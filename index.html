@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Calculation</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#F4A27E" />
+    <link rel="apple-touch-icon" href="/icons/icon-512x512.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react/": "https://esm.sh/react@^19.1.0/",
+          "react": "https://esm.sh/react@^19.1.0",
+          "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+          "@dnd-kit/core": "https://esm.sh/@dnd-kit/core@6.1.0",
+          "@dnd-kit/sortable": "https://esm.sh/@dnd-kit/sortable@8.0.0",
+          "@dnd-kit/utilities": "https://esm.sh/@dnd-kit/utilities@3.2.2",
+          "jspdf": "https://esm.sh/jspdf@2.5.1",
+          "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+          "@google/genai": "https://esm.sh/@google/genai"
+        }
+      }
+    </script>
+    <!-- 
+      *** GOOGLE ADSENSE SCRIPT ***
+      Replace the script below with your own Google AdSense script tag.
+      You can get this from your AdSense account.
+    -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2892214526865008"
+     crossorigin="anonymous"></script>
+
+    <style>
+      body {
+        background-color: var(--color-bg-primary, #2b303a);
+        color: var(--color-text-primary, #ffffff);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      /* For better scrollbar styling in dark themes on webkit browsers */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--color-bg-primary, #2b303a);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-bg-tertiary, #4a5568);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #718096;
+      }
+
+      /* --- Theme System --- */
+
+      /* Classic Light */
+      html[data-theme-style="classic"][data-theme-mode="light"] {
+        --color-bg-primary: #f8f9fa;
+        --color-bg-secondary: #ffffff;
+        --color-bg-tertiary: #e9ecef;
+        --color-text-primary: #2d3748;
+        --color-text-secondary: #718096;
+      }
+
+      /* Classic Dark */
+      html[data-theme-style="classic"][data-theme-mode="dark"] {
+        --color-bg-primary: #2b303a;
+        --color-bg-secondary: #3a404c;
+        --color-bg-tertiary: #4a5568;
+        --color-text-primary: #f7fafc;
+        --color-text-secondary: #a0aec0;
+      }
+
+      /* Glass Theme Background (applied to body) */
+      body.glass-theme-bg {
+        background: linear-gradient(-45deg, var(--gradient-color-1, #ee7752), var(--gradient-color-2, #e73c7e), var(--gradient-color-3, #23a6d5), var(--gradient-color-4, #23d5ab));
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        background-attachment: fixed;
+      }
+
+      @keyframes gradientBG {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+      }
+
+      /* Glass Light */
+      html[data-theme-style="glass"][data-theme-mode="light"] {
+        --color-bg-primary: transparent;
+        --color-bg-secondary: rgba(255, 255, 255, 0.45);
+        --color-bg-tertiary: rgba(255, 255, 255, 0.3);
+        --color-border-glass: rgba(255, 255, 255, 0.2);
+        --color-text-primary: #1a202c;
+        --color-text-secondary: #4a5568;
+      }
+
+      /* Glass Dark */
+      html[data-theme-style="glass"][data-theme-mode="dark"] {
+        --color-bg-primary: transparent;
+        --color-bg-secondary: rgba(20, 25, 35, 0.5);
+        --color-bg-tertiary: rgba(43, 48, 58, 0.4);
+        --color-border-glass: rgba(255, 255, 255, 0.1);
+        --color-text-primary: #f7fafc;
+        --color-text-secondary: #a0aec0;
+      }
+
+      /* Glass Component Styles */
+      [data-theme-style="glass"] .bg-theme-secondary,
+      [data-theme-style="glass"] .bg-theme-tertiary,
+      [data-theme-style="glass"] .bg-theme-primary\/50,
+      [data-theme-style="glass"] .bg-theme-secondary\/50,
+      [data-theme-style="glass"] .bg-theme-secondary\/80 {
+        -webkit-backdrop-filter: blur(14px) saturate(180%);
+        backdrop-filter: blur(14px) saturate(180%);
+        border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.1));
+      }
+
+      /* Custom Accent Color Classes (Applied via JS) */
+      .bg-primary { background-color: var(--color-primary); }
+      .hover\:bg-primary-light:hover { background-color: var(--color-primary-light); }
+      .text-primary { color: var(--color-primary); }
+      .text-on-primary { color: var(--color-text-on-primary); }
+      .border-primary { border-color: var(--color-primary); }
+      .ring-primary { --tw-ring-color: var(--color-primary) !important; }
+      
+      .bg-accent { background-color: var(--color-accent); }
+      .hover\:bg-accent-dark:hover { background-color: var(--color-accent-dark); }
+
+      /* General Component Styles */
+      .bg-theme-primary { background-color: var(--color-bg-primary); }
+      .bg-theme-secondary { background-color: var(--color-bg-secondary); }
+      .bg-theme-tertiary { background-color: var(--color-bg-tertiary); }
+      .hover\:bg-theme-tertiary:hover { background-color: var(--color-bg-tertiary); }
+      .text-theme-primary { color: var(--color-text-primary); }
+      .text-theme-secondary { color: var(--color-text-secondary); }
+      .border-theme { border-color: var(--color-bg-tertiary); }
+
+      .premium-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background-color: var(--color-primary);
+        color: var(--color-text-on-primary);
+        font-size: 0.625rem; /* 10px */
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 9999px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      /* For History Panel Checkboxes */
+      .history-checkbox {
+        appearance: none;
+        background-color: var(--color-bg-primary);
+        border: 2px solid var(--color-bg-tertiary);
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+      }
+      .history-checkbox:checked {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+      }
+      .history-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        color: var(--color-text-on-primary);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+
+      /* Unskippable Ad Modal Timer */
+      .unskippable-ad-timer {
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        display: inline-block;
+      }
+      .unskippable-ad-timer span {
+        font-weight: bold;
+      }
+
+      /* Timer Animations */
+      .skip-button-filling-animation {
+        position: relative;
+        overflow: hidden;
+      }
+      .skip-button-filling-animation::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: width 5s linear;
+      }
+      .skip-button-filling-animation.is-filling::before {
+        width: 100%;
+      }
+
+      .unskippable-progress-container {
+        width: 100%;
+        max-width: 448px;
+        background-color: rgba(255,255,255,0.2);
+        height: 4px;
+        border-radius: 2px;
+        margin-top: 8px;
+      }
+      .unskippable-progress-bar {
+        height: 100%;
+        background-color: white;
+        border-radius: 2px;
+        animation-name: progress-anim;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+      }
+      @keyframes progress-anim {
+        from { width: 100%; }
+        to { width: 0%; }
+      }
+    </style>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
