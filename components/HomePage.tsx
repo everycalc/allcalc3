@@ -143,7 +143,7 @@ const SortableItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id,
 };
 
 const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory }) => {
-    const { homeLayout, pinnedCalculators } = useTheme();
+    const { homeLayout, pinnedCalculators, isDragEnabled } = useTheme();
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('All');
     const filterRef = useRef<HTMLDivElement>(null);
@@ -270,6 +270,18 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                 );
         }
     }
+    
+    const renderAllSections = () => {
+        return filteredAndSortedSections.map((category, index) => (
+            <React.Fragment key={category.category}>
+                <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
+                    <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
+                    {renderCalculators(category)}
+                </section>
+                {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
+            </React.Fragment>
+        ));
+    };
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -330,19 +342,23 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
 
                 <RecentHistory onToggleHistoryPanel={onToggleHistoryPanel} onRestore={onRestoreFromHistory} />
                 
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={orderedSections} strategy={verticalListSortingStrategy}>
-                        {filteredAndSortedSections.map((category, index) => (
-                             <SortableItem key={category.category} id={category.category}>
-                                <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
-                                    <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
-                                    {renderCalculators(category)}
-                                </section>
-                                {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
-                            </SortableItem>
-                        ))}
-                    </SortableContext>
-                </DndContext>
+                {isDragEnabled ? (
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={orderedSections} strategy={verticalListSortingStrategy}>
+                            {filteredAndSortedSections.map((category, index) => (
+                                <SortableItem key={category.category} id={category.category}>
+                                    <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
+                                        <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
+                                        {renderCalculators(category)}
+                                    </section>
+                                    {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
+                                </SortableItem>
+                            ))}
+                        </SortableContext>
+                    </DndContext>
+                ) : (
+                    <div>{renderAllSections()}</div>
+                )}
             </main>
         </div>
     );
