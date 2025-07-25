@@ -60,6 +60,8 @@ interface ThemeContextType {
   setHomeLayout: (layout: HomeLayout) => void;
   pinnedCalculators: string[];
   togglePin: (name: string) => void;
+  isDragEnabled: boolean;
+  setIsDragEnabled: (enabled: boolean) => void;
 }
 
 const DEFAULT_COLOR = '#e53e3e'; // Red
@@ -69,6 +71,7 @@ const DEFAULT_POSITION = 'left';
 const DEFAULT_CURRENCY = 'inr';
 const DEFAULT_CARD_STYLE = 'card';
 const DEFAULT_HOME_LAYOUT: HomeLayout = 'grid';
+const DEFAULT_DRAG_ENABLED = false;
 
 export const ThemeContext = createContext<ThemeContextType>({
   themeColor: DEFAULT_COLOR,
@@ -89,6 +92,8 @@ export const ThemeContext = createContext<ThemeContextType>({
   setHomeLayout: () => {},
   pinnedCalculators: [],
   togglePin: () => {},
+  isDragEnabled: DEFAULT_DRAG_ENABLED,
+  setIsDragEnabled: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -165,6 +170,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [cardStyle, setCardStyleState] = useState<CardStyle>(DEFAULT_CARD_STYLE);
   const [homeLayout, setHomeLayoutState] = useState<HomeLayout>(DEFAULT_HOME_LAYOUT);
   const [pinnedCalculators, setPinnedCalculators] = useState<string[]>([]);
+  const [isDragEnabled, setIsDragEnabledState] = useState<boolean>(DEFAULT_DRAG_ENABLED);
 
 
   useEffect(() => {
@@ -176,6 +182,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const storedCardStyle = localStorage.getItem('cardStyle') as CardStyle | null;
     const storedLayout = localStorage.getItem('homeLayout') as HomeLayout | null;
     const storedPins = localStorage.getItem('pinnedCalculators');
+    const storedDragEnabled = localStorage.getItem('isDragEnabled');
     
     const initialColor = storedColor || DEFAULT_COLOR;
     const initialStyle = storedStyle || DEFAULT_THEME_STYLE;
@@ -184,7 +191,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const initialCurrency = storedCurrency || DEFAULT_CURRENCY;
     const initialCardStyle = storedCardStyle || DEFAULT_CARD_STYLE;
     const initialLayout = storedLayout || DEFAULT_HOME_LAYOUT;
-    
+    const initialDragEnabled = storedDragEnabled ? JSON.parse(storedDragEnabled) : DEFAULT_DRAG_ENABLED;
+
     setThemeColorState(initialColor);
     setThemeStyleState(initialStyle);
     setThemeModeState(initialMode);
@@ -192,6 +200,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setCurrencyState(initialCurrency);
     setCardStyleState(initialCardStyle);
     setHomeLayoutState(initialLayout);
+    setIsDragEnabledState(initialDragEnabled);
 
     if (storedPins) {
         try {
@@ -242,6 +251,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('homeLayout', layout);
   };
 
+  const setIsDragEnabled = (enabled: boolean) => {
+    setIsDragEnabledState(enabled);
+    localStorage.setItem('isDragEnabled', JSON.stringify(enabled));
+  };
+
   const togglePin = (name: string) => {
     setPinnedCalculators(prev => {
         const newPins = prev.includes(name) 
@@ -271,7 +285,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         formatCurrency, currencySymbol, 
         cardStyle, setCardStyle, 
         homeLayout, setHomeLayout, 
-        pinnedCalculators, togglePin 
+        pinnedCalculators, togglePin,
+        isDragEnabled, setIsDragEnabled
     }}>
       {children}
     </ThemeContext.Provider>
