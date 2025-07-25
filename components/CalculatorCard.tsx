@@ -18,17 +18,29 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ name, icon, onClick, is
   const cardedStyle = "p-4 rounded-xl bg-theme-secondary shadow-lg hover:shadow-xl hover:-translate-y-1";
 
   const handlePinClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent the main card's onClick from firing
     togglePin(name);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Trigger onClick on Enter or Space key press for accessibility
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <button
+    <div
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
       className={`${baseClasses} ${cardStyle === 'card' ? cardedStyle : simpleStyle} relative`}
       aria-label={`Open ${name}`}
     >
       {isPremium && <span className="premium-badge">Premium</span>}
+      
       <button
         onClick={handlePinClick}
         className={`absolute top-1 left-1 p-1.5 rounded-full text-theme-secondary bg-theme-primary/50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200 hover:bg-theme-secondary hover:text-primary z-10 ${isPinned ? '!opacity-100 !text-primary' : ''}`}
@@ -43,7 +55,7 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ name, icon, onClick, is
         {icon}
       </div>
       <p className="text-sm font-medium text-theme-primary leading-tight">{name}</p>
-    </button>
+    </div>
   );
 };
 
