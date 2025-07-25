@@ -33,7 +33,8 @@ const ThemeSelector: React.FC = () => {
     sidebarPosition, setSidebarPosition, 
     currency, setCurrency, 
     cardStyle, setCardStyle, 
-    homeLayout, setHomeLayout 
+    homeLayout, setHomeLayout,
+    isDragEnabled, setIsDragEnabled
   } = useTheme();
 
   return (
@@ -100,6 +101,15 @@ const ThemeSelector: React.FC = () => {
             <ViewSwitcherButton onClick={() => setHomeLayout('grid')} isActive={homeLayout === 'grid'} label="Grid View"><GridViewIcon /></ViewSwitcherButton>
             <ViewSwitcherButton onClick={() => setHomeLayout('detailedList')} isActive={homeLayout === 'detailedList'} label="List View"><DetailedListViewIcon /></ViewSwitcherButton>
             <ViewSwitcherButton onClick={() => setHomeLayout('compactList')} isActive={homeLayout === 'compactList'} label="Compact View"><CompactListViewIcon /></ViewSwitcherButton>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-theme-secondary mb-2">Home Page Layout</label>
+        <div className="flex items-center justify-between bg-theme-tertiary p-2 rounded-lg">
+            <span className="text-theme-primary text-sm">Enable Drag-to-Reorder</span>
+            <button onClick={() => setIsDragEnabled(!isDragEnabled)} className={`w-12 h-6 rounded-full flex items-center transition-colors ${isDragEnabled ? 'bg-primary' : 'bg-theme-primary'}`}>
+                <span className={`inline-block w-5 h-5 bg-white rounded-full transform transition-transform ${isDragEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
         </div>
       </div>
     </div>
