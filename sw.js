@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'all-in-one-calculator-v2.0.2'; 
+const CACHE_NAME = 'all-in-one-calculator-v2.1.0'; 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const urlsToCache = [
   '/types.ts',
   '/metadata.json',
   '/manifest.json',
+  '/ads.txt',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/icons/icon-maskable-512x512.png',
