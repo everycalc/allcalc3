@@ -61,6 +61,8 @@ import OnboardingGuide from './components/OnboardingGuide';
 import FeedbackModal from './components/FeedbackModal';
 import SavedDatesPage from './components/SavedDatesPage';
 import ThemeModal from './components/ThemeModal';
+import LayoutCustomizationModal from './components/LayoutCustomizationModal';
+import SharePromptModal from './components/SharePromptModal';
 
 
 interface CalculatorProps {
@@ -137,6 +139,8 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
+  const [isExitIntentModalOpen, setIsExitIntentModalOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -152,9 +156,39 @@ const App: React.FC = () => {
       setShowOnboarding(true);
     }
     
+    // History management for back button
+    const handlePopState = (event: PopStateEvent) => {
+        if (event.state?.page === 'home' || !event.state) {
+            setCurrentCalculator(null);
+            setShowSavedDatesPage(false);
+        } else if (event.state?.page === 'calculator' && calculators[event.state.name]) {
+            setCalculatorState(null); // Clear state when navigating via history
+            setCurrentCalculator(event.state.name);
+            setShowSavedDatesPage(false);
+        } else if (event.state?.page === 'savedDates') {
+            setShowSavedDatesPage(true);
+            setCurrentCalculator(null);
+        }
+    };
+    window.addEventListener('popstate', handlePopState);
+    if (!window.history.state) {
+        window.history.replaceState({ page: 'home' }, '');
+    }
+
+    // Exit-intent modal
+    const handleMouseLeave = (e: MouseEvent) => {
+        if (e.clientY <= 0 && !sessionStorage.getItem('hasSeenExitIntent')) {
+            setIsExitIntentModalOpen(true);
+            sessionStorage.setItem('hasSeenExitIntent', 'true');
+        }
+    };
+    document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+
     return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('popstate', handlePopState);
+        document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
@@ -173,12 +207,12 @@ const App: React.FC = () => {
       setCurrentCalculator(name);
       setIsCurrentPremium(isPremium);
       setShowSavedDatesPage(false);
+      window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
     }
   };
 
   const handleBackToHome = () => {
-    setCurrentCalculator(null);
-    setShowSavedDatesPage(false);
+    window.history.back();
   };
   
   const handleRestoreFromHistory = (entry: HistoryEntry) => {
@@ -188,6 +222,7 @@ const App: React.FC = () => {
         setCurrentCalculator(entry.calculator);
         setShowSavedDatesPage(false);
         setIsHistoryOpen(false); // Close panel on selection
+        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#${entry.calculator.replace(/\s+/g, '-')}`);
     }
   };
 
@@ -204,6 +239,7 @@ const App: React.FC = () => {
     setIsSidebarOpen(false);
     setCurrentCalculator(null);
     setShowSavedDatesPage(true);
+    window.history.pushState({ page: 'savedDates' }, ``, `#saved-dates`);
   };
   
   const handleFinishOnboarding = () => {
@@ -259,7 +295,9 @@ const App: React.FC = () => {
                 onOpenThemeModal={() => setIsThemeModalOpen(true)}
               />
               <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
-              <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
+              <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} onOpenLayoutModal={() => setIsLayoutModalOpen(true)} />
+              <LayoutCustomizationModal isOpen={isLayoutModalOpen} onClose={() => setIsLayoutModalOpen(false)} />
+              <SharePromptModal isOpen={isExitIntentModalOpen} onClose={() => setIsExitIntentModalOpen(false)} />
             </div>
           </HistoryProvider>
         </AdProvider>
