@@ -4,6 +4,8 @@ import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import SaveDatesModal from './SaveDatesModal';
+import AgeCalculatorOnboarding from './AgeCalculatorOnboarding';
 
 interface AgeResult {
     years: number;
@@ -33,9 +35,19 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState }) => {
     const [result, setResult] = useState<AgeResult | null>(null);
     const [intervalId, setIntervalId] = useState<number | null>(null);
     const [shareText, setShareText] = useState('');
+    const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
 
     const [pendingResult, setPendingResult] = useState<any | null>(null);
     const [showAd, setShowAd] = useState(false);
+
+    useEffect(() => {
+      const hasSeen = sessionStorage.getItem('hasSeenAgeCalculatorOnboarding');
+      if (!hasSeen) {
+        setShowOnboarding(true);
+        sessionStorage.setItem('hasSeenAgeCalculatorOnboarding', 'true');
+      }
+    }, []);
 
     useEffect(() => {
         if (initialState) {
@@ -168,6 +180,9 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState }) => {
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
+            <AgeCalculatorOnboarding isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} onOpenDateManager={() => setIsDateModalOpen(true)} />
+            <SaveDatesModal isOpen={isDateModalOpen} onClose={() => setIsDateModalOpen(false)} />
+
             <div className="space-y-4">
                 <div>
                     <label htmlFor="person" className="block text-sm font-medium text-theme-secondary mb-1">Select a Saved Person (Optional)</label>
@@ -183,10 +198,15 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState }) => {
                     <input type="date" id="birthdate" value={birthDate} onChange={handleDateChange} className={commonInputClasses} />
                 </div>
             </div>
-
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
-                Calculate Age
-            </button>
+            
+            <div className="flex flex-col sm:flex-row gap-2">
+                <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+                    Calculate Age
+                </button>
+                <button onClick={() => setIsDateModalOpen(true)} className="w-full sm:w-auto bg-theme-tertiary text-theme-primary font-bold py-3 px-4 rounded-md hover:bg-opacity-80 transition-colors duration-200 shadow-lg flex-shrink-0">
+                    Manage Dates
+                </button>
+            </div>
             
             {result && result.years >= 0 && (
                 <div className="bg-theme-primary/50 p-6 rounded-lg space-y-4 text-center animate-fade-in">
