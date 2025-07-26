@@ -25,7 +25,7 @@ const ViewSwitcherButton: React.FC<{ onClick: () => void; isActive: boolean; chi
     );
 };
 
-const ThemeSelector: React.FC = () => {
+const ThemeSelector: React.FC<{ onOpenLayoutModal: () => void; }> = ({ onOpenLayoutModal }) => {
   const { 
     themeColor, setThemeColor, 
     themeStyle, setThemeStyle,
@@ -34,7 +34,6 @@ const ThemeSelector: React.FC = () => {
     currency, setCurrency, 
     cardStyle, setCardStyle, 
     homeLayout, setHomeLayout,
-    isDragEnabled, setIsDragEnabled
   } = useTheme();
 
   return (
@@ -105,12 +104,9 @@ const ThemeSelector: React.FC = () => {
       </div>
       <div>
         <label className="block text-sm font-medium text-theme-secondary mb-2">Home Page Layout</label>
-        <div className="flex items-center justify-between bg-theme-tertiary p-2 rounded-lg">
-            <span className="text-theme-primary text-sm">Enable Drag-to-Reorder</span>
-            <button onClick={() => setIsDragEnabled(!isDragEnabled)} className={`w-12 h-6 rounded-full flex items-center transition-colors ${isDragEnabled ? 'bg-primary' : 'bg-theme-primary'}`}>
-                <span className={`inline-block w-5 h-5 bg-white rounded-full transform transition-transform ${isDragEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-        </div>
+        <button onClick={onOpenLayoutModal} className="w-full bg-theme-tertiary text-theme-primary font-semibold py-2 px-4 rounded-md hover:bg-theme-primary transition-colors">
+            Reorder Categories
+        </button>
       </div>
     </div>
   );
