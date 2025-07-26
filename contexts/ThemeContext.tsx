@@ -1,5 +1,6 @@
 
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import { calculatorsData } from '../data/calculators';
 
 // A simple utility to check if a color is dark.
 // This helps decide whether text on a colored background should be light or dark.
@@ -60,8 +61,8 @@ interface ThemeContextType {
   setHomeLayout: (layout: HomeLayout) => void;
   pinnedCalculators: string[];
   togglePin: (name: string) => void;
-  isDragEnabled: boolean;
-  setIsDragEnabled: (enabled: boolean) => void;
+  sectionOrder: string[];
+  setSectionOrder: (order: string[]) => void;
 }
 
 const DEFAULT_COLOR = '#e53e3e'; // Red
@@ -71,7 +72,7 @@ const DEFAULT_POSITION = 'left';
 const DEFAULT_CURRENCY = 'inr';
 const DEFAULT_CARD_STYLE = 'card';
 const DEFAULT_HOME_LAYOUT: HomeLayout = 'grid';
-const DEFAULT_DRAG_ENABLED = false;
+const DEFAULT_SECTION_ORDER = calculatorsData.map(c => c.category);
 
 export const ThemeContext = createContext<ThemeContextType>({
   themeColor: DEFAULT_COLOR,
@@ -92,8 +93,8 @@ export const ThemeContext = createContext<ThemeContextType>({
   setHomeLayout: () => {},
   pinnedCalculators: [],
   togglePin: () => {},
-  isDragEnabled: DEFAULT_DRAG_ENABLED,
-  setIsDragEnabled: () => {},
+  sectionOrder: DEFAULT_SECTION_ORDER,
+  setSectionOrder: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -170,7 +171,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [cardStyle, setCardStyleState] = useState<CardStyle>(DEFAULT_CARD_STYLE);
   const [homeLayout, setHomeLayoutState] = useState<HomeLayout>(DEFAULT_HOME_LAYOUT);
   const [pinnedCalculators, setPinnedCalculators] = useState<string[]>([]);
-  const [isDragEnabled, setIsDragEnabledState] = useState<boolean>(DEFAULT_DRAG_ENABLED);
+  const [sectionOrder, setSectionOrderState] = useState<string[]>(DEFAULT_SECTION_ORDER);
 
 
   useEffect(() => {
@@ -182,7 +183,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const storedCardStyle = localStorage.getItem('cardStyle') as CardStyle | null;
     const storedLayout = localStorage.getItem('homeLayout') as HomeLayout | null;
     const storedPins = localStorage.getItem('pinnedCalculators');
-    const storedDragEnabled = localStorage.getItem('isDragEnabled');
+    const storedSectionOrder = localStorage.getItem('sectionOrder');
     
     const initialColor = storedColor || DEFAULT_COLOR;
     const initialStyle = storedStyle || DEFAULT_THEME_STYLE;
@@ -191,7 +192,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const initialCurrency = storedCurrency || DEFAULT_CURRENCY;
     const initialCardStyle = storedCardStyle || DEFAULT_CARD_STYLE;
     const initialLayout = storedLayout || DEFAULT_HOME_LAYOUT;
-    const initialDragEnabled = storedDragEnabled ? JSON.parse(storedDragEnabled) : DEFAULT_DRAG_ENABLED;
 
     setThemeColorState(initialColor);
     setThemeStyleState(initialStyle);
@@ -200,13 +200,28 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setCurrencyState(initialCurrency);
     setCardStyleState(initialCardStyle);
     setHomeLayoutState(initialLayout);
-    setIsDragEnabledState(initialDragEnabled);
 
     if (storedPins) {
         try {
             setPinnedCalculators(JSON.parse(storedPins));
         } catch (e) {
             setPinnedCalculators([]);
+        }
+    }
+    
+    if (storedSectionOrder) {
+        try {
+            const parsedOrder = JSON.parse(storedSectionOrder);
+            // Verify that the stored order contains all categories
+            const currentCategories = new Set(DEFAULT_SECTION_ORDER);
+            const savedCategories = new Set(parsedOrder);
+            if (currentCategories.size === savedCategories.size && [...currentCategories].every(cat => savedCategories.has(cat))) {
+                 setSectionOrderState(parsedOrder);
+            } else {
+                 setSectionOrderState(DEFAULT_SECTION_ORDER);
+            }
+        } catch(e) {
+             setSectionOrderState(DEFAULT_SECTION_ORDER);
         }
     }
 
@@ -251,9 +266,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('homeLayout', layout);
   };
 
-  const setIsDragEnabled = (enabled: boolean) => {
-    setIsDragEnabledState(enabled);
-    localStorage.setItem('isDragEnabled', JSON.stringify(enabled));
+  const setSectionOrder = (order: string[]) => {
+    setSectionOrderState(order);
+    localStorage.setItem('sectionOrder', JSON.stringify(order));
   };
 
   const togglePin = (name: string) => {
@@ -286,7 +301,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         cardStyle, setCardStyle, 
         homeLayout, setHomeLayout, 
         pinnedCalculators, togglePin,
-        isDragEnabled, setIsDragEnabled
+        sectionOrder, setSectionOrder
     }}>
       {children}
     </ThemeContext.Provider>
