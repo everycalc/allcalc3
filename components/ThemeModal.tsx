@@ -4,9 +4,10 @@ import ThemeSelector from './ThemeSelector';
 interface ThemeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenLayoutModal: () => void;
 }
 
-const ThemeModal: React.FC<ThemeModalProps> = ({ isOpen, onClose }) => {
+const ThemeModal: React.FC<ThemeModalProps> = ({ isOpen, onClose, onOpenLayoutModal }) => {
   if (!isOpen) return null;
 
   return (
@@ -31,7 +32,7 @@ const ThemeModal: React.FC<ThemeModalProps> = ({ isOpen, onClose }) => {
             </svg>
           </button>
         </div>
-        <ThemeSelector />
+        <ThemeSelector onOpenLayoutModal={onOpenLayoutModal} />
       </div>
     </div>
   );
