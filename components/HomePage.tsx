@@ -5,9 +5,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import AdsensePlaceholder from './AdsensePlaceholder';
 import RecentHistory from './RecentHistory';
 import { HistoryEntry } from '../contexts/HistoryContext';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { calculatorsData } from '../data/calculators';
+import Logo from './Logo';
+import CalculatorCarousel from './CalculatorCarousel';
 
 
 interface HomePageProps {
@@ -17,159 +17,23 @@ interface HomePageProps {
   onRestoreFromHistory: (entry: HistoryEntry) => void;
 }
 
-// Icons
-const AreaIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>;
-const VolumeIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0-10 10c0 4.42 3.58 8 8 8s8-3.58 8-8"></path><path d="M2 12h20"></path></svg>;
-const BmiIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10m0-4V4m-6 16V4m6 1h-4.5a2.5 2.5 0 0 0 0 5H18m-6 1h-2a2 2 0 0 0 0 4h2m0 1h-4.5a2.5 2.5 0 0 0 0 5H18"></path></svg>;
-const StandardIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="16" y1="10" x2="12" y2="10"></line><line x1="12" y1="14" x2="8" y2="14"></line><line x1="12" y1="18" x2="8" y2="18"></line><line x1="8" y1="10" x2="8" y2="10"></line></svg>;
-const ScientificIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18.37 2.63L14 7l-1.4-1.4a2.83 2.83 0 0 0-4 0L3 11.2V14l6.6-6.6a2.83 2.83 0 0 1 4 0L17 10l5-5-2.63-2.37z"></path><path d="M21 12v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4"></path><path d="M16 12h2"></path><path d="M12 16h2"></path></svg>;
-const LoanIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>;
-const UnitIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path></svg>;
-const AgeIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path></svg>;
-const ProfitMarginIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.79"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>;
-const DiscountIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="15" y1="8" x2="9" y2="14"></line><circle cx="12" cy="11" r="1"></circle><circle cx="12" cy="11" r="1"></circle></svg>;
-const BreakEvenIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"></path><path d="M18.7 8.3a4 4 0 0 1-5.7 5.7l-4.3 4.3"></path><path d="M3 12.7L18 3"></path></svg>;
-const ROASIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path><path d="M9 7h6"></path><path d="M9 11h6"></path><path d="M9 15h2"></path></svg>;
-const CLVCACIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
-const InventoryIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"></path><polygon points="21 10 12 10 12 22 21 22"></polygon><line x1="7" y1="15" x2="9" y2="15"></line></svg>;
-const ECommerceIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>;
-const SIPFDRIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path><path d="M16 8l-4 4-4-4"></path><path d="M12 16V8"></path></svg>;
-const HomeLoanIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
-const RentBuyIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>;
-const PercentageIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>;
-const ScienceIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
-const CurrencyIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
-const FuelIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 8V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3"></path><path d="M14 11h6.5a1.5 1.5 0 0 1 0 3H14v-3z"></path></svg>;
-const RecipeIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
-const ProductCostIcon = () => <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8.2c2.5-2 6.3-2.4 8.8-1.2 2.5 1.2 3.2 4.2 1.2 6.5-2 2.3-5.5 2.8-8 1.5"></path><path d="M4.2 14c-1.2 2.5.8 5.5 3.3 6.5s5.5.8 6.5-1.8"></path><path d="M12 17.8c-2.5 2-6.3 2.4-8.8 1.2-2.5-1.2-3.2-4.2-1.2-6.5 2-2.3 5.5-2.8 8-1.5"></path><path d="M19.8 10c1.2-2.5-.8-5.5-3.3-6.5s-5.5-.8-6.5 1.8"></path><circle cx="12" cy="12" r="1.5"></circle></svg>;
-
-const calculatorsData = [
-  {
-    category: 'Business & E-commerce',
-    items: [
-      { name: 'E-commerce Profit Calculator', icon: <ECommerceIcon />, isPremium: true },
-      { name: 'Product Cost Calculator', icon: <ProductCostIcon />, isPremium: true },
-      { name: 'Recipe Cost Calculator', icon: <RecipeIcon /> },
-      { name: 'CLV & CAC Calculator', icon: <CLVCACIcon />, isPremium: true },
-      { name: 'Inventory Management Calculator', icon: <InventoryIcon />, isPremium: true },
-      { name: 'Break-Even ROAS Calculator', icon: <ROASIcon />, isPremium: true },
-      { name: 'Break-Even Point Calculator', icon: <BreakEvenIcon /> },
-      { name: 'Profit Margin Calculator', icon: <ProfitMarginIcon /> },
-      { name: 'Discount Calculator', icon: <DiscountIcon /> },
-      { name: 'AOV Calculator', icon: <LoanIcon /> }, 
-    ]
-  },
-  {
-    category: 'Finance & Investment',
-    items: [
-      { name: 'SIP Calculator', icon: <SIPFDRIcon /> },
-      { name: 'FD/RD Calculator', icon: <SIPFDRIcon /> },
-      { name: 'Mutual Fund Returns Calculator', icon: <ProfitMarginIcon /> },
-      { name: 'Compound Interest Calculator', icon: <ROASIcon /> },
-      { name: 'Credit Card Interest Calculator', icon: <DiscountIcon /> },
-      { name: 'Home Loan EMI & Affordability', icon: <HomeLoanIcon /> },
-      { name: 'GST/Tax Calculator', icon: <PercentageIcon /> },
-      { name: 'Loan Calculator', icon: <LoanIcon /> },
-    ]
-  },
-  {
-    category: 'Real Estate & Construction',
-    items: [
-      { name: 'Area Cost Estimator', icon: <HomeLoanIcon /> },
-      { name: 'Rent vs Buy Calculator', icon: <RentBuyIcon /> },
-      { name: 'Carpet Area vs Built-up Area', icon: <AreaIcon /> },
-    ]
-  },
-  {
-    category: 'Math & Education',
-    items: [
-      { name: 'Percentage Calculator', icon: <PercentageIcon /> },
-      { name: 'Average Calculator', icon: <StandardIcon /> },
-      { name: 'Median & Mode Calculator', icon: <ScientificIcon /> },
-      { name: 'Logarithm & Trigonometry', icon: <BmiIcon /> },
-      { name: 'Standard Calculator', icon: <StandardIcon /> },
-      { name: 'Scientific Calculator', icon: <ScientificIcon /> },
-    ]
-  },
-  {
-    category: 'Science',
-    items: [
-      { name: 'Force & Acceleration', icon: <ScienceIcon /> },
-      { name: 'Velocity & Distance', icon: <ScienceIcon /> },
-    ]
-  },
-  {
-    category: 'Geometry',
-    items: [
-      { name: 'All Shapes Area Calculator', icon: <AreaIcon /> },
-      { name: 'All Shapes Volume Calculator', icon: <VolumeIcon /> },
-    ]
-  },
-  {
-    category: 'Health',
-    items: [
-      { name: 'BMI Calculator', icon: <BmiIcon /> },
-      { name: 'Age Calculator', icon: <AgeIcon /> },
-    ]
-  },
-  {
-    category: 'Converters',
-    items: [
-      { name: 'Unit Converter', icon: <UnitIcon /> },
-      { name: 'Currency Converter', icon: <CurrencyIcon /> },
-    ]
-  },
-  {
-    category: 'Everyday Use',
-    items: [
-      { name: 'Fuel Cost Calculator', icon: <FuelIcon /> },
-      { name: 'Trip Expense Splitter', icon: <CLVCACIcon /> },
-    ]
-  },
+const suggestedCalculatorNames = [
+    'SIP Calculator',
+    'BMI Calculator',
+    'Age Calculator',
+    'Loan Calculator',
+    'Discount Calculator',
+    'Fuel Cost Calculator',
+    'E-commerce Profit Calculator',
 ];
 
-
-const SortableItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-    return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            {children}
-        </div>
-    );
-};
-
 const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory }) => {
-    const { homeLayout, pinnedCalculators, isDragEnabled } = useTheme();
+    const { homeLayout, pinnedCalculators, sectionOrder } = useTheme();
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('All');
     const filterRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchVisible, setIsSearchVisible] = useState(false);
-
-    const [orderedSections, setOrderedSections] = useState(calculatorsData.map(c => c.category));
-    
-    useEffect(() => {
-        try {
-            const savedOrder = localStorage.getItem('calculatorSectionOrder');
-            if (savedOrder) {
-                setOrderedSections(JSON.parse(savedOrder));
-            }
-        } catch (error) {
-            console.error("Failed to load section order:", error);
-        }
-    }, []);
-    
-    useEffect(() => {
-        try {
-            localStorage.setItem('calculatorSectionOrder', JSON.stringify(orderedSections));
-        } catch (error) {
-            console.error("Failed to save section order:", error);
-        }
-    }, [orderedSections]);
     
     // Close filter dropdown if clicked outside
     useEffect(() => {
@@ -185,6 +49,12 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
     }, []);
 
     const allCalculatorsFlat = useMemo(() => calculatorsData.flatMap(cat => cat.items), []);
+    
+    const suggestedCalculators = useMemo(() => {
+        return suggestedCalculatorNames
+            .map(name => allCalculatorsFlat.find(calc => calc.name === name))
+            .filter((item): item is NonNullable<typeof item> => !!item);
+    }, [allCalculatorsFlat]);
 
     const pinnedItems = useMemo(() => {
         return pinnedCalculators
@@ -209,22 +79,10 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
             sections = sections.filter(c => c.category === filter);
         }
         
-        return sections.sort((a, b) => orderedSections.indexOf(a.category) - orderedSections.indexOf(b.category));
+        // Use the order from context
+        return sections.sort((a, b) => sectionOrder.indexOf(a.category) - sectionOrder.indexOf(b.category));
 
-    }, [searchQuery, filter, orderedSections, pinnedCalculators]);
-    
-    const sensors = useSensors(useSensor(PointerSensor));
-
-    const handleDragEnd = (event: any) => {
-        const { active, over } = event;
-        if (active.id !== over.id) {
-            setOrderedSections((items) => {
-                const oldIndex = items.indexOf(active.id);
-                const newIndex = items.indexOf(over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
-    };
+    }, [searchQuery, filter, sectionOrder, pinnedCalculators]);
     
     const renderCalculators = (category: any) => {
         const premiumBadge = <span className="ml-2 text-xs font-bold uppercase text-on-primary bg-primary px-1.5 py-0.5 rounded-full flex-shrink-0">Premium</span>;
@@ -293,7 +151,10 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <h1 className="text-xl font-bold">All Calculation</h1>
+                <div className="flex items-center gap-2">
+                    <Logo />
+                    <h1 className="text-xl font-bold">All Calculation</h1>
+                </div>
                 <button onClick={() => setIsSearchVisible(p => !p)} id="onboarding-search-toggle" className="p-2 rounded-full hover:bg-black/10 transition-colors" aria-label="Search calculators">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </button>
@@ -327,6 +188,14 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                         </div>
                     </div>
                 )}
+                
+                <section className="mb-8" aria-labelledby="suggested-calculators">
+                    <h2 id="suggested-calculators" className="text-2xl font-semibold mb-4 text-theme-primary flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1V3a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V6H6a1 1 0 110-2h1V3a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0V6h1a1 1 0 100-2h-1V3zM4 12a1 1 0 011-1h1v-1a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H5a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1v-1z" clipRule="evenodd" /></svg>
+                        Suggested For You
+                    </h2>
+                    <CalculatorCarousel items={suggestedCalculators} onSelectCalculator={onSelectCalculator} />
+                </section>
                
                 {pinnedItems.length > 0 && (
                     <section className="mb-8" aria-labelledby="pinned-calculators">
@@ -336,29 +205,13 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                             </svg>
                             Pinned
                         </h2>
-                        {renderCalculators({ items: pinnedItems })}
+                        <CalculatorCarousel items={pinnedItems} onSelectCalculator={onSelectCalculator} />
                     </section>
                 )}
 
                 <RecentHistory onToggleHistoryPanel={onToggleHistoryPanel} onRestore={onRestoreFromHistory} />
                 
-                {isDragEnabled ? (
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={orderedSections} strategy={verticalListSortingStrategy}>
-                            {filteredAndSortedSections.map((category, index) => (
-                                <SortableItem key={category.category} id={category.category}>
-                                    <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
-                                        <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
-                                        {renderCalculators(category)}
-                                    </section>
-                                    {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
-                                </SortableItem>
-                            ))}
-                        </SortableContext>
-                    </DndContext>
-                ) : (
-                    <div>{renderAllSections()}</div>
-                )}
+                <div>{renderAllSections()}</div>
             </main>
         </div>
     );
