@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 interface ShareButtonProps {
   textToShare: string;
+  onShared?: () => void;
 }
 
-const ShareButton: React.FC<ShareButtonProps> = ({ textToShare }) => {
+const ShareButton: React.FC<ShareButtonProps> = ({ textToShare, onShared }) => {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -16,6 +17,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ textToShare }) => {
         });
       } catch (error) {
         console.error('Error sharing:', error);
+      } finally {
+        onShared?.();
       }
     } else {
       // Fallback to copy
@@ -25,6 +28,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ textToShare }) => {
         setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
       } catch (err) {
         console.error('Failed to copy text: ', err);
+      } finally {
+        onShared?.();
       }
     }
   };

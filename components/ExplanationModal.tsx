@@ -99,49 +99,51 @@ const ExplanationModal: React.FC<ExplanationModalProps> = ({ isOpen, onClose, ca
 
         } catch (err: any) {
           console.error("Gemini API Error:", err);
-          setError("Sorry, we couldn't generate an explanation at this moment. Please try again later.");
+          setError("Sorry, we couldn't generate an explanation right now. Please try again later.");
         } finally {
           setIsLoading(false);
         }
       };
-
       fetchExplanation();
     }
-  }, [isOpen]);
+  }, [isOpen, calculatorName, inputs, result]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
       <div 
         className="fixed inset-0"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
-        className="relative w-full max-w-2xl bg-theme-secondary rounded-xl shadow-2xl transform transition-transform animate-fade-in-down"
+        className="relative w-full max-w-2xl bg-theme-secondary rounded-xl shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="explanation-modal-title"
       >
         <header className="flex justify-between items-center p-4 border-b border-theme">
-          <h2 className="text-xl font-bold text-theme-primary">Calculation Explained</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/10 text-theme-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <h2 id="explanation-modal-title" className="text-xl font-bold text-theme-primary">Calculation Explained</h2>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/10 text-theme-secondary" aria-label="Close explanation">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
-
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center space-y-4 text-theme-primary h-40">
-               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-               <p>Generating explanation...</p>
-            </div>
-          )}
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          {explanation && (
-             <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: explanation }}></div>
-          )}
-        </div>
+        <main className="p-6 max-h-[60vh] overflow-y-auto">
+            {isLoading && (
+                <div className="flex items-center justify-center space-x-2 text-theme-primary">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p>Generating explanation with AI...</p>
+                </div>
+            )}
+            {error && <p className="text-red-500 text-center">{error}</p>}
+            {!isLoading && !error && explanation && (
+                <div className="prose prose-sm prose-invert" dangerouslySetInnerHTML={{ __html: explanation }} />
+            )}
+        </main>
       </div>
     </div>
   );
