@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import AdsensePlaceholder from './AdsensePlaceholder';
 import CalculatorHistoryView from './CalculatorHistoryView';
+import TimedShareToast from './TimedShareToast';
+import ShareButton from './ShareButton'; // Share logic is in ShareButton
 
 interface CalculatorPageWrapperProps {
   title: string;
@@ -10,6 +13,18 @@ interface CalculatorPageWrapperProps {
 
 const CalculatorPageWrapper: React.FC<CalculatorPageWrapperProps> = ({ title, onBack, children }) => {
   const [activeTab, setActiveTab] = useState<'calculator' | 'history'>('calculator');
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        if (!sessionStorage.getItem('hasSeenTimedShare')) {
+            setShowShareToast(true);
+            sessionStorage.setItem('hasSeenTimedShare', 'true');
+        }
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const TabButton: React.FC<{label: string, name: 'calculator' | 'history'}> = ({label, name}) => (
     <button
@@ -28,7 +43,7 @@ const CalculatorPageWrapper: React.FC<CalculatorPageWrapperProps> = ({ title, on
     <div className="flex flex-col min-h-screen bg-theme-primary">
       <header className="bg-theme-secondary/80 backdrop-blur-sm p-4 flex items-center shadow-md sticky top-0 z-10 text-theme-primary">
         <button onClick={onBack} className="p-2 rounded-full hover:bg-black/10 transition-colors" aria-label="Go back to home page">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -52,6 +67,11 @@ const CalculatorPageWrapper: React.FC<CalculatorPageWrapperProps> = ({ title, on
             </div>
         </div>
       </main>
+      <TimedShareToast 
+        isOpen={showShareToast} 
+        onClose={() => setShowShareToast(false)} 
+        textToShare={`Check out this awesome calculator app! I'm using the ${title}. You can find it here: ${window.location.origin}`}
+      />
     </div>
   );
 };
