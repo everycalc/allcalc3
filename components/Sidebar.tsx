@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -17,7 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
 
   useEffect(() => {
     if (isOpen) {
-      fetch('../metadata.json')
+      fetch('/metadata.json')
         .then(response => {
           if (!response.ok) {
             throw new Error('Network response was not ok');
