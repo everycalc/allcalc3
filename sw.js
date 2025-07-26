@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'all-in-one-calculator-v2.1.0'; 
+const CACHE_NAME = 'all-in-one-calculator-v2.3.0'; 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -13,10 +12,14 @@ const urlsToCache = [
   '/icons/icon-512x512.png',
   '/icons/icon-maskable-512x512.png',
 
+  // Data
+  '/data/calculators.ts',
+
   // Components
   '/components/AOVCalculator.tsx',
   '/components/AdsensePlaceholder.tsx',
   '/components/AgeCalculator.tsx',
+  '/components/AgeCalculatorOnboarding.tsx',
   '/components/AreaCalculator.tsx',
   '/components/AreaCostEstimator.tsx',
   '/components/AverageCalculator.tsx',
@@ -26,6 +29,7 @@ const urlsToCache = [
   '/components/CLVCACCalculator.tsx',
   '/components/CalculatorButton.tsx',
   '/components/CalculatorCard.tsx',
+  '/components/CalculatorCarousel.tsx',
   '/components/CalculatorHistoryView.tsx',
   '/components/CalculatorPageWrapper.tsx',
   '/components/CarpetAreaCalculator.tsx',
@@ -49,7 +53,9 @@ const urlsToCache = [
   '/components/InfoTooltip.tsx',
   '/components/InterstitialAdModal.tsx',
   '/components/InventoryManagementCalculator.tsx',
+  '/components/LayoutCustomizationModal.tsx',
   '/components/LoanCalculator.tsx',
+  '/components/Logo.tsx',
   '/components/LogTrigCalculator.tsx',
   '/components/MedianModeCalculator.tsx',
   '/components/MutualFundReturnsCalculator.tsx',
@@ -67,11 +73,13 @@ const urlsToCache = [
   '/components/SavedDatesPage.tsx',
   '/components/ScientificCalculator.tsx',
   '/components/ShareButton.tsx',
+  '/components/SharePromptModal.tsx',
   '/components/Sidebar.tsx',
   '/components/StandardCalculator.tsx',
   '/components/TabButton.tsx',
   '/components/ThemeModal.tsx',
   '/components/ThemeSelector.tsx',
+  '/components/TimedShareToast.tsx',
   '/components/TripExpenseSplitter.tsx',
   '/components/UnitConverter.tsx',
   '/components/UnskippableAdModal.tsx',
