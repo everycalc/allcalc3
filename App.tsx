@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import StandardCalculator from './components/StandardCalculator';
@@ -64,6 +65,10 @@ import ThemeModal from './components/ThemeModal';
 import LayoutCustomizationModal from './components/LayoutCustomizationModal';
 import SharePromptModal from './components/SharePromptModal';
 
+import PolicyPage from './components/PolicyPage';
+import { PrivacyPolicyContent, TermsOfServiceContent, AboutUsContent, DisclaimerContent } from './data/policyContent';
+import CookieConsentBanner from './components/CookieConsentBanner';
+
 
 interface CalculatorProps {
   initialState?: any;
@@ -128,6 +133,14 @@ const calculators: { [key: string]: React.FC<CalculatorProps> } = {
   'Trip Expense Splitter': TripExpenseSplitter,
 };
 
+const policyPages: { [key: string]: { title: string; content: React.ReactNode } } = {
+  'privacy': { title: 'Privacy Policy', content: <PrivacyPolicyContent /> },
+  'terms': { title: 'Terms of Service', content: <TermsOfServiceContent /> },
+  'about': { title: 'About Us', content: <AboutUsContent /> },
+  'disclaimer': { title: 'Disclaimer', content: <DisclaimerContent /> },
+};
+
+
 const App: React.FC = () => {
   const [currentCalculator, setCurrentCalculator] = useState<string | null>(null);
   const [isCurrentPremium, setIsCurrentPremium] = useState(false);
@@ -136,6 +149,7 @@ const App: React.FC = () => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSavedDatesPage, setShowSavedDatesPage] = useState(false);
+  const [policyPage, setPolicyPage] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
@@ -161,13 +175,20 @@ const App: React.FC = () => {
         if (event.state?.page === 'home' || !event.state) {
             setCurrentCalculator(null);
             setShowSavedDatesPage(false);
+            setPolicyPage(null);
         } else if (event.state?.page === 'calculator' && calculators[event.state.name]) {
             setCalculatorState(null); // Clear state when navigating via history
             setCurrentCalculator(event.state.name);
             setShowSavedDatesPage(false);
+            setPolicyPage(null);
         } else if (event.state?.page === 'savedDates') {
             setShowSavedDatesPage(true);
             setCurrentCalculator(null);
+            setPolicyPage(null);
+        } else if (event.state?.page === 'policy' && policyPages[event.state.name]) {
+            setShowSavedDatesPage(false);
+            setCurrentCalculator(null);
+            setPolicyPage(event.state.name);
         }
     };
     window.addEventListener('popstate', handlePopState);
@@ -175,30 +196,40 @@ const App: React.FC = () => {
         window.history.replaceState({ page: 'home' }, '');
     }
 
-    // Exit-intent modal
+    // Exit-intent modal - Desktop only
     const handleMouseLeave = (e: MouseEvent) => {
         if (e.clientY <= 0 && !sessionStorage.getItem('hasSeenExitIntent')) {
             setIsExitIntentModalOpen(true);
             sessionStorage.setItem('hasSeenExitIntent', 'true');
         }
     };
-    document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+    
+    const isDesktop = !('ontouchstart' in window);
+    let timer: number | undefined;
+
+    if (isDesktop) {
+        // Delay attaching the listener to avoid it firing on page load
+        timer = window.setTimeout(() => {
+            document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+        }, 5000); // Attach after 5 seconds
+    }
 
     return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('popstate', handlePopState);
+        if (timer) window.clearTimeout(timer);
         document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
   useEffect(() => {
     // Scroll restoration logic
-    if (currentCalculator === null && !showSavedDatesPage) {
+    if (currentCalculator === null && !showSavedDatesPage && !policyPage) {
       // Small timeout to allow DOM to render before scrolling
       setTimeout(() => window.scrollTo(0, scrollPosition), 0);
     }
-  }, [currentCalculator, showSavedDatesPage, scrollPosition]);
+  }, [currentCalculator, showSavedDatesPage, policyPage, scrollPosition]);
 
   const handleSelectCalculator = (name: string, isPremium: boolean = false) => {
     if (calculators[name]) {
@@ -207,6 +238,7 @@ const App: React.FC = () => {
       setCurrentCalculator(name);
       setIsCurrentPremium(isPremium);
       setShowSavedDatesPage(false);
+      setPolicyPage(null);
       window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
     }
   };
@@ -221,6 +253,7 @@ const App: React.FC = () => {
         setCalculatorState(entry.inputs);
         setCurrentCalculator(entry.calculator);
         setShowSavedDatesPage(false);
+        setPolicyPage(null);
         setIsHistoryOpen(false); // Close panel on selection
         window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#${entry.calculator.replace(/\s+/g, '-')}`);
     }
@@ -238,8 +271,20 @@ const App: React.FC = () => {
     setScrollPosition(window.scrollY);
     setIsSidebarOpen(false);
     setCurrentCalculator(null);
+    setPolicyPage(null);
     setShowSavedDatesPage(true);
     window.history.pushState({ page: 'savedDates' }, ``, `#saved-dates`);
+  };
+
+  const handleShowPolicyPage = (page: string) => {
+    if (policyPages[page]) {
+      setScrollPosition(window.scrollY);
+      setIsSidebarOpen(false);
+      setCurrentCalculator(null);
+      setShowSavedDatesPage(false);
+      setPolicyPage(page);
+      window.history.pushState({ page: 'policy', name: page }, '', `#${page}`);
+    }
   };
   
   const handleFinishOnboarding = () => {
@@ -250,6 +295,11 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (showSavedDatesPage) {
       return <SavedDatesPage onBack={handleBackToHome} />;
+    }
+
+    if (policyPage && policyPages[policyPage]) {
+      const { title, content } = policyPages[policyPage];
+      return <PolicyPage title={title} onBack={handleBackToHome}>{content}</PolicyPage>;
     }
 
     // If a calculator is selected, render it within the page wrapper
@@ -268,6 +318,7 @@ const App: React.FC = () => {
         onToggleSidebar={handleToggleSidebar} 
         onToggleHistoryPanel={handleToggleHistory}
         onRestoreFromHistory={handleRestoreFromHistory}
+        onShowPolicyPage={handleShowPolicyPage}
     />;
   }
 
@@ -290,6 +341,7 @@ const App: React.FC = () => {
                 onClose={() => setIsSidebarOpen(false)} 
                 onToggleHistory={handleToggleHistory}
                 onShowSavedDatesPage={handleShowSavedDatesPage}
+                onShowPolicyPage={handleShowPolicyPage}
                 onShowOnboarding={() => setShowOnboarding(true)}
                 onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
                 onOpenThemeModal={() => setIsThemeModalOpen(true)}
@@ -298,6 +350,7 @@ const App: React.FC = () => {
               <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} onOpenLayoutModal={() => setIsLayoutModalOpen(true)} />
               <LayoutCustomizationModal isOpen={isLayoutModalOpen} onClose={() => setIsLayoutModalOpen(false)} />
               <SharePromptModal isOpen={isExitIntentModalOpen} onClose={() => setIsExitIntentModalOpen(false)} />
+              <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
             </div>
           </HistoryProvider>
         </AdProvider>
