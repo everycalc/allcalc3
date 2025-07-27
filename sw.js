@@ -9,6 +9,7 @@ const urlsToCache = [
   '/manifest.json',
   '/ads.txt',
   '/data/calculators.ts',
+  '/data/policyContent.tsx',
 
   // Components
   '/components/AOVCalculator.tsx',
@@ -29,6 +30,7 @@ const urlsToCache = [
   '/components/CalculatorPageWrapper.tsx',
   '/components/CarpetAreaCalculator.tsx',
   '/components/CompoundInterestCalculator.tsx',
+  '/components/CookieConsentBanner.tsx',
   '/components/CreditCardInterestCalculator.tsx',
   '/components/CurrencyConverter.tsx',
   '/components/DateTracker.tsx',
@@ -43,6 +45,7 @@ const urlsToCache = [
   '/components/HistoryAd.tsx',
   '/components/HistoryDropdown.tsx',
   '/components/HistoryPanel.tsx',
+  '/components/HistoryExportGuide.tsx',
   '/components/HomeLoanEMICalculator.tsx',
   '/components/HomePage.tsx',
   '/components/InfoTooltip.tsx',
@@ -58,6 +61,8 @@ const urlsToCache = [
   '/components/OnboardingGuide.tsx',
   '/components/PercentageCalculator.tsx',
   '/components/PieChart.tsx',
+  '/components/PinningGuide.tsx',
+  '/components/PolicyPage.tsx',
   '/components/ProductCostCalculator.tsx',
   '/components/ProfitMarginCalculator.tsx',
   '/components/RecentHistory.tsx',
@@ -72,6 +77,7 @@ const urlsToCache = [
   '/components/Sidebar.tsx',
   '/components/StandardCalculator.tsx',
   '/components/TabButton.tsx',
+  '/components/ThemeGuide.tsx',
   '/components/ThemeModal.tsx',
   '/components/ThemeSelector.tsx',
   '/components/TimedShareToast.tsx',
@@ -148,6 +154,14 @@ self.addEventListener('fetch', event => {
             return response || caches.match('/index.html');
           });
         })
+    );
+    return;
+  }
+  
+  // For metadata.json, always try network first to get the latest version info.
+  if (url.pathname === '/metadata.json') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
     );
     return;
   }
