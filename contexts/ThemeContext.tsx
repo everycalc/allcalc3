@@ -13,33 +13,34 @@ const isColorDark = (hexColor: string): boolean => {
   return luma < 128;
 };
 
-// Simple lighten/darken function, refactored for clarity
-const lightenDarkenColor = (col: string, amt: number) => {
+// Refactored for clarity and robustness
+const lightenDarkenColor = (hexColor: string, amount: number) => {
   let usePound = false;
-  if (col[0] === "#") {
-    col = col.slice(1);
+  if (hexColor.startsWith("#")) {
+    hexColor = hexColor.slice(1);
     usePound = true;
   }
 
-  // Handle 3-digit hex colors
-  if (col.length === 3) {
-    col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+  // Handle 3-digit hex colors by duplicating characters
+  if (hexColor.length === 3) {
+    hexColor = hexColor[0].repeat(2) + hexColor[1].repeat(2) + hexColor[2].repeat(2);
   }
 
-  const num = parseInt(col, 16);
-  if (isNaN(num)) return '#000000'; // Return a fallback color
+  const decimalColor = parseInt(hexColor, 16);
+  if (isNaN(decimalColor)) return '#000000'; // Fallback for invalid color
 
-  let r = (num >> 16) & 0xFF;
-  let g = (num >> 8) & 0xFF;
-  let b = num & 0xFF;
+  let red = (decimalColor >> 16) & 0xFF;
+  let green = (decimalColor >> 8) & 0xFF;
+  let blue = decimalColor & 0xFF;
 
-  r = Math.max(0, Math.min(255, r + amt));
-  g = Math.max(0, Math.min(255, g + amt));
-  b = Math.max(0, Math.min(255, b + amt));
+  // Apply the amount to each channel, clamping the result between 0 and 255
+  red = Math.max(0, Math.min(255, red + amount));
+  green = Math.max(0, Math.min(255, green + amount));
+  blue = Math.max(0, Math.min(255, blue + amount));
   
   const toHex = (c: number) => c.toString(16).padStart(2, '0');
 
-  return `${usePound ? "#" : ""}${toHex(r)}${toHex(g)}${toHex(b)}`;
+  return `${usePound ? "#" : ""}${toHex(red)}${toHex(green)}${toHex(blue)}`;
 }
 
 type ThemeMode = 'light' | 'dark';
