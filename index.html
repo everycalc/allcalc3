@@ -141,7 +141,7 @@
       .text-theme-secondary { color: var(--color-text-secondary); }
       .border-theme { border-color: var(--color-bg-tertiary); }
 
-      .premium-badge {
+      .expert-badge {
         position: absolute;
         top: 6px;
         right: 6px;
@@ -154,6 +154,29 @@
         line-height: 1;
         text-transform: uppercase;
       }
+       .pin-button {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background-color: var(--color-bg-tertiary);
+        color: var(--color-text-secondary);
+        opacity: 1; /* Changed from 0 to 1 */
+        transition: all 0.2s ease-in-out;
+      }
+      .pin-button:hover {
+        transform: scale(1.1);
+      }
+      .pin-button.pinned {
+        background-color: var(--color-primary);
+        color: var(--color-text-on-primary);
+      }
+
       /* For History Panel Checkboxes */
       .history-checkbox {
         appearance: none;
@@ -193,6 +216,17 @@
       .unskippable-ad-timer span {
         font-weight: bold;
       }
+      
+      .notification-dot {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-bg-secondary);
+      }
 
       /* Timer Animations */
       .skip-button-filling-animation {
@@ -207,10 +241,12 @@
         height: 100%;
         width: 0;
         background-color: rgba(255, 255, 255, 0.2);
-        transition: width 5s linear;
+        animation: fill-width var(--animation-duration, 5s) linear forwards;
       }
-      .skip-button-filling-animation.is-filling::before {
-        width: 100%;
+      
+      @keyframes fill-width {
+        from { width: 0%; }
+        to { width: 100%; }
       }
 
       .unskippable-progress-container {
@@ -238,7 +274,8 @@
         50% { transform: scale(1.25); }
       }
     </style>
-  </head>
+  <link rel="stylesheet" href="/index.css">
+</head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>

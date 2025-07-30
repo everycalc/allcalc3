@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import StandardCalculator from './components/StandardCalculator';
@@ -12,7 +11,9 @@ import CalculatorPageWrapper from './components/CalculatorPageWrapper';
 import { HistoryProvider, HistoryEntry } from './contexts/HistoryContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { DateTrackerProvider } from './contexts/DateTrackerContext';
-import { AdProvider } from './contexts/AdContext';
+import { AdProvider, useAd } from './contexts/AdContext';
+import { FuelProvider } from './contexts/FuelContext';
+import { DailyRewardsProvider } from './contexts/DailyRewardsContext';
 import HistoryPanel from './components/HistoryPanel';
 import Sidebar from './components/Sidebar';
 import AgeCalculator from './components/AgeCalculator';
@@ -58,16 +59,17 @@ import FuelCostCalculator from './components/FuelCostCalculator';
 import TripExpenseSplitter from './components/TripExpenseSplitter';
 import ProductCostCalculator from './components/ProductCostCalculator';
 import RecipeCostCalculator from './components/RecipeCostCalculator';
-import OnboardingGuide from './components/OnboardingGuide';
 import FeedbackModal from './components/FeedbackModal';
 import SavedDatesPage from './components/SavedDatesPage';
+import DailyRewardsPage from './components/DailyRewardsPage';
 import ThemeModal from './components/ThemeModal';
-import LayoutCustomizationModal from './components/LayoutCustomizationModal';
 import SharePromptModal from './components/SharePromptModal';
+import OutOfFuelToast from './components/OutOfFuelToast';
 
 import PolicyPage from './components/PolicyPage';
 import { PrivacyPolicyContent, TermsOfServiceContent, AboutUsContent, DisclaimerContent } from './data/policyContent';
 import CookieConsentBanner from './components/CookieConsentBanner';
+import OnboardingGuide from './components/OnboardingGuide';
 
 
 interface CalculatorProps {
@@ -140,8 +142,7 @@ const policyPages: { [key: string]: { title: string; content: React.ReactNode } 
   'disclaimer': { title: 'Disclaimer', content: <DisclaimerContent /> },
 };
 
-
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [currentCalculator, setCurrentCalculator] = useState<string | null>(null);
   const [isCurrentPremium, setIsCurrentPremium] = useState(false);
   const [calculatorState, setCalculatorState] = useState<any | null>(null);
@@ -149,13 +150,26 @@ const App: React.FC = () => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSavedDatesPage, setShowSavedDatesPage] = useState(false);
+  const [showDailyRewardsPage, setShowDailyRewardsPage] = useState(false);
   const [policyPage, setPolicyPage] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-  const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isExitIntentModalOpen, setIsExitIntentModalOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { showOutOfFuelToast, closeOutOfFuelToast } = useAd();
+
+
+  useEffect(() => {
+    // Onboarding guide
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+        const timer = setTimeout(() => {
+            setShowOnboarding(true);
+        }, 1500); // Show after a short delay
+        return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     // Online/offline listeners
@@ -163,30 +177,33 @@ const App: React.FC = () => {
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
-    // Show onboarding guide on first visit
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (!hasSeenOnboarding) {
-      setShowOnboarding(true);
-    }
     
     // History management for back button
     const handlePopState = (event: PopStateEvent) => {
         if (event.state?.page === 'home' || !event.state) {
             setCurrentCalculator(null);
             setShowSavedDatesPage(false);
+            setShowDailyRewardsPage(false);
             setPolicyPage(null);
         } else if (event.state?.page === 'calculator' && calculators[event.state.name]) {
             setCalculatorState(null); // Clear state when navigating via history
             setCurrentCalculator(event.state.name);
             setShowSavedDatesPage(false);
+            setShowDailyRewardsPage(false);
             setPolicyPage(null);
         } else if (event.state?.page === 'savedDates') {
             setShowSavedDatesPage(true);
             setCurrentCalculator(null);
+            setShowDailyRewardsPage(false);
+            setPolicyPage(null);
+        } else if (event.state?.page === 'dailyRewards') {
+            setShowDailyRewardsPage(true);
+            setCurrentCalculator(null);
+            setShowSavedDatesPage(false);
             setPolicyPage(null);
         } else if (event.state?.page === 'policy' && policyPages[event.state.name]) {
             setShowSavedDatesPage(false);
+            setShowDailyRewardsPage(false);
             setCurrentCalculator(null);
             setPolicyPage(event.state.name);
         }
@@ -211,7 +228,7 @@ const App: React.FC = () => {
         // Delay attaching the listener to avoid it firing on page load
         timer = window.setTimeout(() => {
             document.documentElement.addEventListener('mouseleave', handleMouseLeave);
-        }, 5000); // Attach after 5 seconds
+        }, 30000); // Attach after 30 seconds
     }
 
     return () => {
@@ -225,11 +242,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Scroll restoration logic
-    if (currentCalculator === null && !showSavedDatesPage && !policyPage) {
+    if (currentCalculator === null && !showSavedDatesPage && !policyPage && !showDailyRewardsPage) {
       // Small timeout to allow DOM to render before scrolling
       setTimeout(() => window.scrollTo(0, scrollPosition), 0);
     }
-  }, [currentCalculator, showSavedDatesPage, policyPage, scrollPosition]);
+  }, [currentCalculator, showSavedDatesPage, policyPage, showDailyRewardsPage, scrollPosition]);
 
   const handleSelectCalculator = (name: string, isPremium: boolean = false) => {
     if (calculators[name]) {
@@ -238,6 +255,7 @@ const App: React.FC = () => {
       setCurrentCalculator(name);
       setIsCurrentPremium(isPremium);
       setShowSavedDatesPage(false);
+      setShowDailyRewardsPage(false);
       setPolicyPage(null);
       window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
     }
@@ -253,6 +271,7 @@ const App: React.FC = () => {
         setCalculatorState(entry.inputs);
         setCurrentCalculator(entry.calculator);
         setShowSavedDatesPage(false);
+        setShowDailyRewardsPage(false);
         setPolicyPage(null);
         setIsHistoryOpen(false); // Close panel on selection
         window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#${entry.calculator.replace(/\s+/g, '-')}`);
@@ -271,9 +290,20 @@ const App: React.FC = () => {
     setScrollPosition(window.scrollY);
     setIsSidebarOpen(false);
     setCurrentCalculator(null);
+    setShowDailyRewardsPage(false);
     setPolicyPage(null);
     setShowSavedDatesPage(true);
     window.history.pushState({ page: 'savedDates' }, ``, `#saved-dates`);
+  };
+
+  const handleShowDailyRewardsPage = () => {
+    setScrollPosition(window.scrollY);
+    setIsSidebarOpen(false);
+    setCurrentCalculator(null);
+    setShowSavedDatesPage(false);
+    setPolicyPage(null);
+    setShowDailyRewardsPage(true);
+    window.history.pushState({ page: 'dailyRewards' }, ``, `#daily-rewards`);
   };
 
   const handleShowPolicyPage = (page: string) => {
@@ -282,19 +312,19 @@ const App: React.FC = () => {
       setIsSidebarOpen(false);
       setCurrentCalculator(null);
       setShowSavedDatesPage(false);
+      setShowDailyRewardsPage(false);
       setPolicyPage(page);
       window.history.pushState({ page: 'policy', name: page }, '', `#${page}`);
     }
   };
   
-  const handleFinishOnboarding = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
-    setShowOnboarding(false);
-  };
-
   const renderContent = () => {
     if (showSavedDatesPage) {
       return <SavedDatesPage onBack={handleBackToHome} />;
+    }
+
+    if (showDailyRewardsPage) {
+      return <DailyRewardsPage onBack={handleBackToHome} />;
     }
 
     if (policyPage && policyPages[policyPage]) {
@@ -306,7 +336,7 @@ const App: React.FC = () => {
     if (currentCalculator) {
       const CalculatorComponent = calculators[currentCalculator];
       return (
-        <CalculatorPageWrapper title={currentCalculator} onBack={handleBackToHome}>
+        <CalculatorPageWrapper title={currentCalculator} onBack={handleBackToHome} isPremium={isCurrentPremium}>
           <CalculatorComponent initialState={calculatorState} isPremium={isCurrentPremium} />
         </CalculatorPageWrapper>
       );
@@ -322,41 +352,70 @@ const App: React.FC = () => {
     />;
   }
 
+  const handleOnboardingComplete = () => {
+      setShowOnboarding(false);
+      localStorage.setItem('hasSeenOnboarding', 'true');
+  };
+
+  return (
+    <>
+      <div className="bg-theme-primary text-theme-primary">
+        <OnboardingGuide 
+          isOpen={showOnboarding} 
+          onClose={handleOnboardingComplete}
+          onOpenHistory={() => {
+              handleOnboardingComplete();
+              setIsHistoryOpen(true);
+          }}
+          onOpenTheme={() => {
+              handleOnboardingComplete();
+              setIsThemeModalOpen(true);
+          }}
+        />
+        {!isOnline && <OfflineNotice />}
+        {renderContent()}
+        <HistoryPanel 
+          isOpen={isHistoryOpen} 
+          onClose={() => setIsHistoryOpen(false)} 
+          onRestore={handleRestoreFromHistory}
+        />
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          onToggleHistory={handleToggleHistory}
+          onShowSavedDatesPage={handleShowSavedDatesPage}
+          onShowDailyRewardsPage={handleShowDailyRewardsPage}
+          onShowPolicyPage={handleShowPolicyPage}
+          onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
+          onOpenThemeModal={() => setIsThemeModalOpen(true)}
+        />
+        <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
+        <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
+        <SharePromptModal isOpen={isExitIntentModalOpen} onClose={() => setIsExitIntentModalOpen(false)} />
+        <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
+        <OutOfFuelToast isOpen={showOutOfFuelToast} onClose={closeOutOfFuelToast} />
+      </div>
+    </>
+  );
+};
+
+
+const App: React.FC = () => {
   return (
     <ThemeProvider>
       <DateTrackerProvider>
-        <AdProvider>
-          <HistoryProvider>
-            <div className="bg-theme-primary text-theme-primary">
-              {!isOnline && <OfflineNotice />}
-              <OnboardingGuide isOpen={showOnboarding} onClose={handleFinishOnboarding} />
-              {renderContent()}
-              <HistoryPanel 
-                isOpen={isHistoryOpen} 
-                onClose={() => setIsHistoryOpen(false)} 
-                onRestore={handleRestoreFromHistory}
-              />
-              <Sidebar 
-                isOpen={isSidebarOpen} 
-                onClose={() => setIsSidebarOpen(false)} 
-                onToggleHistory={handleToggleHistory}
-                onShowSavedDatesPage={handleShowSavedDatesPage}
-                onShowPolicyPage={handleShowPolicyPage}
-                onShowOnboarding={() => setShowOnboarding(true)}
-                onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
-                onOpenThemeModal={() => setIsThemeModalOpen(true)}
-              />
-              <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
-              <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} onOpenLayoutModal={() => setIsLayoutModalOpen(true)} />
-              <LayoutCustomizationModal isOpen={isLayoutModalOpen} onClose={() => setIsLayoutModalOpen(false)} />
-              <SharePromptModal isOpen={isExitIntentModalOpen} onClose={() => setIsExitIntentModalOpen(false)} />
-              <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
-            </div>
-          </HistoryProvider>
-        </AdProvider>
+        <FuelProvider>
+          <DailyRewardsProvider>
+            <AdProvider>
+              <HistoryProvider>
+                  <AppContent />
+              </HistoryProvider>
+            </AdProvider>
+          </DailyRewardsProvider>
+        </FuelProvider>
       </DateTrackerProvider>
     </ThemeProvider>
   );
-};
+}
 
 export default App;
