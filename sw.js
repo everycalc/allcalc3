@@ -14,6 +14,7 @@ const urlsToCache = [
   '/components/AOVCalculator.tsx',
   '/components/AdsensePlaceholder.tsx',
   '/components/AgeCalculator.tsx',
+  '/components/AgeCalculatorOnboarding.tsx',
   '/components/AreaCalculator.tsx',
   '/components/AreaCostEstimator.tsx',
   '/components/AverageCalculator.tsx',
@@ -57,6 +58,7 @@ const urlsToCache = [
   '/components/MedianModeCalculator.tsx',
   '/components/MutualFundReturnsCalculator.tsx',
   '/components/OfflineNotice.tsx',
+  '/components/OnboardingGuide.tsx',
   '/components/OutOfFuelToast.tsx',
   '/components/PdfFuelModal.tsx',
   '/components/PercentageCalculator.tsx',
@@ -85,6 +87,7 @@ const urlsToCache = [
   '/components/VelocityDistanceCalculator.tsx',
   '/components/VolumeCalculator.tsx',
   '/components/ExplanationModal.tsx',
+  '/components/HistoryExportGuide.tsx',
 
   // Contexts
   '/contexts/AdContext.tsx',
@@ -114,10 +117,18 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache and caching assets');
-        return cache.addAll(urlsToCache);
+        // Cache files individually and ignore failures.
+        // This makes the installation more resilient.
+        const cachePromises = urlsToCache.map(urlToCache => {
+          return cache.add(urlToCache).catch(err => {
+            // Log the error but don't fail the entire installation
+            console.warn(`Failed to cache ${urlToCache}:`, err);
+          });
+        });
+        return Promise.all(cachePromises);
       })
       .catch(error => {
-        console.error('Failed to cache assets during install:', error);
+        console.error('Failed to open cache during install:', error);
       })
   );
 });
@@ -126,10 +137,12 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Directly serve ads.txt from the service worker to ensure it's always available.
+  // Directly serve ads.txt from the service worker to ensure it's always available with a 200 OK status.
   if (url.pathname === '/ads.txt') {
     event.respondWith(
       new Response('google.com, pub-2892214526865008, DIRECT, f08c47fec0942fa0', {
+        status: 200,
+        statusText: "OK",
         headers: { 'Content-Type': 'text/plain' }
       })
     );
