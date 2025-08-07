@@ -1,3 +1,1 @@
-# PLEASE REPLACE pub-0000000000000000 WITH YOUR OWN GOOGLE ADSENSE PUBLISHER ID.
-# You can find this ID in your AdSense account. This file is required for ads to serve correctly.
 google.com, pub-2892214526865008, DIRECT, f08c47fec0942fa0
