@@ -7,7 +7,6 @@ const urlsToCache = [
   '/types.ts',
   '/metadata.json',
   '/manifest.json',
-  '/ads.txt',
   '/data/calculators.ts',
   '/data/policyContent.tsx',
   '/data/calculatorDescriptions.ts',
