@@ -139,16 +139,6 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Directly serve ads.txt from the service worker to ensure it's always available.
-  if (url.pathname === '/ads.txt') {
-    event.respondWith(
-      new Response('google.com, pub-2892214526865008, DIRECT, f08c47fec0942fa0', {
-        headers: { 'Content-Type': 'text/plain' }
-      })
-    );
-    return;
-  }
-
   // Use a Network First, Falling Back to Cache strategy for the main page (navigation)
   if (request.mode === 'navigate') {
     event.respondWith(
