@@ -216,37 +216,6 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
         handleGoalSeekCalculate(true);
     }
 
-    const handleDownloadPdf = async () => {
-        if (!result) return;
-        
-        const pdf = new jsPDF();
-        pdf.setFontSize(18);
-        pdf.text('SIP Investment Report', 14, 22);
-        pdf.line(14, 32, 196, 32);
-        pdf.setFontSize(12);
-        pdf.text('Inputs:', 14, 40);
-        pdf.setFontSize(10);
-        pdf.text(`Monthly Investment: ${formatCurrency(parseFloat(monthlyInvestment))}`, 20, 48);
-        pdf.text(`Expected Return Rate: ${returnRate}% p.a.`, 20, 54);
-        pdf.text(`Time Period: ${timePeriod} years`, 20, 60);
-        pdf.line(14, 70, 196, 70);
-        pdf.setFontSize(12);
-        pdf.text('Results:', 14, 78);
-        pdf.setFontSize(10);
-        pdf.text(`Total Investment: ${formatCurrency(result.totalInvestment)}`, 20, 86);
-        pdf.text(`Estimated Returns: ${formatCurrency(result.estimatedReturns)}`, 20, 92);
-        pdf.text(`Maturity Value: ${formatCurrency(result.maturityValue)}`, 20, 98);
-        
-        const pieChartElement = document.getElementById('pdf-pie-chart-sip');
-        if (pieChartElement) {
-            const canvas = await html2canvas(pieChartElement, { backgroundColor: null });
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 14, 110, 80, 80);
-        }
-        
-        pdf.save(`SIP-Report-${Date.now()}.pdf`);
-    };
-
     const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
     return (
@@ -351,12 +320,8 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain Calculation
                         </button>
-                         <button onClick={handleDownloadPdf} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download PDF
-                        </button>
+                         <ShareButton textToShare={shareText} />
                     </div>
-                    <ShareButton textToShare={shareText} />
                 </div>
             )}
             

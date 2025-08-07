@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -7,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     breakEvenUnits: number | null;
@@ -37,6 +37,8 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -48,35 +50,46 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
     }, [initialState]);
 
     const handleCalculate = () => {
-        const fc = parseFloat(fixedCosts);
-        const ppu = parseFloat(pricePerUnit);
-        const vcu = parseFloat(variableCostPerUnit);
+        const performCalculation = () => {
+            const fc = parseFloat(fixedCosts);
+            const ppu = parseFloat(pricePerUnit);
+            const vcu = parseFloat(variableCostPerUnit);
 
-        const contributionMargin = ppu - vcu;
+            const contributionMargin = ppu - vcu;
 
-        if (isNaN(fc) || isNaN(ppu) || isNaN(vcu) || contributionMargin <= 0) {
-            setResult({ breakEvenUnits: null, breakEvenRevenue: null });
-            return;
-        }
+            if (isNaN(fc) || isNaN(ppu) || isNaN(vcu) || contributionMargin <= 0) {
+                return { breakEvenUnits: null, breakEvenRevenue: null };
+            }
 
-        const units = fc / contributionMargin;
-        const revenue = units * ppu;
-        
-        const calculatedResult = { breakEvenUnits: units, breakEvenRevenue: revenue };
-        
-        addHistory({
-            calculator: 'Break-Even Point Calculator',
-            calculation: `Break-Even: ${Math.ceil(units).toLocaleString()} units or ${formatCurrency(revenue)}`,
-            inputs: { fixedCosts, pricePerUnit, variableCostPerUnit }
-        });
+            const units = fc / contributionMargin;
+            const revenue = units * ppu;
+            
+            const calculatedResult = { breakEvenUnits: units, breakEvenRevenue: revenue };
+            
+            addHistory({
+                calculator: 'Break-Even Point Calculator',
+                calculation: `Break-Even: ${Math.ceil(units).toLocaleString()} units or ${formatCurrency(revenue)}`,
+                inputs: { fixedCosts, pricePerUnit, variableCostPerUnit }
+            });
 
-        setShareText(`Break-Even Point Calculation:\n- Fixed Costs: ${formatCurrency(fc)}\n- Price Per Unit: ${formatCurrency(ppu)}\n- Variable Cost Per Unit: ${formatCurrency(vcu)}\n\nResult:\n- Break-Even Units: ${Math.ceil(units).toLocaleString()}\n- Break-Even Revenue: ${formatCurrency(revenue)}`);
+            setShareText(`Break-Even Point Calculation:\n- Fixed Costs: ${formatCurrency(fc)}\n- Price Per Unit: ${formatCurrency(ppu)}\n- Variable Cost Per Unit: ${formatCurrency(vcu)}\n\nResult:\n- Break-Even Units: ${Math.ceil(units).toLocaleString()}\n- Break-Even Revenue: ${formatCurrency(revenue)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

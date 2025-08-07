@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     finalAmount: number;
@@ -39,6 +39,8 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -51,34 +53,45 @@ const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({
     }, [initialState]);
 
     const handleCalculate = () => {
-        const P = parseFloat(principal);
-        const r = parseFloat(rate) / 100;
-        const t = parseFloat(time);
-        const n = parseFloat(frequency);
+        const performCalculation = () => {
+            const P = parseFloat(principal);
+            const r = parseFloat(rate) / 100;
+            const t = parseFloat(time);
+            const n = parseFloat(frequency);
 
-        if (isNaN(P) || isNaN(r) || isNaN(t) || isNaN(n) || P <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(P) || isNaN(r) || isNaN(t) || isNaN(n) || P <= 0) {
+                return null;
+            }
 
-        const amount = P * Math.pow((1 + r / n), n * t);
-        const interest = amount - P;
+            const amount = P * Math.pow((1 + r / n), n * t);
+            const interest = amount - P;
 
-        const calculatedResult = { finalAmount: amount, totalInterest: interest };
+            const calculatedResult = { finalAmount: amount, totalInterest: interest };
 
-        addHistory({
-            calculator: 'Compound Interest Calculator',
-            calculation: `CI on ${formatCurrency(P)} @ ${rate}% for ${t} yrs -> ${formatCurrency(amount)}`,
-            inputs: { principal, rate, time, frequency }
-        });
-        
-        setShareText(`Compound Interest Calculation:\n- Principal: ${formatCurrency(P)}\n- Rate: ${rate}% p.a.\n- Time: ${t} years\n- Compounding: ${n === 12 ? 'Monthly' : n === 4 ? 'Quarterly' : n === 2 ? 'Semi-Annually' : 'Annually'}\n\nResult:\n- Total Interest: ${formatCurrency(interest)}\n- Final Amount: ${formatCurrency(amount)}`);
+            addHistory({
+                calculator: 'Compound Interest Calculator',
+                calculation: `CI on ${formatCurrency(P)} @ ${rate}% for ${t} yrs -> ${formatCurrency(amount)}`,
+                inputs: { principal, rate, time, frequency }
+            });
+            
+            setShareText(`Compound Interest Calculation:\n- Principal: ${formatCurrency(P)}\n- Rate: ${rate}% p.a.\n- Time: ${t} years\n- Compounding: ${n === 12 ? 'Monthly' : n === 4 ? 'Quarterly' : n === 2 ? 'Semi-Annually' : 'Annually'}\n\nResult:\n- Total Interest: ${formatCurrency(interest)}\n- Final Amount: ${formatCurrency(amount)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

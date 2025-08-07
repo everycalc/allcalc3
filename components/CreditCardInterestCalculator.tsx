@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     monthsToPayOff: number;
@@ -39,6 +39,8 @@ const CreditCardInterestCalculator: React.FC<CreditCardInterestCalculatorProps> 
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -51,43 +53,54 @@ const CreditCardInterestCalculator: React.FC<CreditCardInterestCalculatorProps> 
     }, [initialState]);
 
     const handleCalculate = () => {
-        const B = parseFloat(balance);
-        const annualRate = parseFloat(apr) / 100;
-        const P = parseFloat(monthlyPayment);
+        const performCalculation = () => {
+            const B = parseFloat(balance);
+            const annualRate = parseFloat(apr) / 100;
+            const P = parseFloat(monthlyPayment);
 
-        setError('');
-        if (isNaN(B) || isNaN(annualRate) || isNaN(P) || B <= 0) {
-            setResult(null);
-            return;
-        }
+            setError('');
+            if (isNaN(B) || isNaN(annualRate) || isNaN(P) || B <= 0) {
+                return null;
+            }
 
-        const monthlyRate = annualRate / 12;
-        if (P <= B * monthlyRate) {
-            setError('Monthly payment is too low to cover interest. Debt will never be paid off.');
-            setResult(null);
-            return;
-        }
-        
-        // Using the formula: N = -log(1 - (B * i) / P) / log(1 + i)
-        const months = -Math.log(1 - (B * monthlyRate) / P) / Math.log(1 + monthlyRate);
-        const totalPayment = P * months;
-        const totalInterest = totalPayment - B;
-        
-        const calculatedResult = { monthsToPayOff: Math.ceil(months), totalInterest, totalPayment };
+            const monthlyRate = annualRate / 12;
+            if (P <= B * monthlyRate) {
+                setError('Monthly payment is too low to cover interest. Debt will never be paid off.');
+                setResult(null);
+                return null;
+            }
+            
+            // Using the formula: N = -log(1 - (B * i) / P) / log(1 + i)
+            const months = -Math.log(1 - (B * monthlyRate) / P) / Math.log(1 + monthlyRate);
+            const totalPayment = P * months;
+            const totalInterest = totalPayment - B;
+            
+            const calculatedResult = { monthsToPayOff: Math.ceil(months), totalInterest, totalPayment };
 
-        addHistory({
-            calculator: 'Credit Card Interest Calculator',
-            calculation: `Debt ${formatCurrency(B)} @ ${apr}% APR -> ${Math.ceil(months)} months`,
-            inputs: { balance, apr, monthlyPayment }
-        });
-        
-        setShareText(`Credit Card Payoff Calculation:\n- Outstanding Balance: ${formatCurrency(B)}\n- APR: ${apr}%\n- Monthly Payment: ${formatCurrency(P)}\n\nResult:\n- Time to Pay Off: ${Math.ceil(months)} months\n- Total Interest Paid: ${formatCurrency(totalInterest)}`);
+            addHistory({
+                calculator: 'Credit Card Interest Calculator',
+                calculation: `Debt ${formatCurrency(B)} @ ${apr}% APR -> ${Math.ceil(months)} months`,
+                inputs: { balance, apr, monthlyPayment }
+            });
+            
+            setShareText(`Credit Card Payoff Calculation:\n- Outstanding Balance: ${formatCurrency(B)}\n- APR: ${apr}%\n- Monthly Payment: ${formatCurrency(P)}\n\nResult:\n- Time to Pay Off: ${Math.ceil(months)} months\n- Total Interest Paid: ${formatCurrency(totalInterest)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

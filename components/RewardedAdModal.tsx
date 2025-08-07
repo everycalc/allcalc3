@@ -4,10 +4,10 @@ interface RewardedAdModalProps {
   onClose: () => void; // For closing without getting reward
   onComplete: () => void; // After watching the ad
   duration?: number;
-  rewardAmount?: number;
+  rewardAmount?: number; // Now optional, for display only
 }
 
-const RewardedAdModal: React.FC<RewardedAdModalProps> = ({ onClose, onComplete, duration = 10, rewardAmount = 3 }) => {
+const RewardedAdModal: React.FC<RewardedAdModalProps> = ({ onClose, onComplete, duration = 10, rewardAmount }) => {
   const [isComplete, setIsComplete] = useState(false);
   const adContainerRef = useRef<HTMLDivElement>(null);
 
@@ -26,25 +26,34 @@ const RewardedAdModal: React.FC<RewardedAdModalProps> = ({ onClose, onComplete, 
 
   useEffect(() => {
     const adContainer = adContainerRef.current;
-    if (adContainer && adContainer.childElementCount === 0) {
-      // Ad loading logic
+    if (!adContainer) return;
+    
+    // Use a small timeout to ensure the AdSense script is ready
+    const timeoutId = setTimeout(() => {
       const adSlot = document.createElement('ins');
       adSlot.className = 'adsbygoogle';
       adSlot.style.display = 'block';
       adSlot.style.width = '100%';
       adSlot.style.height = '100%';
-      adSlot.setAttribute('data-ad-client', 'ca-pub-2892214526865008'); // Replace with your ad client ID
-      adSlot.setAttribute('data-ad-slot', '7805870574'); // Replace with your ad slot ID
+      adSlot.setAttribute('data-ad-client', 'ca-pub-2892214526865008');
+      adSlot.setAttribute('data-ad-slot', '7805870574');
       adSlot.setAttribute('data-ad-format', 'auto');
       adSlot.setAttribute('data-full-width-responsive', 'true');
       adContainer.appendChild(adSlot);
+
       try {
-        // @ts-ignore
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        if ((window as any).adsbygoogle) {
+            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } else {
+            adContainer.innerHTML = '<div class="text-center text-xs text-white/50 p-4 h-full flex items-center justify-center">Advertisement</div>';
+        }
       } catch (e) {
         console.error("Rewarded ad push error:", e);
+        adContainer.innerHTML = '<div class="text-center text-xs text-white/50 p-4 h-full flex items-center justify-center">Ad could not be displayed.</div>';
       }
-    }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handleClaim = () => {
@@ -72,13 +81,13 @@ const RewardedAdModal: React.FC<RewardedAdModalProps> = ({ onClose, onComplete, 
                 className={buttonClasses}
                 style={{ '--animation-duration': `${duration}s` } as React.CSSProperties}
             >
-                <span className="relative z-10">{isComplete ? `Claim +${rewardAmount} Fuel` : 'Claim Reward'}</span>
+                <span className="relative z-10">{isComplete ? `Claim Reward${rewardAmount ? ` (+${rewardAmount} Fuel)` : ''}` : 'Claim Reward'}</span>
             </button>
       </div>
       <div ref={adContainerRef} className="w-full max-w-md bg-theme-tertiary rounded-lg aspect-[4/3] flex items-center justify-center overflow-hidden">
         {/* Ad slot will be injected here */}
       </div>
-      <div className="mt-4 text-center text-white/50 text-xs">Watch ad to earn fuel</div>
+      <div className="mt-4 text-center text-white/50 text-xs">Watch ad to earn a reward</div>
     </div>
   );
 };

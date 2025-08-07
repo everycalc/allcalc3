@@ -3,6 +3,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useFuel } from '../contexts/FuelContext';
 import { useDailyRewards } from '../contexts/DailyRewardsContext';
 import RewardedAdModal from './RewardedAdModal';
+import RewardCard from './RewardCard';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,14 +14,31 @@ interface SidebarProps {
   onShowPolicyPage: (page: string) => void;
   onOpenFeedbackModal: () => void;
   onOpenThemeModal: () => void;
+  onOpenCheatCodeModal: () => void;
+  onOpenScratchCardModal: () => void;
+  onOpenReferralModal: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onShowSavedDatesPage, onShowDailyRewardsPage, onShowPolicyPage, onOpenFeedbackModal, onOpenThemeModal }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+    isOpen, onClose, onToggleHistory, onShowSavedDatesPage, 
+    onShowDailyRewardsPage, onShowPolicyPage, onOpenFeedbackModal, 
+    onOpenThemeModal, onOpenCheatCodeModal, onOpenScratchCardModal,
+    onOpenReferralModal
+}) => {
   const { sidebarPosition } = useTheme();
   const { fuel, addFuel } = useFuel();
   const { canClaimReward } = useDailyRewards();
   const [version, setVersion] = useState('');
   const [isRefuelModalOpen, setIsRefuelModalOpen] = useState(false);
+  const [versionTapCount, setVersionTapCount] = useState(0);
+  const [showRewardCard, setShowRewardCard] = useState(false);
+  const [lastReward, setLastReward] = useState(0);
+  const [refuelCount, setRefuelCount] = useState(0);
+
+  useEffect(() => {
+    const count = parseInt(localStorage.getItem('refuelCount') || '0', 10);
+    setRefuelCount(count);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -63,14 +81,55 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
   };
   
   const handleRefuelClick = () => {
-    // This flow is for general refueling, not for specific actions like PDF downloads
+    onClose(); // Close sidebar before showing ad
     setIsRefuelModalOpen(true);
   }
 
   const handleRefuelComplete = () => {
-    addFuel(3);
+    let reward;
+    if (refuelCount < 3) {
+        // Higher reward for first 3 times: 5 to 8
+        reward = Math.floor(Math.random() * 4) + 5;
+    } else {
+        // Normal reward: 1 to 8
+        reward = Math.floor(Math.random() * 8) + 1;
+    }
+    
+    addFuel(reward);
+    const newCount = refuelCount + 1;
+    setRefuelCount(newCount);
+    localStorage.setItem('refuelCount', String(newCount));
+    
+    setLastReward(reward);
     setIsRefuelModalOpen(false);
+    setShowRewardCard(true);
   };
+  
+  const handleVersionTap = () => {
+    const newCount = versionTapCount + 1;
+    setVersionTapCount(newCount);
+
+    if (newCount >= 7) {
+      onOpenCheatCodeModal();
+      setVersionTapCount(0); // Reset count
+      onClose(); // Close the sidebar
+    }
+  };
+  
+  const handleScratchCard = () => {
+    onOpenScratchCardModal();
+    onClose();
+  }
+
+  const handleReferral = () => {
+      onOpenReferralModal();
+      onClose();
+  }
+  
+  const handleRefuelAgain = () => {
+      setShowRewardCard(false);
+      handleRefuelClick();
+  }
 
   const positionClasses = sidebarPosition === 'left' ? 'left-0' : 'right-0';
   const transformClasses = sidebarPosition === 'left' 
@@ -80,6 +139,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
   return (
     <>
       {isRefuelModalOpen && <RewardedAdModal onClose={() => setIsRefuelModalOpen(false)} onComplete={handleRefuelComplete} />}
+      <RewardCard
+        isOpen={showRewardCard}
+        onClose={() => setShowRewardCard(false)}
+        onRefuelAgain={handleRefuelAgain}
+        rewardAmount={lastReward}
+        totalFuel={fuel}
+      />
       <div 
         className={`fixed inset-0 bg-black/60 z-40 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
@@ -107,6 +173,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span>Daily Rewards</span>
                         {canClaimReward() && <span className="notification-dot"></span>}
+                    </button>
+                    
+                    <button onClick={handleScratchCard} className="w-full flex items-center p-3 rounded-lg hover:bg-theme-tertiary transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15v1a1 1 0 001 1h12a1 1 0 001-1v-1a1 1 0 00-.293-.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                        <span>Daily Scratch Card</span>
+                    </button>
+
+                    <button onClick={handleReferral} className="w-full flex items-center p-3 rounded-lg hover:bg-theme-tertiary transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197M15 21a6 6 0 006-6v-1a4 4 0 00-4-4h-2.354a4 4 0 000 5.292z" /></svg>
+                        <span>Refer a Friend</span>
                     </button>
 
                     <button 
@@ -145,16 +221,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
                     </button>
 
                     <div className="mt-4 pt-4 border-t border-theme space-y-2">
-                        <h3 className="px-3 text-sm font-semibold text-theme-secondary">How Fuel Works</h3>
-                        <div className="text-xs text-theme-secondary px-3 space-y-1">
-                            <p>• Standard calculators use 1 Fuel.</p>
-                            <p>• Expert Tools use 2 Fuel.</p>
-                            <p>• When you run out, click "Refuel" below to watch a short ad for +3 Fuel!</p>
-                            <p>• Ads will show after every 3 calculations when fuel is empty.</p>
-                        </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-theme space-y-2">
                         <h3 className="px-3 text-sm font-semibold text-theme-secondary">About this App</h3>
                         <button onClick={() => handlePolicyClick('about')} className="w-full flex items-center p-3 rounded-lg hover:bg-theme-tertiary transition-colors text-sm">About Us</button>
                         <button onClick={() => handlePolicyClick('privacy')} className="w-full flex items-center p-3 rounded-lg hover:bg-theme-tertiary transition-colors text-sm">Privacy Policy</button>
@@ -163,9 +229,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToggleHistory, onS
                     </div>
                 </div>
                 
-                <div className="text-center text-xs text-theme-secondary py-2">
+                <button onClick={handleVersionTap} className="text-center text-xs text-theme-secondary py-2 hover:bg-theme-tertiary w-full">
                     Version {version}
-                </div>
+                </button>
                  <div className="sticky bottom-0 bg-theme-secondary py-3 px-4 border-t border-theme">
                     <div className="flex justify-between items-center mb-2">
                         <span className="font-bold text-theme-primary">Calculation Fuel</span>

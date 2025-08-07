@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -6,6 +5,7 @@ import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     totalWithTip: number;
@@ -13,7 +13,7 @@ interface Result {
     tipAmount: number;
 }
 
-const TripExpenseSplitter: React.FC<{initialState?: any}> = ({initialState}) => {
+const TripExpenseSplitter: React.FC<{initialState?: any; isPremium?: boolean}> = ({initialState, isPremium}) => {
     const [billAmount, setBillAmount] = useState('2500');
     const [people, setPeople] = useState('4');
     const [tipPercent, setTipPercent] = useState('10');
@@ -24,6 +24,8 @@ const TripExpenseSplitter: React.FC<{initialState?: any}> = ({initialState}) => 
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -35,30 +37,42 @@ const TripExpenseSplitter: React.FC<{initialState?: any}> = ({initialState}) => 
     }, [initialState]);
 
     const handleCalculate = () => {
-        const bill = parseFloat(billAmount);
-        const numPeople = parseInt(people, 10);
-        const tip = parseFloat(tipPercent) / 100;
+        const performCalculation = () => {
+            const bill = parseFloat(billAmount);
+            const numPeople = parseInt(people, 10);
+            const tip = parseFloat(tipPercent) / 100;
 
-        if (isNaN(bill) || isNaN(numPeople) || isNaN(tip) || bill <= 0 || numPeople <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(bill) || isNaN(numPeople) || isNaN(tip) || bill <= 0 || numPeople <= 0) {
+                return null;
+            }
 
-        const tipAmount = bill * tip;
-        const totalWithTip = bill + tipAmount;
-        const perPersonCost = totalWithTip / numPeople;
+            const tipAmount = bill * tip;
+            const totalWithTip = bill + tipAmount;
+            const perPersonCost = totalWithTip / numPeople;
+            
+            const calculatedResult = { totalWithTip, perPersonCost, tipAmount };
+            
+            addHistory({ calculator: 'Trip Expense Splitter', calculation: `${formatCurrency(totalWithTip)} split among ${numPeople} people`, inputs: { billAmount, people, tipPercent } });
+            
+            setShareText(`Expense Split:\n- Total Bill: ${formatCurrency(bill)}\n- People: ${numPeople}\n- Tip: ${tipPercent}%\n\nResult:\n- Cost per Person: ${formatCurrency(perPersonCost)}\n- Total with Tip: ${formatCurrency(totalWithTip)}`);
+            
+            return calculatedResult;
+        };
         
-        const calculatedResult = { totalWithTip, perPersonCost, tipAmount };
-        
-        addHistory({ calculator: 'Trip Expense Splitter', calculation: `${formatCurrency(totalWithTip)} split among ${numPeople} people`, inputs: { billAmount, people, tipPercent } });
-        
-        setShareText(`Expense Split:\n- Total Bill: ${formatCurrency(bill)}\n- People: ${numPeople}\n- Tip: ${tipPercent}%\n\nResult:\n- Cost per Person: ${formatCurrency(perPersonCost)}\n- Total with Tip: ${formatCurrency(totalWithTip)}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

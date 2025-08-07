@@ -1,41 +1,29 @@
-
 import React, { useEffect, useRef } from 'react';
 
 const HistoryAd: React.FC = () => {
   const adRef = useRef<HTMLDivElement>(null);
-  const pushedRef = useRef(false);
 
   useEffect(() => {
-    const currentAdRef = adRef.current;
+    const adContainer = adRef.current;
+    if (!adContainer) return;
 
-    if (!currentAdRef) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !pushedRef.current) {
-          try {
-            // @ts-ignore
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            pushedRef.current = true; // Mark as pushed to prevent multiple pushes
-          } catch (e) {
-            console.error("Adsense history ad error:", e);
-          }
-          // Once the ad is pushed, we can stop observing
-          observer.disconnect();
-        }
-      },
-      {
-        threshold: 0.1, // Trigger when 10% of the element is visible
+    const timeoutId = setTimeout(() => {
+      if (adContainer.querySelector('.adsbygoogle-filled')) {
+        return;
       }
-    );
+      try {
+        if ((window as any).adsbygoogle) {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } else {
+          adContainer.style.display = 'none'; // Hide if ad blocker is active
+        }
+      } catch (e) {
+        console.error("Adsense history ad error:", e);
+        adContainer.style.display = 'none';
+      }
+    }, 150);
 
-    observer.observe(currentAdRef);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (

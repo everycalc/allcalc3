@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 type Mode = 'builtUpToCarpet' | 'carpetToBuiltUp';
 
@@ -32,6 +32,8 @@ const CarpetAreaCalculator: React.FC<{initialState?: CarpetAreaCalculatorState, 
 
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     const [pendingResult, setPendingResult] = useState<any | null>(null);
     const [showAd, setShowAd] = useState(false);
@@ -47,41 +49,52 @@ const CarpetAreaCalculator: React.FC<{initialState?: CarpetAreaCalculatorState, 
     }, [initialState]);
     
     const handleCalculate = () => {
-        const areaInput = parseFloat(area);
-        const percent = parseFloat(nonCarpetPercent) / 100;
+        const performCalculation = () => {
+            const areaInput = parseFloat(area);
+            const percent = parseFloat(nonCarpetPercent) / 100;
 
-        if (isNaN(areaInput) || isNaN(percent) || areaInput <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(areaInput) || isNaN(percent) || areaInput <= 0) {
+                return null;
+            }
 
-        let calculatedResult: Result;
+            let calculatedResult: Result;
 
-        if (mode === 'builtUpToCarpet') {
-            const builtUpArea = areaInput;
-            const otherArea = builtUpArea * percent;
-            const carpetArea = builtUpArea - otherArea;
-            calculatedResult = { builtUpArea, carpetArea, otherArea };
-        } else { // carpetToBuiltUp
-            const carpetArea = areaInput;
-            const builtUpArea = carpetArea / (1 - percent);
-            const otherArea = builtUpArea - carpetArea;
-            calculatedResult = { builtUpArea, carpetArea, otherArea };
-        }
+            if (mode === 'builtUpToCarpet') {
+                const builtUpArea = areaInput;
+                const otherArea = builtUpArea * percent;
+                const carpetArea = builtUpArea - otherArea;
+                calculatedResult = { builtUpArea, carpetArea, otherArea };
+            } else { // carpetToBuiltUp
+                const carpetArea = areaInput;
+                const builtUpArea = carpetArea / (1 - percent);
+                const otherArea = builtUpArea - carpetArea;
+                calculatedResult = { builtUpArea, carpetArea, otherArea };
+            }
 
-        addHistory({
-            calculator: 'Carpet Area vs Built-up Area',
-            calculation: `Carpet: ${calculatedResult.carpetArea.toFixed(2)} sq.unit, Built-up: ${calculatedResult.builtUpArea.toFixed(2)} sq.unit`,
-            inputs: { mode, area, nonCarpetPercent }
-        });
+            addHistory({
+                calculator: 'Carpet Area vs Built-up Area',
+                calculation: `Carpet: ${calculatedResult.carpetArea.toFixed(2)} sq.unit, Built-up: ${calculatedResult.builtUpArea.toFixed(2)} sq.unit`,
+                inputs: { mode, area, nonCarpetPercent }
+            });
 
-        setShareText(`Carpet Area Calculation:\n- Input: ${areaInput.toFixed(2)} ${mode === 'builtUpToCarpet' ? 'Built-up Area' : 'Carpet Area'}\n- Result:\n- Carpet Area: ${calculatedResult.carpetArea.toFixed(2)} sq.unit\n- Built-up Area: ${calculatedResult.builtUpArea.toFixed(2)} sq.unit`);
+            setShareText(`Carpet Area Calculation:\n- Input: ${areaInput.toFixed(2)} ${mode === 'builtUpToCarpet' ? 'Built-up Area' : 'Carpet Area'}\n- Result:\n- Carpet Area: ${calculatedResult.carpetArea.toFixed(2)} sq.unit\n- Built-up Area: ${calculatedResult.builtUpArea.toFixed(2)} sq.unit`);
+            return calculatedResult;
+        };
         
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

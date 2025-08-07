@@ -61,7 +61,8 @@ const BreakEvenROASCalculator: React.FC<BreakEvenROASCalculatorProps> = ({ isPre
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
-    const { fuel, consumeFuel, addFuel } = useFuel();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
     
     const [inputs, setInputs] = useState<RoasInputs>({
         adSpend: '3000',
@@ -80,10 +81,6 @@ const BreakEvenROASCalculator: React.FC<BreakEvenROASCalculatorProps> = ({ isPre
     const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
-    
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -98,87 +95,99 @@ const BreakEvenROASCalculator: React.FC<BreakEvenROASCalculatorProps> = ({ isPre
     };
 
     const handleCalculate = () => {
-        const adSpend = parseFloat(inputs.adSpend) || 0;
-        const aov = parseFloat(inputs.aov) || 0;
-        const cogsPercent = (parseFloat(inputs.cogsPercent) || 0) / 100;
-        const shippingCost = parseFloat(inputs.shippingCost) || 0;
-        const prepaidSalesMix = (parseFloat(inputs.prepaidSalesMix) || 0) / 100;
-        const codSalesMix = 1 - prepaidSalesMix;
-        const prepaidDiscountPercent = (parseFloat(inputs.prepaidDiscountPercent) || 0) / 100;
-        const prepaidPgPercent = (parseFloat(inputs.prepaidPgPercent) || 0) / 100;
-        const codCharges = parseFloat(inputs.codCharges) || 0;
-        const rtoPercent = (parseFloat(inputs.rtoPercent) || 0) / 100;
-        const rtoShippingCost = parseFloat(inputs.rtoShippingCost) || 0;
+        const performCalculation = () => {
+            const adSpend = parseFloat(inputs.adSpend) || 0;
+            const aov = parseFloat(inputs.aov) || 0;
+            const cogsPercent = (parseFloat(inputs.cogsPercent) || 0) / 100;
+            const shippingCost = parseFloat(inputs.shippingCost) || 0;
+            const prepaidSalesMix = (parseFloat(inputs.prepaidSalesMix) || 0) / 100;
+            const codSalesMix = 1 - prepaidSalesMix;
+            const prepaidDiscountPercent = (parseFloat(inputs.prepaidDiscountPercent) || 0) / 100;
+            const prepaidPgPercent = (parseFloat(inputs.prepaidPgPercent) || 0) / 100;
+            const codCharges = parseFloat(inputs.codCharges) || 0;
+            const rtoPercent = (parseFloat(inputs.rtoPercent) || 0) / 100;
+            const rtoShippingCost = parseFloat(inputs.rtoShippingCost) || 0;
 
-        // Calculate Net Profit Per Order (PPO) for each type, before ad spend
-        const ppo_prepaid = 
-            (aov * (1 - prepaidDiscountPercent)) * (1 - prepaidPgPercent) // Net Revenue
-            - (aov * cogsPercent) // COGS Cost
-            - shippingCost; // Shipping Cost
+            // Calculate Net Profit Per Order (PPO) for each type, before ad spend
+            const ppo_prepaid = 
+                (aov * (1 - prepaidDiscountPercent)) * (1 - prepaidPgPercent) // Net Revenue
+                - (aov * cogsPercent) // COGS Cost
+                - shippingCost; // Shipping Cost
 
-        const ppo_cod = 
-            (aov * (1 - rtoPercent)) // Revenue from delivered orders
-            - (aov * cogsPercent) // COGS for ALL shipped orders
-            - shippingCost // Shipping cost for ALL shipped orders
-            - (codCharges * (1 - rtoPercent)) // COD charges for delivered orders
-            - (rtoShippingCost * rtoPercent); // RTO cost for returned orders
+            const ppo_cod = 
+                (aov * (1 - rtoPercent)) // Revenue from delivered orders
+                - (aov * cogsPercent) // COGS for ALL shipped orders
+                - shippingCost // Shipping cost for ALL shipped orders
+                - (codCharges * (1 - rtoPercent)) // COD charges for delivered orders
+                - (rtoShippingCost * rtoPercent); // RTO cost for returned orders
 
-        const blendedPPO = (ppo_prepaid * prepaidSalesMix) + (ppo_cod * codSalesMix);
-        const breakEvenROAS = blendedPPO > 0 ? aov / blendedPPO : Infinity;
+            const blendedPPO = (ppo_prepaid * prepaidSalesMix) + (ppo_cod * codSalesMix);
+            const breakEvenROAS = blendedPPO > 0 ? aov / blendedPPO : Infinity;
 
-        // Now calculate all metrics at the break-even ROAS
-        const totalSales = adSpend * breakEvenROAS;
-        const totalOrders = aov > 0 ? totalSales / aov : 0;
-        
-        const prepaidOrders = totalOrders * prepaidSalesMix;
-        const prepaidGrossRevenue = prepaidOrders * aov;
-        const prepaidDiscountValue = prepaidGrossRevenue * prepaidDiscountPercent;
-        const prepaidNetBeforePg = prepaidGrossRevenue - prepaidDiscountValue;
-        const prepaidPgFee = prepaidNetBeforePg * prepaidPgPercent;
-        const prepaidFinalRevenue = prepaidNetBeforePg - prepaidPgFee;
-        const prepaidCogs = prepaidGrossRevenue * cogsPercent;
-        const prepaidShipping = prepaidOrders * shippingCost;
-        const prepaidTotalCost = prepaidCogs + prepaidShipping + prepaidPgFee;
-        const prepaidProfit = prepaidFinalRevenue - prepaidTotalCost;
+            // Now calculate all metrics at the break-even ROAS
+            const totalSales = adSpend * breakEvenROAS;
+            const totalOrders = aov > 0 ? totalSales / aov : 0;
+            
+            const prepaidOrders = totalOrders * prepaidSalesMix;
+            const prepaidGrossRevenue = prepaidOrders * aov;
+            const prepaidDiscountValue = prepaidGrossRevenue * prepaidDiscountPercent;
+            const prepaidNetBeforePg = prepaidGrossRevenue - prepaidDiscountValue;
+            const prepaidPgFee = prepaidNetBeforePg * prepaidPgPercent;
+            const prepaidFinalRevenue = prepaidNetBeforePg - prepaidPgFee;
+            const prepaidCogs = prepaidGrossRevenue * cogsPercent;
+            const prepaidShipping = prepaidOrders * shippingCost;
+            const prepaidTotalCost = prepaidCogs + prepaidShipping + prepaidPgFee;
+            const prepaidProfit = prepaidFinalRevenue - prepaidTotalCost;
 
-        const codOrders = totalOrders * codSalesMix;
-        const rtoOrders = codOrders * rtoPercent;
-        const deliveredCodOrders = codOrders * (1-rtoPercent);
-        const codGrossRevenueShipped = codOrders * aov;
-        const codFinalRevenue = deliveredCodOrders * aov;
-        const codCogs = codGrossRevenueShipped * cogsPercent;
-        const codShipping = codOrders * shippingCost;
-        const codChargesValue = deliveredCodOrders * codCharges;
-        const rtoCostValue = rtoOrders * rtoShippingCost;
-        const codTotalCost = codCogs + codShipping + codChargesValue + rtoCostValue;
-        const codProfit = codFinalRevenue - codTotalCost;
+            const codOrders = totalOrders * codSalesMix;
+            const rtoOrders = codOrders * rtoPercent;
+            const deliveredCodOrders = codOrders * (1-rtoPercent);
+            const codGrossRevenueShipped = codOrders * aov;
+            const codFinalRevenue = deliveredCodOrders * aov;
+            const codCogs = codGrossRevenueShipped * cogsPercent;
+            const codShipping = codOrders * shippingCost;
+            const codChargesValue = deliveredCodOrders * codCharges;
+            const rtoCostValue = rtoOrders * rtoShippingCost;
+            const codTotalCost = codCogs + codShipping + codChargesValue + rtoCostValue;
+            const codProfit = codFinalRevenue - codTotalCost;
 
-        const overallTotalRevenue = prepaidFinalRevenue + codFinalRevenue;
-        const overallTotalCost = adSpend + prepaidTotalCost + codTotalCost;
-        const overallProfit = overallTotalRevenue - overallTotalCost;
-        
-        const calculatedResults = {
-            breakEvenROAS,
-            totalSales,
-            totalOrders,
-            prepaidOrders, prepaidFinalRevenue, prepaidTotalCost, prepaidProfit,
-            codOrders, codFinalRevenue, codTotalCost, codProfit,
-            overallTotalRevenue, overallTotalCost, overallProfit
+            const overallTotalRevenue = prepaidFinalRevenue + codFinalRevenue;
+            const overallTotalCost = adSpend + prepaidTotalCost + codTotalCost;
+            const overallProfit = overallTotalRevenue - overallTotalCost;
+            
+            const calculatedResults = {
+                breakEvenROAS,
+                totalSales,
+                totalOrders,
+                prepaidOrders, prepaidFinalRevenue, prepaidTotalCost, prepaidProfit,
+                codOrders, codFinalRevenue, codTotalCost, codProfit,
+                overallTotalRevenue, overallTotalCost, overallProfit
+            };
+
+            addHistory({
+                calculator: 'Break-Even ROAS Calculator',
+                calculation: `For AOV ${formatCurrency(parseFloat(inputs.aov))}, Break-Even ROAS is ${breakEvenROAS.toFixed(2)}`,
+                inputs: inputs
+            });
+            
+            setShareText(`Break-Even ROAS Calculation:\n- Ad Spend: ${formatCurrency(adSpend)}\n- AOV: ${formatCurrency(aov)}\n- COGS: ${inputs.cogsPercent}%\n- Prepaid Mix: ${inputs.prepaidSalesMix}%\n\nResult:\n- Break-Even ROAS: ${isFinite(breakEvenROAS) ? breakEvenROAS.toFixed(2) : 'N/A'}\n- Total Sales: ${formatCurrency(totalSales)}\n- Total Profit/Loss: ${formatCurrency(overallProfit)}`);
+            return calculatedResults;
         };
 
-        addHistory({
-            calculator: 'Break-Even ROAS Calculator',
-            calculation: `For AOV ${formatCurrency(parseFloat(inputs.aov))}, Break-Even ROAS is ${breakEvenROAS.toFixed(2)}`,
-            inputs: inputs
-        });
-        
-        setShareText(`Break-Even ROAS Calculation:\n- Ad Spend: ${formatCurrency(adSpend)}\n- AOV: ${formatCurrency(aov)}\n- COGS: ${inputs.cogsPercent}%\n- Prepaid Mix: ${inputs.prepaidSalesMix}%\n\nResult:\n- Break-Even ROAS: ${isFinite(breakEvenROAS) ? breakEvenROAS.toFixed(2) : 'N/A'}\n- Total Sales: ${formatCurrency(totalSales)}\n- Total Profit/Loss: ${formatCurrency(overallProfit)}`);
-
-        if (shouldShowAd(isPremium)) {
-            setPendingResult(calculatedResults);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResults(res);
         } else {
-            setResults(calculatedResults);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResults(res);
+                }
+            }
         }
     };
 
@@ -190,75 +199,9 @@ const BreakEvenROASCalculator: React.FC<BreakEvenROASCalculatorProps> = ({ isPre
         setShowAd(false);
     };
 
-    const generatePdf = () => {
-        if (!results) return;
-        const doc = new jsPDF();
-        let y = 15;
-    
-        doc.setFontSize(18);
-        doc.text('Break-Even ROAS Report', 14, y);
-        y += 10;
-    
-        doc.setFontSize(12);
-        doc.text('Inputs', 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        Object.entries(inputs).forEach(([key, value]) => {
-            doc.text(`- ${key}: ${value}`, 16, y);
-            y += 5;
-        });
-    
-        y += 5;
-        doc.line(14, y, 196, y);
-        y += 10;
-    
-        doc.setFontSize(12);
-        doc.text('Results', 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Break-Even ROAS: ${isFinite(results.breakEvenROAS) ? results.breakEvenROAS.toFixed(2) : 'N/A'}`, 16, y); y += 5;
-        doc.text(`- Total Sales at Break-Even: ${formatCurrency(results.totalSales)}`, 16, y); y += 5;
-        doc.text(`- Total Orders at Break-Even: ${results.totalOrders.toFixed(2)}`, 16, y); y += 10;
-
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Prepaid Breakdown', 14, y); y+=6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text(`- Orders: ${results.prepaidOrders.toFixed(2)}`, 16, y); y+=5;
-        doc.text(`- Revenue: ${formatCurrency(results.prepaidFinalRevenue)}`, 16, y); y+=5;
-        doc.text(`- Cost: ${formatCurrency(results.prepaidTotalCost)}`, 16, y); y+=5;
-        doc.text(`- Profit/Loss: ${formatCurrency(results.prepaidProfit)}`, 16, y); y+=10;
-        
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text('COD Breakdown', 14, y); y+=6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text(`- Orders: ${results.codOrders.toFixed(2)}`, 16, y); y+=5;
-        doc.text(`- Revenue: ${formatCurrency(results.codFinalRevenue)}`, 16, y); y+=5;
-        doc.text(`- Cost: ${formatCurrency(results.codTotalCost)}`, 16, y); y+=5;
-        doc.text(`- Profit/Loss: ${formatCurrency(results.codProfit)}`, 16, y); y+=5;
-
-    
-        doc.save(`BreakEven-ROAS-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!results) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
              {isExplainModalOpen && results && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -312,11 +255,7 @@ const BreakEvenROASCalculator: React.FC<BreakEvenROASCalculatorProps> = ({ isPre
                             <ResultBox label="Total Revenue" value={formatCurrency(results.overallTotalRevenue)} />
                             <ResultBox label="Profit / Loss" value={formatCurrency(results.overallProfit)} large highlight />
                         </div>
-                         <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme-tertiary">
-                             <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
-                            </button>
+                         <div className="flex justify-end items-center mt-4 pt-4 border-t border-theme-tertiary">
                             <ShareButton textToShare={shareText} />
                         </div>
                     </div>

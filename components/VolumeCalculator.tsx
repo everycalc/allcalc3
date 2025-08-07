@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 type Shape = 'Sphere' | 'Cube' | 'Cylinder' | 'Cone';
 
@@ -36,6 +36,8 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -51,56 +53,68 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
     };
 
     const calculateVolume = () => {
-        const getNum = (val: string) => {
-            const num = parseFloat(val);
-            return isNaN(num) || num < 0 ? 0 : num;
+        const performCalculation = () => {
+            const getNum = (val: string) => {
+                const num = parseFloat(val);
+                return isNaN(num) || num < 0 ? 0 : num;
+            };
+
+            const r = getNum(inputs.radius);
+            const s = getNum(inputs.side);
+            const h = getNum(inputs.height);
+
+            let calculatedVolume = 0;
+            let details = '';
+            let shareDetails = '';
+            
+            switch (shape) {
+                case 'Sphere':
+                    calculatedVolume = (4 / 3) * Math.PI * Math.pow(r, 3);
+                    details = `(r=${r})`;
+                    shareDetails = `Shape: Sphere\nRadius: ${r}`;
+                    break;
+                case 'Cube':
+                    calculatedVolume = Math.pow(s, 3);
+                    details = `(side=${s})`;
+                    shareDetails = `Shape: Cube\nSide Length: ${s}`;
+                    break;
+                case 'Cylinder':
+                    calculatedVolume = Math.PI * Math.pow(r, 2) * h;
+                    details = `(r=${r}, h=${h})`;
+                    shareDetails = `Shape: Cylinder\nRadius: ${r}\nHeight: ${h}`;
+                    break;
+                case 'Cone':
+                    calculatedVolume = (1 / 3) * Math.PI * Math.pow(r, 2) * h;
+                    details = `(r=${r}, h=${h})`;
+                    shareDetails = `Shape: Cone\nRadius: ${r}\nHeight: ${h}`;
+                    break;
+            }
+            
+            const historyText = `Volume ${shape} ${details} = ${calculatedVolume.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
+            addHistory({
+                calculator: 'All Shapes Volume Calculator',
+                calculation: historyText,
+                inputs: { shape, inputs }
+            });
+            
+            setShareText(`Volume Calculation:\n${shareDetails}\n\nResult:\nVolume = ${calculatedVolume.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
+            return calculatedVolume;
         };
 
-        const r = getNum(inputs.radius);
-        const s = getNum(inputs.side);
-        const h = getNum(inputs.height);
-
-        let calculatedVolume = 0;
-        let details = '';
-        let shareDetails = '';
-        
-        switch (shape) {
-            case 'Sphere':
-                calculatedVolume = (4 / 3) * Math.PI * Math.pow(r, 3);
-                details = `(r=${r})`;
-                shareDetails = `Shape: Sphere\nRadius: ${r}`;
-                break;
-            case 'Cube':
-                calculatedVolume = Math.pow(s, 3);
-                details = `(side=${s})`;
-                shareDetails = `Shape: Cube\nSide Length: ${s}`;
-                break;
-            case 'Cylinder':
-                calculatedVolume = Math.PI * Math.pow(r, 2) * h;
-                details = `(r=${r}, h=${h})`;
-                shareDetails = `Shape: Cylinder\nRadius: ${r}\nHeight: ${h}`;
-                break;
-            case 'Cone':
-                calculatedVolume = (1 / 3) * Math.PI * Math.pow(r, 2) * h;
-                details = `(r=${r}, h=${h})`;
-                shareDetails = `Shape: Cone\nRadius: ${r}\nHeight: ${h}`;
-                break;
-        }
-        
-        const historyText = `Volume ${shape} ${details} = ${calculatedVolume.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
-        addHistory({
-            calculator: 'All Shapes Volume Calculator',
-            calculation: historyText,
-            inputs: { shape, inputs }
-        });
-        
-        setShareText(`Volume Calculation:\n${shareDetails}\n\nResult:\nVolume = ${calculatedVolume.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedVolume);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res !== null) setResult(res);
         } else {
-            setResult(calculatedVolume);
+            const res = performCalculation();
+            if (res !== null) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

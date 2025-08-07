@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -7,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface AOVCalculatorState {
     revenue: string;
@@ -29,6 +29,8 @@ const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -39,28 +41,39 @@ const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }
     }, [initialState]);
 
     const handleCalculate = () => {
-        const rev = parseFloat(revenue);
-        const ord = parseFloat(orders);
+        const performCalculation = () => {
+            const rev = parseFloat(revenue);
+            const ord = parseFloat(orders);
 
-        if (isNaN(rev) || isNaN(ord) || ord <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(rev) || isNaN(ord) || ord <= 0) {
+                return null;
+            }
 
-        const aov = rev / ord;
-        addHistory({
-            calculator: 'AOV Calculator',
-            calculation: `AOV: ${formatCurrency(rev)} / ${ord} = ${formatCurrency(aov)}`,
-            inputs: { revenue, orders }
-        });
-        
-        setShareText(`AOV Calculation:\n- Total Revenue: ${formatCurrency(rev)}\n- Total Orders: ${ord}\n\nResult:\n- Average Order Value (AOV): ${formatCurrency(aov)}`);
+            const aov = rev / ord;
+            addHistory({
+                calculator: 'AOV Calculator',
+                calculation: `AOV: ${formatCurrency(rev)} / ${ord} = ${formatCurrency(aov)}`,
+                inputs: { revenue, orders }
+            });
+            
+            setShareText(`AOV Calculation:\n- Total Revenue: ${formatCurrency(rev)}\n- Total Orders: ${ord}\n\nResult:\n- Average Order Value (AOV): ${formatCurrency(aov)}`);
+            return aov;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(aov);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res !== null) setResult(res);
         } else {
-            setResult(aov);
+            const res = performCalculation();
+            if (res !== null) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

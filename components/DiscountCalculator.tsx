@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     finalPrice: number;
@@ -35,6 +35,8 @@ const DiscountCalculator: React.FC<DiscountCalculatorProps> = ({ isPremium, init
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -45,32 +47,43 @@ const DiscountCalculator: React.FC<DiscountCalculatorProps> = ({ isPremium, init
     }, [initialState]);
 
     const handleCalculate = () => {
-        const price = parseFloat(originalPrice);
-        const disc = parseFloat(discount);
+        const performCalculation = () => {
+            const price = parseFloat(originalPrice);
+            const disc = parseFloat(discount);
 
-        if (isNaN(price) || isNaN(disc) || price < 0 || disc < 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(price) || isNaN(disc) || price < 0 || disc < 0) {
+                return null;
+            }
 
-        const saved = price * (disc / 100);
-        const final = price - saved;
-        
-        const calculatedResult = { finalPrice: final, savedAmount: saved };
-        
-        addHistory({
-            calculator: 'Discount Calculator',
-            calculation: `${disc}% off ${formatCurrency(price)} = ${formatCurrency(final)}`,
-            inputs: { originalPrice, discount }
-        });
-        
-        setShareText(`Discount Calculation:\n- Original Price: ${formatCurrency(price)}\n- Discount: ${disc}%\n\nResult:\n- Final Price: ${formatCurrency(final)}\n- You Save: ${formatCurrency(saved)}`);
+            const saved = price * (disc / 100);
+            const final = price - saved;
+            
+            const calculatedResult = { finalPrice: final, savedAmount: saved };
+            
+            addHistory({
+                calculator: 'Discount Calculator',
+                calculation: `${disc}% off ${formatCurrency(price)} = ${formatCurrency(final)}`,
+                inputs: { originalPrice, discount }
+            });
+            
+            setShareText(`Discount Calculation:\n- Original Price: ${formatCurrency(price)}\n- Discount: ${disc}%\n\nResult:\n- Final Price: ${formatCurrency(final)}\n- You Save: ${formatCurrency(saved)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

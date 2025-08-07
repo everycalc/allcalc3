@@ -36,13 +36,13 @@ const PdfFuelModal: React.FC<PdfFuelModalProps> = ({ isOpen, onClose, onRefuel, 
         aria-labelledby="pdf-fuel-modal-title"
       >
         <div className="text-5xl">📄</div>
-        <h2 id="pdf-fuel-modal-title" className="text-2xl font-bold text-primary">PDF Download</h2>
+        <h2 id="pdf-fuel-modal-title" className="text-2xl font-bold text-primary">Feature Requires Fuel</h2>
         <p className="text-theme-secondary">
-          This feature requires <strong className="text-theme-primary">{cost} Calculation Fuel</strong> to download your AI-powered PDF report.
+          This feature requires <strong className="text-theme-primary">{cost} Calculation Fuel</strong>.
         </p>
         <div className="space-y-2 pt-2">
             <button onClick={onRefuel} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors">
-                Refuel
+                Refuel (Watch Ad)
             </button>
             <button onClick={onClose} className="w-full text-sm text-theme-secondary font-semibold py-2 px-4 rounded-md hover:bg-theme-tertiary transition-colors">
                 Cancel

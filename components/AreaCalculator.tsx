@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 type Shape = 'Circle' | 'Square' | 'Rectangle' | 'Triangle';
 
@@ -42,6 +42,8 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -57,58 +59,70 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
     };
 
     const calculateArea = () => {
-        const getNum = (val: string) => {
-            const num = parseFloat(val);
-            return isNaN(num) || num < 0 ? 0 : num;
+        const performCalculation = () => {
+            const getNum = (val: string) => {
+                const num = parseFloat(val);
+                return isNaN(num) || num < 0 ? 0 : num;
+            };
+
+            let calculatedArea = 0;
+            let details = '';
+            let shareDetails = '';
+            
+            switch (shape) {
+                case 'Circle':
+                    const radius = getNum(inputs.radius);
+                    calculatedArea = Math.PI * Math.pow(radius, 2);
+                    details = `(r=${radius})`;
+                    shareDetails = `Shape: Circle\nRadius: ${radius}`;
+                    break;
+                case 'Square':
+                    const side = getNum(inputs.side);
+                    calculatedArea = Math.pow(side, 2);
+                    details = `(side=${side})`;
+                    shareDetails = `Shape: Square\nSide: ${side}`;
+                    break;
+                case 'Rectangle':
+                    const length = getNum(inputs.length);
+                    const width = getNum(inputs.width);
+                    calculatedArea = length * width;
+                    details = `(l=${length}, w=${width})`;
+                    shareDetails = `Shape: Rectangle\nLength: ${length}\nWidth: ${width}`;
+                    break;
+                case 'Triangle':
+                    const base = getNum(inputs.base);
+                    const height = getNum(inputs.height);
+                    calculatedArea = 0.5 * base * height;
+                    details = `(b=${base}, h=${height})`;
+                    shareDetails = `Shape: Triangle\nBase: ${base}\nHeight: ${height}`;
+                    break;
+            }
+
+            const historyText = `Area ${shape} ${details} = ${calculatedArea.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
+            addHistory({
+                calculator: 'All Shapes Area Calculator',
+                calculation: historyText,
+                inputs: { shape, inputs }
+            });
+            
+            setShareText(`Area Calculation:\n${shareDetails}\n\nResult:\nArea = ${calculatedArea.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
+            return calculatedArea;
         };
 
-        let calculatedArea = 0;
-        let details = '';
-        let shareDetails = '';
-        
-        switch (shape) {
-            case 'Circle':
-                const radius = getNum(inputs.radius);
-                calculatedArea = Math.PI * Math.pow(radius, 2);
-                details = `(r=${radius})`;
-                shareDetails = `Shape: Circle\nRadius: ${radius}`;
-                break;
-            case 'Square':
-                const side = getNum(inputs.side);
-                calculatedArea = Math.pow(side, 2);
-                details = `(side=${side})`;
-                shareDetails = `Shape: Square\nSide: ${side}`;
-                break;
-            case 'Rectangle':
-                const length = getNum(inputs.length);
-                const width = getNum(inputs.width);
-                calculatedArea = length * width;
-                details = `(l=${length}, w=${width})`;
-                shareDetails = `Shape: Rectangle\nLength: ${length}\nWidth: ${width}`;
-                break;
-            case 'Triangle':
-                const base = getNum(inputs.base);
-                const height = getNum(inputs.height);
-                calculatedArea = 0.5 * base * height;
-                details = `(b=${base}, h=${height})`;
-                shareDetails = `Shape: Triangle\nBase: ${base}\nHeight: ${height}`;
-                break;
-        }
-
-        const historyText = `Area ${shape} ${details} = ${calculatedArea.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
-        addHistory({
-            calculator: 'All Shapes Area Calculator',
-            calculation: historyText,
-            inputs: { shape, inputs }
-        });
-        
-        setShareText(`Area Calculation:\n${shareDetails}\n\nResult:\nArea = ${calculatedArea.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedArea);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res !== null) setResult(res);
         } else {
-            setResult(calculatedArea);
+            const res = performCalculation();
+            if (res !== null) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

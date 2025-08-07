@@ -1,7 +1,9 @@
-
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
+import { useAd } from '../contexts/AdContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 const conversionFactors = {
   Length: {
@@ -40,16 +42,23 @@ interface UnitConverterState {
 
 interface UnitConverterProps {
     initialState?: UnitConverterState;
+    isPremium?: boolean;
 }
 
-const UnitConverter: React.FC<UnitConverterProps> = ({ initialState }) => {
+const UnitConverter: React.FC<UnitConverterProps> = ({ initialState, isPremium }) => {
   const [category, setCategory] = useState<Category>('Length');
   const [fromUnit, setFromUnit] = useState<string>('Meter');
   const [toUnit, setToUnit] = useState<string>('Foot');
   const [inputValue, setInputValue] = useState('1');
   const [outputValue, setOutputValue] = useState('');
   const [shareText, setShareText] = useState('');
+  const [showAd, setShowAd] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
   const { addHistory } = useContext(HistoryContext);
+  const { fuel, consumeFuel } = useFuel();
+  const { shouldShowAd } = useAd();
+  const fuelCost = isPremium ? 2 : 1;
 
   const units = useMemo(() => Object.keys(conversionFactors[category]), [category]);
 
@@ -69,57 +78,76 @@ const UnitConverter: React.FC<UnitConverterProps> = ({ initialState }) => {
     }
   }, [category, units, initialState]);
   
-  useEffect(() => {
-    const input = parseFloat(inputValue);
-    if (isNaN(input)) {
-        setOutputValue('');
-        return;
-    }
-
-    let result: number;
-    if (category === 'Temperature') {
-        let celsius: number;
-        switch (fromUnit) {
-            case 'Fahrenheit': celsius = (input - 32) * 5/9; break;
-            case 'Kelvin': celsius = input - 273.15; break;
-            default: celsius = input;
+  const handleConversion = () => {
+    const performConversion = () => {
+        const input = parseFloat(inputValue);
+        if (isNaN(input)) {
+            setOutputValue('');
+            return;
         }
 
-        switch (toUnit) {
-            case 'Fahrenheit': result = (celsius * 9/5) + 32; break;
-            case 'Kelvin': result = celsius + 273.15; break;
-            default: result = celsius;
+        let result: number;
+        if (category === 'Temperature') {
+            let celsius: number;
+            switch (fromUnit) {
+                case 'Fahrenheit': celsius = (input - 32) * 5/9; break;
+                case 'Kelvin': celsius = input - 273.15; break;
+                default: celsius = input;
+            }
+
+            switch (toUnit) {
+                case 'Fahrenheit': result = (celsius * 9/5) + 32; break;
+                case 'Kelvin': result = celsius + 273.15; break;
+                default: result = celsius;
+            }
+        } else {
+            const fromFactor = conversionFactors[category][fromUnit] as number;
+            const toFactor = conversionFactors[category][toUnit] as number;
+            result = (input * fromFactor) / toFactor;
         }
+        
+        const finalOutput = parseFloat(result.toPrecision(6)).toString();
+        setOutputValue(finalOutput);
+        setShareText(`Unit Conversion:\n${input} ${fromUnit} = ${finalOutput} ${toUnit}`);
+        
+        addHistory({
+            calculator: 'Unit Converter',
+            calculation: `${inputValue} ${fromUnit} = ${finalOutput} ${toUnit}`,
+            inputs: { category, fromUnit, toUnit, inputValue }
+        });
+    };
+
+    if (fuel >= fuelCost) {
+        consumeFuel(fuelCost);
+        performConversion();
     } else {
-        const fromFactor = conversionFactors[category][fromUnit] as number;
-        const toFactor = conversionFactors[category][toUnit] as number;
-        result = (input * fromFactor) / toFactor;
+        if (shouldShowAd(isPremium)) {
+            setPendingAction(() => performConversion);
+            setShowAd(true);
+        } else {
+            performConversion();
+        }
     }
-    
-    const finalOutput = parseFloat(result.toPrecision(6)).toString();
-    setOutputValue(finalOutput);
-    setShareText(`Unit Conversion:\n${input} ${fromUnit} = ${finalOutput} ${toUnit}`);
-  }, [inputValue, fromUnit, toUnit, category]);
+  };
+
+  const handleAdClose = () => {
+      if(pendingAction) {
+          pendingAction();
+          setPendingAction(null);
+      }
+      setShowAd(false);
+  }
 
   const handleSwap = () => {
     setFromUnit(toUnit);
     setToUnit(fromUnit);
   };
   
-  const handleSaveHistory = () => {
-    if (inputValue && outputValue) {
-      addHistory({
-        calculator: 'Unit Converter',
-        calculation: `${inputValue} ${fromUnit} = ${outputValue} ${toUnit}`,
-        inputs: { category, fromUnit, toUnit, inputValue }
-      });
-    }
-  };
-
   const commonSelectClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
   return (
     <div className="space-y-6">
+      {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-theme-secondary mb-1">Category</label>
         <select id="category" value={category} onChange={e => setCategory(e.target.value as Category)} className={commonSelectClasses}>
@@ -151,11 +179,11 @@ const UnitConverter: React.FC<UnitConverterProps> = ({ initialState }) => {
         </div>
       </div>
       <div className="text-center">
-        <button onClick={handleSaveHistory} className="bg-primary text-on-primary font-bold py-2 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-theme-primary ring-primary">
-            Save to History
+        <button onClick={handleConversion} className="bg-primary text-on-primary font-bold py-3 px-6 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-theme-primary ring-primary">
+            Convert
         </button>
       </div>
-       <ShareButton textToShare={shareText} />
+       {outputValue && <ShareButton textToShare={shareText} />}
     </div>
   );
 };

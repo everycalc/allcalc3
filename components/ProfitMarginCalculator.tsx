@@ -25,9 +25,10 @@ interface ProfitMarginCalculatorState {
 
 interface ProfitMarginCalculatorProps {
     initialState?: ProfitMarginCalculatorState;
+    isPremium?: boolean;
 }
 
-const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initialState }) => {
+const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initialState, isPremium }) => {
     const [revenue, setRevenue] = useState('1000');
     const [cogs, setCogs] = useState('600');
     const [result, setResult] = useState<Result | null>(null);
@@ -42,7 +43,7 @@ const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initial
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
     const { fuel, consumeFuel, addFuel } = useFuel();
-    const PDF_COST = 5;
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -53,32 +54,43 @@ const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initial
     }, [initialState]);
 
     const handleCalculate = () => {
-        const rev = parseFloat(revenue);
-        const cost = parseFloat(cogs);
+        const performCalculation = () => {
+            const rev = parseFloat(revenue);
+            const cost = parseFloat(cogs);
 
-        if (isNaN(rev) || isNaN(cost) || rev <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(rev) || isNaN(cost) || rev <= 0) {
+                return null;
+            }
 
-        const gp = rev - cost;
-        const margin = (gp / rev) * 100;
-        
-        const calculatedResult = { grossProfit: gp, profitMargin: margin };
-        
-        addHistory({
-            calculator: 'Profit Margin Calculator',
-            calculation: `Revenue: ${formatCurrency(rev)}, COGS: ${formatCurrency(cost)} -> Margin: ${margin.toFixed(2)}%`,
-            inputs: { revenue, cogs }
-        });
-        
-        setShareText(`Profit Margin Calculation:\n- Total Revenue: ${formatCurrency(rev)}\n- COGS: ${formatCurrency(cost)}\n\nResult:\n- Gross Profit: ${formatCurrency(gp)}\n- Profit Margin: ${margin.toFixed(2)}%`);
+            const gp = rev - cost;
+            const margin = (gp / rev) * 100;
+            
+            const calculatedResult = { grossProfit: gp, profitMargin: margin };
+            
+            addHistory({
+                calculator: 'Profit Margin Calculator',
+                calculation: `Revenue: ${formatCurrency(rev)}, COGS: ${formatCurrency(cost)} -> Margin: ${margin.toFixed(2)}%`,
+                inputs: { revenue, cogs }
+            });
+            
+            setShareText(`Profit Margin Calculation:\n- Total Revenue: ${formatCurrency(rev)}\n- COGS: ${formatCurrency(cost)}\n\nResult:\n- Gross Profit: ${formatCurrency(gp)}\n- Profit Margin: ${margin.toFixed(2)}%`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     
@@ -89,57 +101,13 @@ const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initial
         }
         setShowAd(false);
     };
-
-    const generatePdf = async () => {
-        if (!result) return;
-        
-        const pdf = new jsPDF();
-        
-        pdf.setFontSize(18);
-        pdf.text('Profit Margin Report', 14, 22);
-        
-        pdf.line(14, 32, 196, 32);
-
-        pdf.setFontSize(12);
-        pdf.text('Inputs:', 14, 40);
-        pdf.setFontSize(10);
-        pdf.text(`Total Revenue: ${formatCurrency(parseFloat(revenue))}`, 20, 48);
-        pdf.text(`Cost of Goods Sold (COGS): ${formatCurrency(parseFloat(cogs))}`, 20, 54);
-
-        pdf.line(14, 64, 196, 64);
-
-        pdf.setFontSize(12);
-        pdf.text('Results:', 14, 72);
-        pdf.setFontSize(10);
-        pdf.text(`Gross Profit: ${formatCurrency(result.grossProfit)}`, 20, 80);
-        pdf.text(`Profit Margin: ${result.profitMargin.toFixed(2)}%`, 20, 86);
-        
-        const pieChartElement = document.getElementById('pdf-pie-chart-profit');
-        if (pieChartElement) {
-            const canvas = await html2canvas(pieChartElement, { backgroundColor: null });
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 14, 100, 80, 80);
-        }
-        
-        pdf.save(`Profit-Margin-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!result) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
     
     const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
+            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={5} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
             {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {isExplainModalOpen && result && (
                 <ExplanationModal
@@ -193,12 +161,8 @@ const ProfitMarginCalculator: React.FC<ProfitMarginCalculatorProps> = ({ initial
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain & Get Insights
                         </button>
-                         <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
-                        </button>
+                         <ShareButton textToShare={shareText} />
                     </div>
-                     <ShareButton textToShare={shareText} />
                 </div>
             )}
         </div>

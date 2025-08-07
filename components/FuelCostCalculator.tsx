@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -6,13 +5,14 @@ import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     totalFuel: number;
     totalCost: number;
 }
 
-const FuelCostCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+const FuelCostCalculator: React.FC<{initialState?: any; isPremium?: boolean}> = ({initialState, isPremium}) => {
     const [distance, setDistance] = useState('400');
     const [mileage, setMileage] = useState('15');
     const [fuelPrice, setFuelPrice] = useState('100');
@@ -23,6 +23,8 @@ const FuelCostCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -34,29 +36,41 @@ const FuelCostCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     }, [initialState]);
 
     const handleCalculate = () => {
-        const dist = parseFloat(distance);
-        const mil = parseFloat(mileage);
-        const price = parseFloat(fuelPrice);
+        const performCalculation = () => {
+            const dist = parseFloat(distance);
+            const mil = parseFloat(mileage);
+            const price = parseFloat(fuelPrice);
 
-        if (isNaN(dist) || isNaN(mil) || isNaN(price) || mil <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(dist) || isNaN(mil) || isNaN(price) || mil <= 0) {
+                return null;
+            }
 
-        const totalFuel = dist / mil;
-        const totalCost = totalFuel * price;
-        
-        const calculatedResult = { totalFuel, totalCost };
-        
-        addHistory({ calculator: 'Fuel Cost Calculator', calculation: `Trip of ${dist}km -> ${formatCurrency(totalCost)}`, inputs: { distance, mileage, fuelPrice } });
-        
-        setShareText(`Fuel Cost Calculation:\n- Distance: ${dist} km\n- Mileage: ${mil} km per L\n- Fuel Price: ${formatCurrency(price)}/L\n\nResult:\n- Total Fuel: ${totalFuel.toFixed(2)} L\n- Total Cost: ${formatCurrency(totalCost)}`);
+            const totalFuel = dist / mil;
+            const totalCost = totalFuel * price;
+            
+            const calculatedResult = { totalFuel, totalCost };
+            
+            addHistory({ calculator: 'Fuel Cost Calculator', calculation: `Trip of ${dist}km -> ${formatCurrency(totalCost)}`, inputs: { distance, mileage, fuelPrice } });
+            
+            setShareText(`Fuel Cost Calculation:\n- Distance: ${dist} km\n- Mileage: ${mil} km per L\n- Fuel Price: ${formatCurrency(price)}/L\n\nResult:\n- Total Fuel: ${totalFuel.toFixed(2)} L\n- Total Cost: ${formatCurrency(totalCost)}`);
+            
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

@@ -1,9 +1,9 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     average: number;
@@ -11,7 +11,12 @@ interface Result {
     count: number;
 }
 
-const AverageCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+interface AverageCalculatorProps {
+    initialState?: any;
+    isPremium?: boolean;
+}
+
+const AverageCalculator: React.FC<AverageCalculatorProps> = ({initialState, isPremium}) => {
     const [numbers, setNumbers] = useState('10, 20, 30, 40, 50');
     const [result, setResult] = useState<Result | null>(null);
     const [pendingResult, setPendingResult] = useState<any | null>(null);
@@ -19,6 +24,8 @@ const AverageCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     const [shareText, setShareText] = useState('');
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -28,26 +35,37 @@ const AverageCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     }, [initialState]);
 
     const handleCalculate = () => {
-        const numArray = numbers.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
-        if (numArray.length === 0) {
-            setResult(null);
-            return;
-        }
+        const performCalculation = () => {
+            const numArray = numbers.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
+            if (numArray.length === 0) {
+                return null;
+            }
 
-        const sum = numArray.reduce((acc, val) => acc + val, 0);
-        const count = numArray.length;
-        const average = sum / count;
+            const sum = numArray.reduce((acc, val) => acc + val, 0);
+            const count = numArray.length;
+            const average = sum / count;
 
-        const calculatedResult = { average, sum, count };
-        addHistory({ calculator: 'Average Calculator', calculation: `Avg of ${count} numbers = ${average.toFixed(2)}`, inputs: { numbers } });
+            const calculatedResult = { average, sum, count };
+            addHistory({ calculator: 'Average Calculator', calculation: `Avg of ${count} numbers = ${average.toFixed(2)}`, inputs: { numbers } });
+            
+            setShareText(`Average Calculation:\n- Numbers: ${numbers}\n\nResult:\n- Average: ${average.toFixed(2)}\n- Sum: ${sum.toLocaleString()}\n- Count: ${count}`);
+            return calculatedResult;
+        };
         
-        setShareText(`Average Calculation:\n- Numbers: ${numbers}\n\nResult:\n- Average: ${average.toFixed(2)}\n- Sum: ${sum.toLocaleString()}\n- Count: ${count}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

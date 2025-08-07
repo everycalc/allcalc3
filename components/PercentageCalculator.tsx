@@ -1,13 +1,18 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 type Mode = 'percentOf' | 'isWhatPercent' | 'percentChange';
 
-const PercentageCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+interface PercentageCalculatorProps {
+    initialState?: any;
+    isPremium?: boolean;
+}
+
+const PercentageCalculator: React.FC<PercentageCalculatorProps> = ({initialState, isPremium}) => {
     const [mode, setMode] = useState<Mode>('percentOf');
     const [inputs, setInputs] = useState({ val1: '20', val2: '500' });
     const [result, setResult] = useState<string | null>(null);
@@ -16,6 +21,8 @@ const PercentageCalculator: React.FC<{initialState?: any}> = ({initialState}) =>
     const [shareText, setShareText] = useState('');
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -30,37 +37,49 @@ const PercentageCalculator: React.FC<{initialState?: any}> = ({initialState}) =>
     };
 
     const handleCalculate = () => {
-        const v1 = parseFloat(inputs.val1);
-        const v2 = parseFloat(inputs.val2);
-        if (isNaN(v1) || isNaN(v2)) return;
+        const performCalculation = () => {
+            const v1 = parseFloat(inputs.val1);
+            const v2 = parseFloat(inputs.val2);
+            if (isNaN(v1) || isNaN(v2)) return null;
 
-        let res = '';
-        let historyCalc = '';
+            let res = '';
+            let historyCalc = '';
 
-        switch (mode) {
-            case 'percentOf':
-                res = ((v1 / 100) * v2).toLocaleString();
-                historyCalc = `${v1}% of ${v2} = ${res}`;
-                break;
-            case 'isWhatPercent':
-                res = v2 !== 0 ? ((v1 / v2) * 100).toFixed(2) + '%' : 'N/A';
-                historyCalc = `${v1} is what % of ${v2}? ${res}`;
-                break;
-            case 'percentChange':
-                const change = v2 - v1;
-                res = v1 !== 0 ? ((change / v1) * 100).toFixed(2) + '%' : 'N/A';
-                historyCalc = `% change from ${v1} to ${v2} is ${res}`;
-                break;
-        }
-        
-        addHistory({ calculator: 'Percentage Calculator', calculation: historyCalc, inputs: { mode, ...inputs } });
-        setShareText(`Percentage Calculation:\n- Calculation: ${historyCalc}`);
+            switch (mode) {
+                case 'percentOf':
+                    res = ((v1 / 100) * v2).toLocaleString();
+                    historyCalc = `${v1}% of ${v2} = ${res}`;
+                    break;
+                case 'isWhatPercent':
+                    res = v2 !== 0 ? ((v1 / v2) * 100).toFixed(2) + '%' : 'N/A';
+                    historyCalc = `${v1} is what % of ${v2}? ${res}`;
+                    break;
+                case 'percentChange':
+                    const change = v2 - v1;
+                    res = v1 !== 0 ? ((change / v1) * 100).toFixed(2) + '%' : 'N/A';
+                    historyCalc = `% change from ${v1} to ${v2} is ${res}`;
+                    break;
+            }
+            
+            addHistory({ calculator: 'Percentage Calculator', calculation: historyCalc, inputs: { mode, ...inputs } });
+            setShareText(`Percentage Calculation:\n- Calculation: ${historyCalc}`);
+            return res;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(res);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(res);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

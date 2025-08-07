@@ -1,11 +1,13 @@
-
 import React, { useState, useContext } from 'react';
 import Display from './Display';
 import CalculatorButton from './CalculatorButton';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
+import { useAd } from '../contexts/AdContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
-const ScientificCalculator: React.FC = () => {
+const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
     const [displayValue, setDisplayValue] = useState('0');
     const [previousValue, setPreviousValue] = useState<null | number>(null);
     const [operator, setOperator] = useState<null | string>(null);
@@ -13,7 +15,13 @@ const ScientificCalculator: React.FC = () => {
     const [subDisplay, setSubDisplay] = useState('');
     const [isDeg, setIsDeg] = useState(true);
     const [shareText, setShareText] = useState('');
+    const [showAd, setShowAd] = useState(false);
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+
     const { addHistory } = useContext(HistoryContext);
+    const { fuel, consumeFuel } = useFuel();
+    const { shouldShowAd } = useAd();
+    const fuelCost = isPremium ? 2 : 1;
 
     const handleDigit = (digit: string) => {
         if (waitingForOperand) {
@@ -92,9 +100,23 @@ const ScientificCalculator: React.FC = () => {
     };
 
     const handleEquals = () => {
-        if (operator && previousValue !== null && !waitingForOperand) {
-            performCalculation(true);
-            setWaitingForOperand(true);
+        const perform = () => {
+            if (operator && previousValue !== null && !waitingForOperand) {
+                performCalculation(true);
+                setWaitingForOperand(true);
+            }
+        };
+
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            perform();
+        } else {
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => perform);
+                setShowAd(true);
+            } else {
+                perform();
+            }
         }
     }
 
@@ -108,21 +130,43 @@ const ScientificCalculator: React.FC = () => {
     };
 
     const handleUnary = (operation: (a: number) => number, opString?: string) => {
-        const value = parseFloat(displayValue);
-        const result = operation(value);
-        const resultString = String(parseFloat(result.toPrecision(15)));
-        const calculationString = `${opString || ''}(${displayValue}) = ${resultString}`;
-        
-        addHistory({
-          calculator: 'Scientific Calculator',
-          calculation: calculationString,
-          inputs: null
-        });
-        setShareText(`Scientific Calculation:\n${calculationString}`);
+        const perform = () => {
+            const value = parseFloat(displayValue);
+            const result = operation(value);
+            const resultString = String(parseFloat(result.toPrecision(15)));
+            const calculationString = `${opString || ''}(${displayValue}) = ${resultString}`;
+            
+            addHistory({
+              calculator: 'Scientific Calculator',
+              calculation: calculationString,
+              inputs: null
+            });
+            setShareText(`Scientific Calculation:\n${calculationString}`);
 
-        setSubDisplay(calculationString);
-        setDisplayValue(resultString);
-        setWaitingForOperand(true);
+            setSubDisplay(calculationString);
+            setDisplayValue(resultString);
+            setWaitingForOperand(true);
+        };
+
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            perform();
+        } else {
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => perform);
+                setShowAd(true);
+            } else {
+                perform();
+            }
+        }
+    };
+
+    const handleAdClose = () => {
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+        setShowAd(false);
     };
     
     const handleClick = (label: string) => {
@@ -145,6 +189,7 @@ const ScientificCalculator: React.FC = () => {
 
   return (
     <div>
+      {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <Display value={displayValue} subValue={subDisplay} />
       <div className="grid grid-cols-5 gap-2">
         <CalculatorButton label={isDeg ? 'Deg' : 'Rad'} onClick={() => setIsDeg(!isDeg)} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />

@@ -1,7 +1,9 @@
-
 import React, { useState, useEffect, useContext } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
+import { useAd } from '../contexts/AdContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 // NOTE: This is a placeholder with static rates.
 // For a real app, you would fetch these rates from an API.
@@ -17,45 +19,73 @@ const staticRates = {
 
 type Currency = keyof typeof staticRates;
 
-const CurrencyConverter: React.FC<{initialState?: any}> = ({initialState}) => {
+const CurrencyConverter: React.FC<{initialState?: any; isPremium?: boolean}> = ({initialState, isPremium}) => {
   const [fromCurrency, setFromCurrency] = useState<Currency>('USD');
   const [toCurrency, setToCurrency] = useState<Currency>('INR');
   const [amount, setAmount] = useState('100');
   const [result, setResult] = useState('');
   const [shareText, setShareText] = useState('');
   const { addHistory } = useContext(HistoryContext);
+  const { fuel, consumeFuel } = useFuel();
+  const { shouldShowAd } = useAd();
+  const fuelCost = isPremium ? 2 : 1;
+
+  const [pendingResult, setPendingResult] = useState<any | null>(null);
+  const [showAd, setShowAd] = useState(false);
 
   useEffect(() => {
     if (initialState) {
         setFromCurrency(initialState.fromCurrency || 'USD');
         setToCurrency(initialState.toCurrency || 'INR');
         setAmount(initialState.amount || '100');
+        setResult('');
     }
   }, [initialState]);
 
-  useEffect(() => {
-    const amt = parseFloat(amount);
-    if (isNaN(amt)) {
-      setResult('');
-      return;
-    }
-    const rateFrom = staticRates[fromCurrency];
-    const rateTo = staticRates[toCurrency];
-    const convertedAmount = (amt / rateFrom) * rateTo;
-    const finalResult = convertedAmount.toFixed(2);
-    setResult(finalResult);
-    setShareText(`Currency Conversion:\n${amt} ${fromCurrency} = ${finalResult} ${toCurrency}`);
-  }, [amount, fromCurrency, toCurrency]);
-
-  const handleSaveHistory = () => {
-    if (amount && result) {
-      addHistory({
-        calculator: 'Currency Converter',
-        calculation: `${amount} ${fromCurrency} = ${result} ${toCurrency}`,
-        inputs: { fromCurrency, toCurrency, amount }
-      });
+  const handleConvert = () => {
+      const performConversion = () => {
+        const amt = parseFloat(amount);
+        if (isNaN(amt)) {
+          return null;
+        }
+        const rateFrom = staticRates[fromCurrency];
+        const rateTo = staticRates[toCurrency];
+        const convertedAmount = (amt / rateFrom) * rateTo;
+        const finalResult = convertedAmount.toFixed(2);
+        
+        setShareText(`Currency Conversion:\n${amt} ${fromCurrency} = ${finalResult} ${toCurrency}`);
+        addHistory({
+            calculator: 'Currency Converter',
+            calculation: `${amount} ${fromCurrency} = ${finalResult} ${toCurrency}`,
+            inputs: { fromCurrency, toCurrency, amount }
+        });
+        return finalResult;
+    };
+    
+    if (fuel >= fuelCost) {
+        consumeFuel(fuelCost);
+        const res = performConversion();
+        if (res) setResult(res);
+    } else {
+        const res = performConversion();
+        if (res) {
+            if (shouldShowAd(isPremium)) {
+                setPendingResult(res);
+                setShowAd(true);
+            } else {
+                setResult(res);
+            }
+        }
     }
   };
+  
+   const handleAdClose = () => {
+      if(pendingResult) {
+          setResult(pendingResult);
+          setPendingResult(null);
+      }
+      setShowAd(false);
+  }
 
   const handleSwap = () => {
       setFromCurrency(toCurrency);
@@ -66,6 +96,7 @@ const CurrencyConverter: React.FC<{initialState?: any}> = ({initialState}) => {
 
   return (
     <div className="space-y-6">
+       {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <div className="bg-yellow-500/20 text-yellow-300 p-3 rounded-lg text-sm">
         <strong>Note:</strong> Currency rates are static placeholders. For live rates, you would need to integrate a currency API service.
       </div>
@@ -89,11 +120,11 @@ const CurrencyConverter: React.FC<{initialState?: any}> = ({initialState}) => {
         </div>
       </div>
       <div className="text-center">
-        <button onClick={handleSaveHistory} className="bg-primary text-on-primary font-bold py-2 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
-            Save to History
+        <button onClick={handleConvert} className="bg-primary text-on-primary font-bold py-2 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            Convert
         </button>
       </div>
-      <ShareButton textToShare={shareText} />
+      {result && <ShareButton textToShare={shareText} />}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import HistoryExportGuide from './HistoryExportGuide';
 import { useFuel } from '../contexts/FuelContext';
 import PdfFuelModal from './PdfFuelModal';
 import RewardedAdModal from './RewardedAdModal';
+import AdsensePlaceholder from './AdsensePlaceholder';
 
 interface HistoryPanelProps {
   isOpen: boolean;
@@ -190,37 +191,40 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
                   <div key={date} className="mb-6">
                     <h3 className="text-sm font-semibold text-theme-secondary uppercase tracking-wider mb-2">{date}</h3>
                     <ul className="space-y-2">
-                      {entries.map((entry) => (
-                        <li key={entry.id} className="bg-theme-primary rounded-lg overflow-hidden">
-                          <div className="flex items-start p-3">
-                              <input 
-                                  type="checkbox" 
-                                  className="history-checkbox mr-3 mt-1"
-                                  checked={selectedIds.has(entry.id)}
-                                  onChange={() => handleToggleSelection(entry.id)}
-                              />
-                              <div className="flex-grow" onClick={() => onRestore(entry)}>
-                                  <p className="text-xs text-primary font-semibold cursor-pointer hover:underline">{entry.calculator}</p>
-                                  <p className="text-theme-primary break-words cursor-pointer">{entry.calculation}</p>
-                              </div>
-                              <button onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)} className="p-1 text-theme-secondary hover:text-primary">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${expandedId === entry.id ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                              </button>
-                          </div>
-                          {expandedId === entry.id && (
-                            <div className="bg-theme-secondary/50 p-3 text-xs space-y-1 border-t border-theme">
-                                <h4 className="font-bold text-theme-primary">Inputs:</h4>
-                                {entry.inputs && Object.keys(entry.inputs).length > 0 ? (
-                                    Object.entries(entry.inputs).map(([key, value]) => (
-                                        <div key={key} className="flex text-theme-secondary break-all">
-                                            <strong className="mr-2 flex-shrink-0">{key}:</strong> 
-                                            <span className="truncate">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
-                                        </div>
-                                    ))
-                                ) : <p className="text-theme-secondary">Not available.</p>}
+                      {entries.map((entry, index) => (
+                        <React.Fragment key={entry.id}>
+                          <li className="bg-theme-primary rounded-lg overflow-hidden">
+                            <div className="flex items-start p-3">
+                                <input 
+                                    type="checkbox" 
+                                    className="history-checkbox mr-3 mt-1"
+                                    checked={selectedIds.has(entry.id)}
+                                    onChange={() => handleToggleSelection(entry.id)}
+                                />
+                                <div className="flex-grow" onClick={() => onRestore(entry)}>
+                                    <p className="text-xs text-primary font-semibold cursor-pointer hover:underline">{entry.calculator}</p>
+                                    <p className="text-theme-primary break-words cursor-pointer">{entry.calculation}</p>
+                                </div>
+                                <button onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)} className="p-1 text-theme-secondary hover:text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${expandedId === entry.id ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                                </button>
                             </div>
-                          )}
-                        </li>
+                            {expandedId === entry.id && (
+                              <div className="bg-theme-secondary/50 p-3 text-xs space-y-1 border-t border-theme">
+                                  <h4 className="font-bold text-theme-primary">Inputs:</h4>
+                                  {entry.inputs && Object.keys(entry.inputs).length > 0 ? (
+                                      Object.entries(entry.inputs).map(([key, value]) => (
+                                          <div key={key} className="flex text-theme-secondary break-all">
+                                              <strong className="mr-2 flex-shrink-0">{key}:</strong> 
+                                              <span className="truncate">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                                          </div>
+                                      ))
+                                  ) : <p className="text-theme-secondary">Not available.</p>}
+                              </div>
+                            )}
+                          </li>
+                          {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
+                        </React.Fragment>
                       ))}
                     </ul>
                   </div>

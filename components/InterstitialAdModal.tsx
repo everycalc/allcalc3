@@ -6,15 +6,11 @@ interface InterstitialAdModalProps {
 
 const InterstitialAdModal: React.FC<InterstitialAdModalProps> = ({ onClose }) => {
   const [isSkippable, setIsSkippable] = useState(false);
-  const [isFilling, setIsFilling] = useState(false);
   const adContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    // Start the animation immediately on mount
-    setIsFilling(true);
 
-    // Make the button skippable after 5 seconds
     const timer = setTimeout(() => {
       setIsSkippable(true);
     }, 5000);
@@ -29,33 +25,32 @@ const InterstitialAdModal: React.FC<InterstitialAdModalProps> = ({ onClose }) =>
     const adContainer = adContainerRef.current;
     if (!adContainer) return;
 
-    // Dynamically create the ad slot to ensure a fresh one every time
-    const adSlot = document.createElement('ins');
-    adSlot.className = 'adsbygoogle';
-    adSlot.style.display = 'block';
-    adSlot.style.width = '100%';
-    adSlot.style.height = '100%';
-    adSlot.setAttribute('data-ad-client', 'ca-pub-2892214526865008');
-    adSlot.setAttribute('data-ad-slot', '7805870574');
-    adSlot.setAttribute('data-ad-format', 'auto');
-    adSlot.setAttribute('data-full-width-responsive', 'true');
+    // Use a small timeout to ensure the AdSense script is ready
+    const timeoutId = setTimeout(() => {
+      const adSlot = document.createElement('ins');
+      adSlot.className = 'adsbygoogle';
+      adSlot.style.display = 'block';
+      adSlot.style.width = '100%';
+      adSlot.style.height = '100%';
+      adSlot.setAttribute('data-ad-client', 'ca-pub-2892214526865008');
+      adSlot.setAttribute('data-ad-slot', '7805870574'); // Interstitial slot
+      adSlot.setAttribute('data-ad-format', 'auto');
+      adSlot.setAttribute('data-full-width-responsive', 'true');
+      adContainer.appendChild(adSlot);
 
-    adContainer.appendChild(adSlot);
-
-    // Push the ad
-    try {
-      // @ts-ignore
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("Interstitial ad push error:", e);
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (adContainer) {
-        adContainer.innerHTML = '';
+      try {
+        if ((window as any).adsbygoogle) {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } else {
+          adContainer.innerHTML = '<div class="text-center text-xs text-white/50 p-4 h-full flex items-center justify-center">Advertisement</div>';
+        }
+      } catch (e) {
+        console.error("Interstitial ad push error:", e);
+        adContainer.innerHTML = '<div class="text-center text-xs text-white/50 p-4 h-full flex items-center justify-center">Ad could not be displayed.</div>';
       }
-    };
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const buttonClasses = `
@@ -63,7 +58,6 @@ const InterstitialAdModal: React.FC<InterstitialAdModalProps> = ({ onClose }) =>
     hover:bg-white/20 disabled:cursor-not-allowed 
     disabled:text-white/40 disabled:bg-white/5
     skip-button-filling-animation
-    ${isFilling ? 'is-filling' : ''}
   `;
 
   return (
@@ -73,6 +67,7 @@ const InterstitialAdModal: React.FC<InterstitialAdModalProps> = ({ onClose }) =>
             onClick={onClose}
             disabled={!isSkippable}
             className={buttonClasses}
+            style={{ '--animation-duration': '5s' } as React.CSSProperties}
           >
             <span className="relative z-10">Skip Ad →</span>
          </button>

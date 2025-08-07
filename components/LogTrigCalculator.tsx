@@ -1,11 +1,11 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
-const LogTrigCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+const LogTrigCalculator: React.FC<{initialState?: any, isPremium?: boolean}> = ({initialState, isPremium}) => {
     const [input, setInput] = useState('90');
     const [result, setResult] = useState<string | null>(null);
     const [operation, setOperation] = useState('');
@@ -15,6 +15,8 @@ const LogTrigCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     const [shareText, setShareText] = useState('');
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -26,33 +28,44 @@ const LogTrigCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
     }, [initialState]);
 
     const handleCalculate = (op: string) => {
-        const value = parseFloat(input);
-        if (isNaN(value)) return;
+        const performCalculation = () => {
+            const value = parseFloat(input);
+            if (isNaN(value)) return null;
 
-        let res: number = 0;
-        let calcString = '';
+            let res: number = 0;
+            let calcString = '';
 
-        const trigValue = isDeg ? value * Math.PI / 180 : value;
+            const trigValue = isDeg ? value * Math.PI / 180 : value;
 
-        switch(op) {
-            case 'sin': res = Math.sin(trigValue); calcString = `sin(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
-            case 'cos': res = Math.cos(trigValue); calcString = `cos(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
-            case 'tan': res = Math.tan(trigValue); calcString = `tan(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
-            case 'log': res = Math.log10(value); calcString = `log(${input}) = ${parseFloat(res.toPrecision(10))}`; break;
-            case 'ln': res = Math.log(value); calcString = `ln(${input}) = ${parseFloat(res.toPrecision(10))}`; break;
-        }
+            switch(op) {
+                case 'sin': res = Math.sin(trigValue); calcString = `sin(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
+                case 'cos': res = Math.cos(trigValue); calcString = `cos(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
+                case 'tan': res = Math.tan(trigValue); calcString = `tan(${input}${isDeg ? '°':''}) = ${parseFloat(res.toPrecision(10))}`; break;
+                case 'log': res = Math.log10(value); calcString = `log(${input}) = ${parseFloat(res.toPrecision(10))}`; break;
+                case 'ln': res = Math.log(value); calcString = `ln(${input}) = ${parseFloat(res.toPrecision(10))}`; break;
+            }
 
-        const finalResult = parseFloat(res.toPrecision(10)).toString();
-        addHistory({ calculator: 'Logarithm & Trigonometry', calculation: calcString, inputs: { input, isDeg } });
-        setShareText(`Log/Trig Calculation:\n${calcString}`);
-        
-        if (shouldShowAd()) {
+            const finalResult = parseFloat(res.toPrecision(10)).toString();
+            addHistory({ calculator: 'Logarithm & Trigonometry', calculation: calcString, inputs: { input, isDeg } });
+            setShareText(`Log/Trig Calculation:\n${calcString}`);
             setOperation(op);
-            setPendingResult(finalResult);
-            setShowAd(true);
+            return finalResult;
+        };
+
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setOperation(op);
-            setResult(finalResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

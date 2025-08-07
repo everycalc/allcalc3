@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -7,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     emi: number;
@@ -42,6 +42,8 @@ const HomeLoanEMICalculator: React.FC<HomeLoanEMICalculatorProps> = ({ isPremium
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -55,48 +57,59 @@ const HomeLoanEMICalculator: React.FC<HomeLoanEMICalculatorProps> = ({ isPremium
     }, [initialState]);
 
     const handleCalculate = () => {
-        const P = parseFloat(amount);
-        const annualRate = parseFloat(rate) / 100;
-        const t = parseFloat(tenure);
-        const monthlyIncome = parseFloat(income);
-        const existingEmi = parseFloat(otherEmi);
+        const performCalculation = () => {
+            const P = parseFloat(amount);
+            const annualRate = parseFloat(rate) / 100;
+            const t = parseFloat(tenure);
+            const monthlyIncome = parseFloat(income);
+            const existingEmi = parseFloat(otherEmi);
 
-        if (isNaN(P) || isNaN(annualRate) || isNaN(t) || P <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(P) || isNaN(annualRate) || isNaN(t) || P <= 0) {
+                return null;
+            }
 
-        const r = annualRate / 12;
-        const n = t * 12;
+            const r = annualRate / 12;
+            const n = t * 12;
 
-        const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-        const totalPayment = emi * n;
-        const totalInterest = totalPayment - P;
+            const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const totalPayment = emi * n;
+            const totalInterest = totalPayment - P;
 
-        let affordabilityText = '';
-        let isAffordable: boolean | undefined = undefined;
-        if (!isNaN(monthlyIncome) && monthlyIncome > 0) {
-            const totalEmi = emi + (isNaN(existingEmi) ? 0 : existingEmi);
-            const emiToIncomeRatio = (totalEmi / monthlyIncome);
-            isAffordable = emiToIncomeRatio <= 0.5; // General rule: total EMIs < 50% of income
-            affordabilityText = `\nAffordability: ${isAffordable ? 'This loan seems affordable.' : 'This loan may be a stretch.'}`;
-        }
+            let affordabilityText = '';
+            let isAffordable: boolean | undefined = undefined;
+            if (!isNaN(monthlyIncome) && monthlyIncome > 0) {
+                const totalEmi = emi + (isNaN(existingEmi) ? 0 : existingEmi);
+                const emiToIncomeRatio = (totalEmi / monthlyIncome);
+                isAffordable = emiToIncomeRatio <= 0.5; // General rule: total EMIs < 50% of income
+                affordabilityText = `\nAffordability: ${isAffordable ? 'This loan seems affordable.' : 'This loan may be a stretch.'}`;
+            }
+            
+            const calculatedResult = { emi, totalInterest, totalPayment, isAffordable };
+            
+            addHistory({
+                calculator: 'Home Loan EMI & Affordability',
+                calculation: `EMI for ${formatCurrency(P)} -> ${formatCurrency(emi)}/mo`,
+                inputs: { amount, rate, tenure, income, otherEmi }
+            });
+            
+            setShareText(`Home Loan EMI Calculation:\n- Loan Amount: ${formatCurrency(P)}\n- Interest Rate: ${rate}%\n- Tenure: ${tenure} years\n\nResult:\n- Monthly EMI: ${formatCurrency(emi)}\n- Total Interest: ${formatCurrency(totalInterest)}${affordabilityText}`);
+            return calculatedResult;
+        };
         
-        const calculatedResult = { emi, totalInterest, totalPayment, isAffordable };
-        
-        addHistory({
-            calculator: 'Home Loan EMI & Affordability',
-            calculation: `EMI for ${formatCurrency(P)} -> ${formatCurrency(emi)}/mo`,
-            inputs: { amount, rate, tenure, income, otherEmi }
-        });
-        
-        setShareText(`Home Loan EMI Calculation:\n- Loan Amount: ${formatCurrency(P)}\n- Interest Rate: ${rate}%\n- Tenure: ${tenure} years\n\nResult:\n- Monthly EMI: ${formatCurrency(emi)}\n- Total Interest: ${formatCurrency(totalInterest)}${affordabilityText}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

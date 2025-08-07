@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 type DepositType = 'FD' | 'RD';
 
@@ -44,6 +44,8 @@ const FDRDCalculator: React.FC<FDRDCalculatorProps> = ({ isPremium, initialState
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -57,47 +59,58 @@ const FDRDCalculator: React.FC<FDRDCalculatorProps> = ({ isPremium, initialState
     }, [initialState]);
 
     const handleCalculate = () => {
-        const P = parseFloat(investment);
-        const r = parseFloat(rate) / 100;
-        const t = parseFloat(tenure);
-        const n = parseFloat(compounding);
+        const performCalculation = () => {
+            const P = parseFloat(investment);
+            const r = parseFloat(rate) / 100;
+            const t = parseFloat(tenure);
+            const n = parseFloat(compounding);
 
-        if (isNaN(P) || isNaN(r) || isNaN(t) || P <= 0 || r < 0 || t <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(P) || isNaN(r) || isNaN(t) || P <= 0 || r < 0 || t <= 0) {
+                return null;
+            }
 
-        let maturityValue = 0;
-        let totalInvestment = 0;
+            let maturityValue = 0;
+            let totalInvestment = 0;
 
-        if (depositType === 'FD') {
-            maturityValue = P * Math.pow(1 + r / n, n * t);
-            totalInvestment = P;
-        } else { // RD
-            const months = t * 12;
-            totalInvestment = P * months;
-            const i = r / 12; // Monthly rate
-            maturityValue = P * ((Math.pow(1 + i, months) - 1) / i);
-        }
+            if (depositType === 'FD') {
+                maturityValue = P * Math.pow(1 + r / n, n * t);
+                totalInvestment = P;
+            } else { // RD
+                const months = t * 12;
+                totalInvestment = P * months;
+                const i = r / 12; // Monthly rate
+                maturityValue = P * ((Math.pow(1 + i, months) - 1) / i);
+            }
 
-        const interestEarned = maturityValue - totalInvestment;
-        const calculatedResult = { totalInvestment, interestEarned, maturityValue };
-        
-        const calculationString = `${depositType} of ${formatCurrency(P)}${depositType === 'RD' ? '/mo' : ''} @ ${rate}% for ${t} yrs -> ${formatCurrency(maturityValue)}`;
+            const interestEarned = maturityValue - totalInvestment;
+            const calculatedResult = { totalInvestment, interestEarned, maturityValue };
+            
+            const calculationString = `${depositType} of ${formatCurrency(P)}${depositType === 'RD' ? '/mo' : ''} @ ${rate}% for ${t} yrs -> ${formatCurrency(maturityValue)}`;
 
-        addHistory({
-            calculator: 'FD/RD Calculator',
-            calculation: calculationString,
-            inputs: { depositType, investment, rate, tenure, compounding: depositType === 'FD' ? compounding : '12' }
-        });
-        
-        setShareText(`${depositType} Calculation:\n- Investment: ${formatCurrency(P)}${depositType === 'RD' ? '/mo' : ''}\n- Rate: ${rate}%\n- Tenure: ${t} years\n\nResult:\n- Maturity Value: ${formatCurrency(maturityValue)}\n- Total Interest: ${formatCurrency(interestEarned)}`);
+            addHistory({
+                calculator: 'FD/RD Calculator',
+                calculation: calculationString,
+                inputs: { depositType, investment, rate, tenure, compounding: depositType === 'FD' ? compounding : '12' }
+            });
+            
+            setShareText(`${depositType} Calculation:\n- Investment: ${formatCurrency(P)}${depositType === 'RD' ? '/mo' : ''}\n- Rate: ${rate}%\n- Tenure: ${t} years\n\nResult:\n- Maturity Value: ${formatCurrency(maturityValue)}\n- Total Interest: ${formatCurrency(interestEarned)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

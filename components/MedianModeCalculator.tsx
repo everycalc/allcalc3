@@ -1,16 +1,21 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     median: number;
     mode: number[] | string;
 }
 
-const MedianModeCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+interface MedianModeCalculatorProps {
+    initialState?: any;
+    isPremium?: boolean;
+}
+
+const MedianModeCalculator: React.FC<MedianModeCalculatorProps> = ({initialState, isPremium}) => {
     const [numbers, setNumbers] = useState('1, 2, 2, 3, 4, 5, 5, 5, 6');
     const [result, setResult] = useState<Result | null>(null);
     const [pendingResult, setPendingResult] = useState<any | null>(null);
@@ -18,6 +23,8 @@ const MedianModeCalculator: React.FC<{initialState?: any}> = ({initialState}) =>
     const [shareText, setShareText] = useState('');
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -27,42 +34,53 @@ const MedianModeCalculator: React.FC<{initialState?: any}> = ({initialState}) =>
     }, [initialState]);
 
     const handleCalculate = () => {
-        const numArray = numbers.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n)).sort((a, b) => a - b);
-        if (numArray.length === 0) {
-            setResult(null);
-            return;
-        }
+        const performCalculation = () => {
+            const numArray = numbers.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n)).sort((a, b) => a - b);
+            if (numArray.length === 0) {
+                return null;
+            }
 
-        // Median
-        const mid = Math.floor(numArray.length / 2);
-        const median = numArray.length % 2 !== 0 ? numArray[mid] : (numArray[mid - 1] + numArray[mid]) / 2;
+            // Median
+            const mid = Math.floor(numArray.length / 2);
+            const median = numArray.length % 2 !== 0 ? numArray[mid] : (numArray[mid - 1] + numArray[mid]) / 2;
 
-        // Mode
-        const frequency: {[key: number]: number} = {};
-        let maxFreq = 0;
-        numArray.forEach(n => {
-            frequency[n] = (frequency[n] || 0) + 1;
-            if (frequency[n] > maxFreq) maxFreq = frequency[n];
-        });
+            // Mode
+            const frequency: {[key: number]: number} = {};
+            let maxFreq = 0;
+            numArray.forEach(n => {
+                frequency[n] = (frequency[n] || 0) + 1;
+                if (frequency[n] > maxFreq) maxFreq = frequency[n];
+            });
 
-        let mode: number[] | string;
-        if (maxFreq > 1) {
-            mode = Object.keys(frequency).map(Number).filter(n => frequency[n] === maxFreq);
-        } else {
-            mode = 'No mode';
-        }
+            let mode: number[] | string;
+            if (maxFreq > 1) {
+                mode = Object.keys(frequency).map(Number).filter(n => frequency[n] === maxFreq);
+            } else {
+                mode = 'No mode';
+            }
+            
+            const modeString = Array.isArray(mode) ? mode.join(', ') : mode;
+            const calculatedResult = { median, mode };
+            addHistory({ calculator: 'Median & Mode Calculator', calculation: `Median: ${median}, Mode: ${modeString}`, inputs: { numbers } });
+
+            setShareText(`Median & Mode Calculation:\n- Numbers: ${numbers}\n\nResult:\n- Median: ${median}\n- Mode: ${modeString}`);
+            return calculatedResult;
+        };
         
-        const modeString = Array.isArray(mode) ? mode.join(', ') : mode;
-        const calculatedResult = { median, mode };
-        addHistory({ calculator: 'Median & Mode Calculator', calculation: `Median: ${median}, Mode: ${modeString}`, inputs: { numbers } });
-
-        setShareText(`Median & Mode Calculation:\n- Numbers: ${numbers}\n\nResult:\n- Median: ${median}\n- Mode: ${modeString}`);
-
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

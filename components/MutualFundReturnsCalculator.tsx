@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -8,6 +7,7 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 type InvestmentType = 'LumpSum' | 'SIP';
 
@@ -42,6 +42,8 @@ const MutualFundReturnsCalculator: React.FC<MutualFundReturnsCalculatorProps> = 
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -54,44 +56,55 @@ const MutualFundReturnsCalculator: React.FC<MutualFundReturnsCalculatorProps> = 
     }, [initialState]);
 
     const handleCalculate = () => {
-        const P = parseFloat(amount);
-        const r = parseFloat(rate) / 100;
-        const t = parseFloat(tenure);
+        const performCalculation = () => {
+            const P = parseFloat(amount);
+            const r = parseFloat(rate) / 100;
+            const t = parseFloat(tenure);
 
-        if (isNaN(P) || isNaN(r) || isNaN(t) || P <= 0 || r <= 0 || t <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(P) || isNaN(r) || isNaN(t) || P <= 0 || r <= 0 || t <= 0) {
+                return null;
+            }
 
-        let futureValue = 0;
-        let totalInvestment = 0;
+            let futureValue = 0;
+            let totalInvestment = 0;
 
-        if (investmentType === 'LumpSum') {
-            futureValue = P * Math.pow(1 + r, t);
-            totalInvestment = P;
-        } else { // SIP
-            const n = t * 12;
-            const i = r / 12;
-            futureValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
-            totalInvestment = P * n;
-        }
+            if (investmentType === 'LumpSum') {
+                futureValue = P * Math.pow(1 + r, t);
+                totalInvestment = P;
+            } else { // SIP
+                const n = t * 12;
+                const i = r / 12;
+                futureValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                totalInvestment = P * n;
+            }
 
-        const estimatedReturns = futureValue - totalInvestment;
-        const calculatedResult = { totalInvestment, estimatedReturns, futureValue };
+            const estimatedReturns = futureValue - totalInvestment;
+            const calculatedResult = { totalInvestment, estimatedReturns, futureValue };
 
-        addHistory({
-            calculator: 'Mutual Fund Returns Calculator',
-            calculation: `${investmentType} of ${formatCurrency(P)} @ ${rate}% for ${t} yrs -> ${formatCurrency(futureValue)}`,
-            inputs: { investmentType, amount, rate, tenure }
-        });
-        
-        setShareText(`Mutual Fund Calculation (${investmentType}):\n- ${investmentType === 'SIP' ? 'Monthly' : 'Total'} Investment: ${formatCurrency(P)}\n- Expected Return: ${rate}% p.a.\n- Period: ${t} years\n\nResult:\n- Total Investment: ${formatCurrency(totalInvestment)}\n- Estimated Returns: ${formatCurrency(estimatedReturns)}\n- Future Value: ${formatCurrency(futureValue)}`);
+            addHistory({
+                calculator: 'Mutual Fund Returns Calculator',
+                calculation: `${investmentType} of ${formatCurrency(P)} @ ${rate}% for ${t} yrs -> ${formatCurrency(futureValue)}`,
+                inputs: { investmentType, amount, rate, tenure }
+            });
+            
+            setShareText(`Mutual Fund Calculation (${investmentType}):\n- ${investmentType === 'SIP' ? 'Monthly' : 'Total'} Investment: ${formatCurrency(P)}\n- Expected Return: ${rate}% p.a.\n- Period: ${t} years\n\nResult:\n- Total Investment: ${formatCurrency(totalInvestment)}\n- Estimated Returns: ${formatCurrency(estimatedReturns)}\n- Future Value: ${formatCurrency(futureValue)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

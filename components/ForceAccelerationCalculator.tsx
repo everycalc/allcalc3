@@ -1,13 +1,13 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 type CalculateType = 'force' | 'mass' | 'acceleration';
 
-const ForceAccelerationCalculator: React.FC<{initialState?: any}> = ({initialState}) => {
+const ForceAccelerationCalculator: React.FC<{initialState?: any; isPremium?: boolean}> = ({initialState, isPremium}) => {
     const [calculate, setCalculate] = useState<CalculateType>('force');
     const [force, setForce] = useState('100');
     const [mass, setMass] = useState('10');
@@ -18,6 +18,8 @@ const ForceAccelerationCalculator: React.FC<{initialState?: any}> = ({initialSta
     const [shareText, setShareText] = useState('');
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -30,47 +32,58 @@ const ForceAccelerationCalculator: React.FC<{initialState?: any}> = ({initialSta
     }, [initialState]);
 
     const handleCalculate = () => {
-        const f = parseFloat(force);
-        const m = parseFloat(mass);
-        const a = parseFloat(acceleration);
-        let res: number | null = null;
-        let historyCalc = '';
+        const performCalculation = () => {
+            const f = parseFloat(force);
+            const m = parseFloat(mass);
+            const a = parseFloat(acceleration);
+            let res: number | null = null;
+            let historyCalc = '';
 
-        switch (calculate) {
-            case 'force':
-                if (!isNaN(m) && !isNaN(a)) {
-                    res = m * a;
-                    historyCalc = `Force = ${m}kg * ${a}m/s² = ${res.toFixed(2)} N`;
-                } break;
-            case 'mass':
-                if (!isNaN(f) && !isNaN(a) && a !== 0) {
-                    res = f / a;
-                    historyCalc = `Mass = ${f}N / ${a}m/s² = ${res.toFixed(2)} kg`;
-                } break;
-            case 'acceleration':
-                if (!isNaN(f) && !isNaN(m) && m !== 0) {
-                    res = f / m;
-                    historyCalc = `Acceleration = ${f}N / ${m}kg = ${res.toFixed(2)} m/s²`;
-                } break;
-        }
-
-        if (res !== null) {
-            addHistory({ calculator: 'Force & Acceleration', calculation: historyCalc, inputs: { calculate, force, mass, acceleration } });
-            setShareText(`Physics Calculation (F=ma):\n${historyCalc}`);
-            if (shouldShowAd()) {
-                setPendingResult(res);
-                setShowAd(true);
-            } else {
-                setResult(res.toFixed(4));
+            switch (calculate) {
+                case 'force':
+                    if (!isNaN(m) && !isNaN(a)) {
+                        res = m * a;
+                        historyCalc = `Force = ${m}kg * ${a}m/s² = ${res.toFixed(2)} N`;
+                    } break;
+                case 'mass':
+                    if (!isNaN(f) && !isNaN(a) && a !== 0) {
+                        res = f / a;
+                        historyCalc = `Mass = ${f}N / ${a}m/s² = ${res.toFixed(2)} kg`;
+                    } break;
+                case 'acceleration':
+                    if (!isNaN(f) && !isNaN(m) && m !== 0) {
+                        res = f / m;
+                        historyCalc = `Acceleration = ${f}N / ${m}kg = ${res.toFixed(2)} m/s²`;
+                    } break;
             }
+             if (res !== null) {
+                addHistory({ calculator: 'Force & Acceleration', calculation: historyCalc, inputs: { calculate, force, mass, acceleration } });
+                setShareText(`Physics Calculation (F=ma):\n${historyCalc}`);
+                return res.toFixed(4);
+            }
+            return null;
+        };
+
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(null);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     
     const handleAdClose = () => {
         if (pendingResult !== null) {
-            setResult(pendingResult.toFixed(4));
+            setResult(pendingResult);
             setPendingResult(null);
         }
         setShowAd(false);

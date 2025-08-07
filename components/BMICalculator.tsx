@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
 import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface BMICalculatorState {
     unit: 'metric' | 'imperial';
@@ -28,6 +28,8 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ isPremium, initialState }
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -44,42 +46,53 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ isPremium, initialState }
     }
 
     const calculateBmi = () => {
-        const w = parseFloat(weight);
-        const h = parseFloat(height);
+        const performCalculation = () => {
+            const w = parseFloat(weight);
+            const h = parseFloat(height);
 
-        if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+                return null;
+            }
 
-        let bmiValue = 0;
-        if (unit === 'metric') { // weight in kg, height in cm
-            bmiValue = w / Math.pow(h / 100, 2);
-        } else { // weight in lbs, height in inches
-            bmiValue = (w / Math.pow(h, 2)) * 703;
-        }
+            let bmiValue = 0;
+            if (unit === 'metric') { // weight in kg, height in cm
+                bmiValue = w / Math.pow(h / 100, 2);
+            } else { // weight in lbs, height in inches
+                bmiValue = (w / Math.pow(h, 2)) * 703;
+            }
 
-        let bmiCategory = 'N/A';
-        if (bmiValue < 18.5) bmiCategory = 'Underweight';
-        else if (bmiValue < 25) bmiCategory = 'Normal weight';
-        else if (bmiValue < 30) bmiCategory = 'Overweight';
-        else bmiCategory = 'Obesity';
+            let bmiCategory = 'N/A';
+            if (bmiValue < 18.5) bmiCategory = 'Underweight';
+            else if (bmiValue < 25) bmiCategory = 'Normal weight';
+            else if (bmiValue < 30) bmiCategory = 'Overweight';
+            else bmiCategory = 'Obesity';
 
-        const calculatedResult = { bmi: bmiValue, category: bmiCategory };
+            const calculatedResult = { bmi: bmiValue, category: bmiCategory };
 
-        addHistory({
-            calculator: 'BMI Calculator',
-            calculation: `BMI: ${bmiValue.toFixed(1)} (${bmiCategory})`,
-            inputs: { unit, weight, height }
-        });
-        
-        setShareText(`BMI Calculation:\n- Weight: ${w} ${unit === 'metric' ? 'kg' : 'lbs'}\n- Height: ${h} ${unit === 'metric' ? 'cm' : 'in'}\n\nResult:\n- BMI: ${bmiValue.toFixed(1)}\n- Category: ${bmiCategory}`);
+            addHistory({
+                calculator: 'BMI Calculator',
+                calculation: `BMI: ${bmiValue.toFixed(1)} (${bmiCategory})`,
+                inputs: { unit, weight, height }
+            });
+            
+            setShareText(`BMI Calculation:\n- Weight: ${w} ${unit === 'metric' ? 'kg' : 'lbs'}\n- Height: ${h} ${unit === 'metric' ? 'cm' : 'in'}\n\nResult:\n- BMI: ${bmiValue.toFixed(1)}\n- Category: ${bmiCategory}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
 

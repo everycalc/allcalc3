@@ -43,7 +43,6 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
     const { formatCurrency, currencySymbol } = useTheme();
     const { fuel, consumeFuel, addFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -135,71 +134,12 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
         setShowAd(false);
     };
 
-    const generatePdf = async () => {
-        if (!result) return;
-        
-        const pdf = new jsPDF();
-        
-        pdf.setFontSize(18);
-        pdf.text('Loan Calculation Report', 14, 22);
-        
-        pdf.setFontSize(11);
-        pdf.setTextColor(100);
-        pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
-        
-        pdf.line(14, 32, 196, 32);
-
-        pdf.setFontSize(12);
-        pdf.setTextColor(0);
-        pdf.text('Inputs:', 14, 40);
-        pdf.setFontSize(10);
-        pdf.text(`Loan Amount: ${formatCurrency(parseFloat(principal))}`, 20, 48);
-        pdf.text(`Annual Interest Rate: ${interestRate}%`, 20, 54);
-        pdf.text(`Loan Term: ${loanTerm} years`, 20, 60);
-
-        pdf.line(14, 70, 196, 70);
-
-        pdf.setFontSize(12);
-        pdf.text('Results:', 14, 78);
-        pdf.setFontSize(10);
-        pdf.text(`Monthly Payment (EMI): ${formatCurrency(result.monthlyPayment)}`, 20, 86);
-        pdf.text(`Total Interest Paid: ${formatCurrency(result.totalInterest)}`, 20, 92);
-        pdf.text(`Total Payment (Principal + Interest): ${formatCurrency(result.totalPayment)}`, 20, 98);
-
-        const pieChartElement = document.getElementById('pdf-pie-chart');
-        if (pieChartElement) {
-            const canvas = await html2canvas(pieChartElement, { backgroundColor: null });
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 14, 110, 80, 80);
-        }
-
-        pdf.line(14, 200, 196, 200);
-        pdf.setFontSize(12);
-        pdf.text('Brief Explanation:', 14, 208);
-        pdf.setFontSize(10);
-        const explanationText = `The monthly payment (EMI) of ${formatCurrency(result.monthlyPayment)} is the fixed amount you will pay each month for ${loanTerm} years. Over the life of the loan, you will pay a total of ${formatCurrency(result.totalInterest)} in interest, making the total repayment ${formatCurrency(result.totalPayment)}.`;
-        const splitText = pdf.splitTextToSize(explanationText, 180);
-        pdf.text(splitText, 14, 214);
-        
-        pdf.save(`Loan-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!result) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
-    
     const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
+            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={5} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
             {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {isExplainModalOpen && result && (
                 <ExplanationModal
@@ -266,13 +206,7 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
                            Explain
                         </button>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <ShareButton textToShare={shareText} />
-                        <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
-                        </button>
-                    </div>
+                    <ShareButton textToShare={shareText} />
                 </div>
             )}
              {result && showSchedule && (

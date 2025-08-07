@@ -8,10 +8,6 @@ import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
 import { useFuel } from '../contexts/FuelContext';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 // Interfaces for cost items
 interface MaterialItem { id: string; name: string; marketPrice: string; packageSize: string; usedAmount: string; }
@@ -40,18 +36,15 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     const [unitsProduced, setUnitsProduced] = useState('100');
     const [profitMargin, setProfitMargin] = useState('50');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
 
     const { addHistory } = useContext(HistoryContext);
     const { formatCurrency } = useTheme();
     const { shouldShowAd } = useAd();
-    const { fuel, consumeFuel, addFuel } = useFuel();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     const [showAd, setShowAd] = useState(false);
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -114,6 +107,14 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     }, [materials, labor, packaging, overheads, unitsProduced, profitMargin]);
     
     const saveAction = () => {
+        if (fuel < fuelCost) {
+            if (shouldShowAd(isPremium)) {
+                 setPendingAction(() => saveAction);
+                 setShowAd(true);
+            }
+            return;
+        }
+        consumeFuel(fuelCost);
         addHistory({
             calculator: 'Product Cost Calculator',
             calculation: `${productName}: Rec. Price ${formatCurrency(calculations.recommendedPrice)}`,
@@ -125,12 +126,7 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     };
 
     const handleSaveToHistory = () => {
-        if (shouldShowAd(isPremium)) {
-            setPendingAction(() => saveAction);
-            setShowAd(true);
-        } else {
-            saveAction();
-        }
+        saveAction();
     };
 
     const handleAdClose = () => {
@@ -142,52 +138,6 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     const shareText = useMemo(() => {
         return `Cost Analysis for "${productName}":\n- Cost Per Unit: ${formatCurrency(calculations.totalCostPerUnit)}\n- Recommended Price (${profitMargin}% Margin): ${formatCurrency(calculations.recommendedPrice)}\n- Profit Per Unit: ${formatCurrency(calculations.profitPerUnit)}`;
     }, [productName, calculations, profitMargin, formatCurrency]);
-
-    const generatePdf = async () => {
-        const doc = new jsPDF();
-        let y = 15;
-    
-        doc.setFontSize(18); doc.text(`Cost Report for ${productName}`, 14, y); y += 10;
-        
-        doc.setFontSize(12); doc.text('Summary Inputs', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Units Produced: ${unitsProduced}`, 16, y); y += 5;
-        doc.text(`- Desired Profit Margin: ${profitMargin}%`, 16, y); y += 10;
-
-        doc.setFontSize(12); doc.text('Cost Breakdown', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Material Cost / Unit: ${formatCurrency(calculations.totalMaterialCost)}`, 16, y); y+=5;
-        doc.text(`- Labor & Packaging / Unit: ${formatCurrency(calculations.totalLaborCost + calculations.totalPackagingCost)}`, 16, y); y+=5;
-        doc.text(`- Overhead Cost / Unit: ${formatCurrency(calculations.overheadCostPerUnit)}`, 16, y); y+=5;
-        doc.setFont('helvetica', 'bold');
-        doc.text(`- Total Cost / Unit: ${formatCurrency(calculations.totalCostPerUnit)}`, 16, y); y+=10;
-        doc.setFont('helvetica', 'normal');
-        
-        const pieChartElement = document.getElementById('product-cost-pie-chart');
-        if (pieChartElement) {
-            const canvas = await html2canvas(pieChartElement, { backgroundColor: null });
-            const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 14, y, 120, 60);
-            y += 70;
-        }
-
-        doc.setFontSize(12); doc.text('Pricing & Profit', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Recommended Price / Unit: ${formatCurrency(calculations.recommendedPrice)}`, 16, y); y+=5;
-        doc.text(`- Profit / Unit: ${formatCurrency(calculations.profitPerUnit)}`, 16, y); y+=5;
-        doc.text(`- Total Profit (for batch): ${formatCurrency(calculations.totalProfit)}`, 16, y); y+=5;
-
-        doc.save(`Product-Cost-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
 
 
     const renderCostSection = <T extends {id: string, name: string}>(
@@ -219,8 +169,6 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {isExplainModalOpen && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -314,10 +262,6 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
                  <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                     Explain
-                </button>
-                <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download PDF
                 </button>
                 <ShareButton textToShare={shareText} />
             </div>

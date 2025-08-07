@@ -7,6 +7,7 @@ import { HistoryEntry } from '../contexts/HistoryContext';
 import { calculatorsData } from '../data/calculators';
 import Logo from './Logo';
 import CalculatorCarousel from './CalculatorCarousel';
+import VoiceInputButton from './VoiceInputButton';
 
 
 interface HomePageProps {
@@ -180,7 +181,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                     <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
                     {renderCalculators(category)}
                 </section>
-                {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
+                {(index + 1) % 2 === 0 && <AdsensePlaceholder />}
             </React.Fragment>
         ));
     };
@@ -209,13 +210,18 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                 {isSearchVisible && (
                      <div ref={searchContainerRef} className="bg-theme-secondary/80 backdrop-blur-sm p-4 rounded-xl shadow sticky top-20 z-10 mb-6 animate-fade-in-down">
                         <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                            <input
-                                type="text"
-                                placeholder="Search for a calculator..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-theme-primary text-theme-primary rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition"
-                            />
+                            <div className="relative w-full">
+                                <input
+                                    type="text"
+                                    placeholder="Search for a calculator..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-theme-primary text-theme-primary rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition pr-12"
+                                />
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                                     <VoiceInputButton onTranscript={setSearchQuery} />
+                                </div>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 <div className="relative" ref={filterRef}>
                                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="p-3 bg-theme-primary rounded-md hover:bg-theme-tertiary">

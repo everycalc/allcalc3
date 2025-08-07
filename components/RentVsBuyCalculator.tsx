@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -7,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useFuel } from '../contexts/FuelContext';
 
 interface Result {
     totalRentCost: number;
@@ -44,6 +44,8 @@ const RentVsBuyCalculator: React.FC<RentVsBuyCalculatorProps> = ({ isPremium, in
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -64,44 +66,55 @@ const RentVsBuyCalculator: React.FC<RentVsBuyCalculatorProps> = ({ isPremium, in
     };
 
     const handleCalculate = () => {
-        const propertyPrice = parseFloat(inputs.propertyPrice);
-        const downPayment = parseFloat(inputs.downPayment);
-        const P_loan = propertyPrice - downPayment;
-        const annualRate = parseFloat(inputs.interestRate) / 100;
-        const t_loan = parseFloat(inputs.loanTerm);
-        const monthlyRent = parseFloat(inputs.monthlyRent);
-        const comparisonYears = parseFloat(inputs.comparisonYears);
+        const performCalculation = () => {
+            const propertyPrice = parseFloat(inputs.propertyPrice);
+            const downPayment = parseFloat(inputs.downPayment);
+            const P_loan = propertyPrice - downPayment;
+            const annualRate = parseFloat(inputs.interestRate) / 100;
+            const t_loan = parseFloat(inputs.loanTerm);
+            const monthlyRent = parseFloat(inputs.monthlyRent);
+            const comparisonYears = parseFloat(inputs.comparisonYears);
 
-        if (isNaN(P_loan) || isNaN(annualRate) || isNaN(t_loan) || isNaN(monthlyRent) || isNaN(comparisonYears) || P_loan < 0) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(P_loan) || isNaN(annualRate) || isNaN(t_loan) || isNaN(monthlyRent) || isNaN(comparisonYears) || P_loan < 0) {
+                return null;
+            }
 
-        // Rent calculation
-        const totalRentCost = monthlyRent * 12 * comparisonYears;
+            // Rent calculation
+            const totalRentCost = monthlyRent * 12 * comparisonYears;
 
-        // Buy calculation
-        const r_monthly = annualRate / 12;
-        const n_loan = t_loan * 12;
-        const emi = (P_loan * r_monthly * Math.pow(1 + r_monthly, n_loan)) / (Math.pow(1 + r_monthly, n_loan) - 1);
-        const totalEMIPaid = emi * Math.min(n_loan, comparisonYears * 12);
-        const totalBuyCost = downPayment + totalEMIPaid;
-        
-        const calculatedResult = { totalRentCost, totalBuyCost };
-        
-        addHistory({
-            calculator: 'Rent vs Buy Calculator',
-            calculation: `Rent vs Buy over ${comparisonYears} years`,
-            inputs: inputs
-        });
-        
-        setShareText(`Rent vs Buy Comparison (${comparisonYears} years):\n\nBuying:\n- Property Price: ${formatCurrency(propertyPrice)}\n- Down Payment: ${formatCurrency(downPayment)}\n- Total Cost (Buy): ${formatCurrency(totalBuyCost)}\n\nRenting:\n- Monthly Rent: ${formatCurrency(monthlyRent)}\n- Total Cost (Rent): ${formatCurrency(totalRentCost)}`);
+            // Buy calculation
+            const r_monthly = annualRate / 12;
+            const n_loan = t_loan * 12;
+            const emi = (P_loan * r_monthly * Math.pow(1 + r_monthly, n_loan)) / (Math.pow(1 + r_monthly, n_loan) - 1);
+            const totalEMIPaid = emi * Math.min(n_loan, comparisonYears * 12);
+            const totalBuyCost = downPayment + totalEMIPaid;
+            
+            const calculatedResult = { totalRentCost, totalBuyCost };
+            
+            addHistory({
+                calculator: 'Rent vs Buy Calculator',
+                calculation: `Rent vs Buy over ${comparisonYears} years`,
+                inputs: inputs
+            });
+            
+            setShareText(`Rent vs Buy Comparison (${comparisonYears} years):\n\nBuying:\n- Property Price: ${formatCurrency(propertyPrice)}\n- Down Payment: ${formatCurrency(downPayment)}\n- Total Cost (Buy): ${formatCurrency(totalBuyCost)}\n\nRenting:\n- Monthly Rent: ${formatCurrency(monthlyRent)}\n- Total Cost (Rent): ${formatCurrency(totalRentCost)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

@@ -11,8 +11,6 @@ import { useFuel } from '../contexts/FuelContext';
 import InsufficientFuelModal from './InsufficientFuelModal';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
 
 const InputField: React.FC<{ name: string, label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, unit: string, tooltip: string }> = ({ name, label, value, onChange, unit, tooltip }) => {
     const { currencySymbol } = useTheme();
@@ -60,15 +58,12 @@ const ECommerceProfitCalculator: React.FC<{initialState?: any, isPremium?: boole
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const [showInsufficientFuelModal, setShowInsufficientFuelModal] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
     
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency } = useTheme();
-    const { fuel, consumeFuel, setFuel, addFuel } = useFuel();
+    const { fuel, consumeFuel, setFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -209,63 +204,10 @@ const ECommerceProfitCalculator: React.FC<{initialState?: any, isPremium?: boole
         setPendingResult(calculations); // The result is ready, just needs to be displayed after ad
         setShowAd(true);
     };
-    
-    const generatePdf = async () => {
-        if (!result) return;
-        const doc = new jsPDF();
-        let y = 15;
-    
-        doc.setFontSize(18); doc.text('E-commerce Profit Report', 14, y); y += 10;
-        
-        doc.setFontSize(12); doc.text('Inputs', 14, y); y += 6;
-        doc.setFontSize(10);
-        Object.entries(inputs).forEach(([key, value]) => {
-            doc.text(`- ${key}: ${value}`, 16, y); y += 5;
-        });
-    
-        y += 5; doc.line(14, y, 196, y); y += 10;
-    
-        doc.setFontSize(12); doc.text('Results per Order', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Blended Profit: ${formatCurrency(result.blendedProfit)}`, 16, y); y += 5;
-        doc.text(`- Net Margin: ${result.netMargin.toFixed(2)}%`, 16, y); y += 5;
-        doc.text(`- Profit on Delivered Order: ${formatCurrency(result.profitOnDelivered)}`, 16, y); y += 5;
-        doc.text(`- Loss on RTO Order: ${formatCurrency(result.lossOnRto)}`, 16, y); y += 10;
-        
-        const pieChartElement = document.getElementById('profit-pie-chart');
-        if (pieChartElement) {
-            const canvas = await html2canvas(pieChartElement, { backgroundColor: null });
-            const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 14, y, 120, 60);
-            y += 70;
-        }
-
-        if(scenarioCalculations) {
-            doc.setFontSize(12); doc.text(`Scenario: ${scenarioCalculations.numOrders} Orders`, 14, y); y+=6;
-            doc.setFontSize(10);
-            doc.text(`- Total Net Profit: ${formatCurrency(scenarioCalculations.totalNetProfit)}`, 16, y); y+=5;
-            doc.text(`- Profit from Delivered: ${formatCurrency(scenarioCalculations.profitFromDelivered)}`, 16, y); y+=5;
-            doc.text(`- Loss from RTO: ${formatCurrency(scenarioCalculations.totalLossFromRto)}`, 16, y); y+=5;
-        }
-
-        doc.save(`Ecomm-Profit-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!result) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
 
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {showInsufficientFuelModal && (
                 <InsufficientFuelModal
                     isOpen={true}
@@ -365,10 +307,6 @@ const ECommerceProfitCalculator: React.FC<{initialState?: any, isPremium?: boole
                                          <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                            Explain
-                                        </button>
-                                        <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                            Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
                                         </button>
                                         <ShareButton textToShare={shareText} />
                                     </div>

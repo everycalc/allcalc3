@@ -7,9 +7,6 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
 import { useFuel } from '../contexts/FuelContext';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
-import jsPDF from 'jspdf';
 
 const InputField: React.FC<{ label: string; unit?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; name: string; tooltip?: string; }> = 
 ({ label, unit, value, onChange, name, tooltip }) => (
@@ -59,7 +56,8 @@ const InventoryManagementCalculator: React.FC<InventoryManagementCalculatorProps
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
-    const { fuel, consumeFuel, addFuel } = useFuel();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     const [inputs, setInputs] = useState<InventoryInputs>({
         annualDemand: '10000',
@@ -74,10 +72,6 @@ const InventoryManagementCalculator: React.FC<InventoryManagementCalculatorProps
     const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
-    
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -91,36 +85,48 @@ const InventoryManagementCalculator: React.FC<InventoryManagementCalculatorProps
     };
 
     const handleCalculate = () => {
-        const annualDemand = parseFloat(inputs.annualDemand) || 0;
-        const orderingCost = parseFloat(inputs.orderingCost) || 0;
-        const holdingCost = parseFloat(inputs.holdingCost) || 0;
-        const dailyDemand = parseFloat(inputs.dailyDemand) || 0;
-        const leadTime = parseFloat(inputs.leadTime) || 0;
-        const safetyStock = parseFloat(inputs.safetyStock) || 0;
+        const performCalculation = () => {
+            const annualDemand = parseFloat(inputs.annualDemand) || 0;
+            const orderingCost = parseFloat(inputs.orderingCost) || 0;
+            const holdingCost = parseFloat(inputs.holdingCost) || 0;
+            const dailyDemand = parseFloat(inputs.dailyDemand) || 0;
+            const leadTime = parseFloat(inputs.leadTime) || 0;
+            const safetyStock = parseFloat(inputs.safetyStock) || 0;
 
-        const eoq = holdingCost > 0 ? Math.sqrt((2 * annualDemand * orderingCost) / holdingCost) : 0;
-        const rop = (dailyDemand * leadTime) + safetyStock;
+            const eoq = holdingCost > 0 ? Math.sqrt((2 * annualDemand * orderingCost) / holdingCost) : 0;
+            const rop = (dailyDemand * leadTime) + safetyStock;
 
-        const numOrders = eoq > 0 ? annualDemand / eoq : 0;
-        const annualOrderingCost = numOrders * orderingCost;
-        const annualHoldingCost = eoq > 0 ? (eoq / 2) * holdingCost : 0;
-        const totalCost = annualOrderingCost + annualHoldingCost;
-        
-        const calculatedResult = { eoq, rop, numOrders, annualOrderingCost, annualHoldingCost, totalCost };
+            const numOrders = eoq > 0 ? annualDemand / eoq : 0;
+            const annualOrderingCost = numOrders * orderingCost;
+            const annualHoldingCost = eoq > 0 ? (eoq / 2) * holdingCost : 0;
+            const totalCost = annualOrderingCost + annualHoldingCost;
+            
+            const calculatedResult = { eoq, rop, numOrders, annualOrderingCost, annualHoldingCost, totalCost };
 
-        addHistory({
-            calculator: 'Inventory Management Calculator',
-            calculation: `EOQ: ${eoq.toFixed(0)} units, ROP: ${rop.toFixed(0)} units`,
-            inputs: inputs
-        });
-        
-        setShareText(`Inventory Management Calculation:\n- Annual Demand: ${annualDemand} units\n- Ordering Cost: ${formatCurrency(orderingCost)}\n- Holding Cost: ${formatCurrency(holdingCost)}/unit\n\nResults:\n- EOQ: ${eoq.toFixed(0)} units\n- ROP: ${rop.toFixed(0)} units\n- Total Inventory Cost: ${formatCurrency(totalCost)}`);
+            addHistory({
+                calculator: 'Inventory Management Calculator',
+                calculation: `EOQ: ${eoq.toFixed(0)} units, ROP: ${rop.toFixed(0)} units`,
+                inputs: inputs
+            });
+            
+            setShareText(`Inventory Management Calculation:\n- Annual Demand: ${annualDemand} units\n- Ordering Cost: ${formatCurrency(orderingCost)}\n- Holding Cost: ${formatCurrency(holdingCost)}/unit\n\nResults:\n- EOQ: ${eoq.toFixed(0)} units\n- ROP: ${rop.toFixed(0)} units\n- Total Inventory Cost: ${formatCurrency(totalCost)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd(isPremium)) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if(res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     
@@ -132,53 +138,9 @@ const InventoryManagementCalculator: React.FC<InventoryManagementCalculatorProps
         setShowAd(false);
     };
 
-    const generatePdf = () => {
-        if (!result) return;
-        const doc = new jsPDF();
-        let y = 15;
-    
-        doc.setFontSize(18);
-        doc.text('Inventory Management Report', 14, y); y += 10;
-    
-        doc.setFontSize(12); doc.text('Inputs', 14, y); y += 6;
-        doc.setFontSize(10);
-        Object.entries(inputs).forEach(([key, value]) => {
-            doc.text(`- ${key}: ${value}`, 16, y); y += 5;
-        });
-    
-        y += 5; doc.line(14, y, 196, y); y += 10;
-    
-        doc.setFontSize(12); doc.text('Key Metrics', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Economic Order Quantity (EOQ): ${result.eoq.toFixed(0)} units`, 16, y); y += 5;
-        doc.text(`- Reorder Point (ROP): ${result.rop.toFixed(0)} units`, 16, y); y += 10;
-
-        doc.setFontSize(12); doc.text('Cost Breakdown', 14, y); y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Number of Orders/Year: ${result.numOrders.toFixed(2)}`, 16, y); y += 5;
-        doc.text(`- Annual Ordering Cost: ${formatCurrency(result.annualOrderingCost)}`, 16, y); y += 5;
-        doc.text(`- Annual Holding Cost: ${formatCurrency(result.annualHoldingCost)}`, 16, y); y += 5;
-        doc.setFont('helvetica', 'bold');
-        doc.text(`- Total Annual Inventory Cost: ${formatCurrency(result.totalCost)}`, 16, y); y += 5;
-    
-        doc.save(`Inventory-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!result) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {isExplainModalOpen && result && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -224,10 +186,6 @@ const InventoryManagementCalculator: React.FC<InventoryManagementCalculatorProps
                                      <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                        Explain
-                                    </button>
-                                     <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
                                     </button>
                                     <ShareButton textToShare={shareText} />
                                 </div>

@@ -2,52 +2,45 @@ import React, { useEffect, useRef } from 'react';
 
 const AdsensePlaceholder: React.FC = () => {
   const adRef = useRef<HTMLDivElement>(null);
-  const pushedRef = useRef(false);
 
   useEffect(() => {
-    const currentAdRef = adRef.current;
+    const adContainer = adRef.current;
+    if (!adContainer) return;
 
-    if (!currentAdRef) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !pushedRef.current) {
-          try {
-            // @ts-ignore
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            pushedRef.current = true; // Mark as pushed to prevent multiple pushes
-          } catch (e) {
-            console.error("Adsense error:", e);
-          }
-          // Once the ad is pushed, we can stop observing
-          observer.disconnect();
-        }
-      },
-      {
-        threshold: 0.1, // Trigger when 10% of the element is visible
+    // Use a small timeout to ensure the AdSense script is ready
+    const timeoutId = setTimeout(() => {
+      // Check if an ad has already been loaded in this container
+      if (adContainer.querySelector('.adsbygoogle-filled')) {
+        return;
       }
-    );
 
-    observer.observe(currentAdRef);
+      try {
+        if ((window as any).adsbygoogle) {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } else {
+            adContainer.innerHTML = '<div class="text-center text-xs text-theme-secondary p-4 h-full flex items-center justify-center">Advertisement</div>';
+        }
+      } catch (e) {
+        console.error("AdSense push error:", e);
+        adContainer.innerHTML = '<div class="text-center text-xs text-theme-secondary p-4 h-full flex items-center justify-center">Ad could not be displayed.</div>';
+      }
+    }, 150);
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
-    <div ref={adRef} className="w-full min-h-[100px] my-4 flex items-center justify-center">
-      {/* test for app */}
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block', width: '100%' }}
-        data-ad-client="ca-pub-2892214526865008"
-        data-ad-slot="7805870574"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      ></ins>
+    <div className="w-full min-h-[100px] my-4 flex items-center justify-center bg-theme-secondary/20 rounded-lg">
+      <div ref={adRef} className="w-full h-full">
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block', width: '100%', height: '100px' }}
+          data-ad-client="ca-pub-2892214526865008"
+          data-ad-slot="7805870574"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+      </div>
     </div>
   );
 };

@@ -7,9 +7,6 @@ import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
 import { useFuel } from '../contexts/FuelContext';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
-import jsPDF from 'jspdf';
 
 const InputField: React.FC<{ label: string; unit?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; name: string; tooltip?: string; }> = 
 ({ label, unit, value, onChange, name, tooltip }) => (
@@ -56,7 +53,8 @@ const CLVCACCalculator: React.FC<CLVCACCalculatorProps> = ({ isPremium, initialS
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
-    const { fuel, consumeFuel, addFuel } = useFuel();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
     
     const [inputs, setInputs] = useState<ClvCacInputs>({
         aov: '150',
@@ -71,10 +69,6 @@ const CLVCACCalculator: React.FC<CLVCACCalculatorProps> = ({ isPremium, initialS
     const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
-    
-    const PDF_COST = 5;
 
     useEffect(() => {
         if (initialState) {
@@ -88,33 +82,45 @@ const CLVCACCalculator: React.FC<CLVCACCalculatorProps> = ({ isPremium, initialS
     };
 
     const handleCalculate = () => {
-        const aov = parseFloat(inputs.aov) || 0;
-        const purchaseFrequency = parseFloat(inputs.purchaseFrequency) || 0;
-        const grossMargin = (parseFloat(inputs.grossMargin) || 0) / 100;
-        const customerLifetime = parseFloat(inputs.customerLifetime) || 0;
-        const marketingSpend = parseFloat(inputs.marketingSpend) || 0;
-        const newCustomers = parseFloat(inputs.newCustomers) || 0;
-        
-        const customerValuePerYear = aov * purchaseFrequency;
-        const clv = (customerValuePerYear * grossMargin) * customerLifetime;
-        const cac = newCustomers > 0 ? marketingSpend / newCustomers : 0;
-        const ratio = cac > 0 ? clv / cac : 0;
-        
-        const calculatedResult = { clv, cac, ratio };
+        const performCalculation = () => {
+            const aov = parseFloat(inputs.aov) || 0;
+            const purchaseFrequency = parseFloat(inputs.purchaseFrequency) || 0;
+            const grossMargin = (parseFloat(inputs.grossMargin) || 0) / 100;
+            const customerLifetime = parseFloat(inputs.customerLifetime) || 0;
+            const marketingSpend = parseFloat(inputs.marketingSpend) || 0;
+            const newCustomers = parseFloat(inputs.newCustomers) || 0;
+            
+            const customerValuePerYear = aov * purchaseFrequency;
+            const clv = (customerValuePerYear * grossMargin) * customerLifetime;
+            const cac = newCustomers > 0 ? marketingSpend / newCustomers : 0;
+            const ratio = cac > 0 ? clv / cac : 0;
+            
+            const calculatedResult = { clv, cac, ratio };
 
-        addHistory({
-            calculator: 'CLV & CAC Calculator',
-            calculation: `CLV: ${formatCurrency(clv)}, CAC: ${formatCurrency(cac)} (Ratio: ${ratio.toFixed(2)})`,
-            inputs: inputs
-        });
-        
-        setShareText(`CLV & CAC Calculation:\n- AOV: ${formatCurrency(aov)}\n- Purchase Frequency: ${purchaseFrequency}/yr\n- Gross Margin: ${inputs.grossMargin}%\n- Lifetime: ${customerLifetime} yrs\n- Marketing Spend: ${formatCurrency(marketingSpend)}\n- New Customers: ${newCustomers}\n\nResults:\n- CLV: ${formatCurrency(clv)}\n- CAC: ${formatCurrency(cac)}\n- CLV:CAC Ratio: ${ratio.toFixed(2)} : 1`);
+            addHistory({
+                calculator: 'CLV & CAC Calculator',
+                calculation: `CLV: ${formatCurrency(clv)}, CAC: ${formatCurrency(cac)} (Ratio: ${ratio.toFixed(2)})`,
+                inputs: inputs
+            });
+            
+            setShareText(`CLV & CAC Calculation:\n- AOV: ${formatCurrency(aov)}\n- Purchase Frequency: ${purchaseFrequency}/yr\n- Gross Margin: ${inputs.grossMargin}%\n- Lifetime: ${customerLifetime} yrs\n- Marketing Spend: ${formatCurrency(marketingSpend)}\n- New Customers: ${newCustomers}\n\nResults:\n- CLV: ${formatCurrency(clv)}\n- CAC: ${formatCurrency(cac)}\n- CLV:CAC Ratio: ${ratio.toFixed(2)} : 1`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd(isPremium)) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
 
@@ -126,54 +132,9 @@ const CLVCACCalculator: React.FC<CLVCACCalculatorProps> = ({ isPremium, initialS
         setShowAd(false);
     };
 
-    const generatePdf = () => {
-        if (!result) return;
-        const doc = new jsPDF();
-        let y = 15;
-    
-        doc.setFontSize(18);
-        doc.text('CLV & CAC Report', 14, y);
-        y += 10;
-    
-        doc.setFontSize(12);
-        doc.text('Inputs', 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        Object.entries(inputs).forEach(([key, value]) => {
-            doc.text(`- ${key}: ${value}`, 16, y);
-            y += 5;
-        });
-    
-        y += 5;
-        doc.line(14, y, 196, y);
-        y += 10;
-    
-        doc.setFontSize(12);
-        doc.text('Results', 14, y);
-        y += 6;
-        doc.setFontSize(10);
-        doc.text(`- Customer Lifetime Value (CLV): ${formatCurrency(result.clv)}`, 16, y); y += 5;
-        doc.text(`- Customer Acquisition Cost (CAC): ${formatCurrency(result.cac)}`, 16, y); y += 5;
-        doc.text(`- CLV to CAC Ratio: ${result.ratio.toFixed(2)} : 1`, 16, y); y += 5;
-    
-        doc.save(`CLV-CAC-Report-${Date.now()}.pdf`);
-    };
-
-    const handleDownloadPdfClick = () => {
-        if (!result) return;
-        if (fuel >= PDF_COST) {
-            consumeFuel(PDF_COST);
-            generatePdf();
-        } else {
-            setShowPdfFuelModal(true);
-        }
-    };
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
             {isExplainModalOpen && result && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -214,10 +175,6 @@ const CLVCACCalculator: React.FC<CLVCACCalculatorProps> = ({ isPremium, initialS
                                      <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                        Explain
-                                    </button>
-                                     <button onClick={handleDownloadPdfClick} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        Download PDF <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
                                     </button>
                                     <ShareButton textToShare={shareText} />
                                 </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -6,6 +5,7 @@ import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 type GstAction = 'add' | 'remove';
 
@@ -23,9 +23,10 @@ interface GSTTaxCalculatorState {
 
 interface GSTTaxCalculatorProps {
     initialState?: GSTTaxCalculatorState;
+    isPremium?: boolean;
 }
 
-const GSTTaxCalculator: React.FC<GSTTaxCalculatorProps> = ({initialState}) => {
+const GSTTaxCalculator: React.FC<GSTTaxCalculatorProps> = ({initialState, isPremium}) => {
     const [amount, setAmount] = useState('1000');
     const [rate, setRate] = useState('18');
     const [action, setAction] = useState<GstAction>('add');
@@ -36,6 +37,8 @@ const GSTTaxCalculator: React.FC<GSTTaxCalculatorProps> = ({initialState}) => {
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -47,43 +50,54 @@ const GSTTaxCalculator: React.FC<GSTTaxCalculatorProps> = ({initialState}) => {
     }, [initialState]);
 
     const handleCalculate = () => {
-        const baseAmount = parseFloat(amount);
-        const taxRate = parseFloat(rate) / 100;
+        const performCalculation = () => {
+            const baseAmount = parseFloat(amount);
+            const taxRate = parseFloat(rate) / 100;
 
-        if (isNaN(baseAmount) || isNaN(taxRate)) {
-            setResult(null);
-            return;
-        }
+            if (isNaN(baseAmount) || isNaN(taxRate)) {
+                return null;
+            }
 
-        let initialAmount = 0;
-        let finalAmount = 0;
-        let taxAmount = 0;
+            let initialAmount = 0;
+            let finalAmount = 0;
+            let taxAmount = 0;
 
-        if (action === 'add') {
-            initialAmount = baseAmount;
-            taxAmount = baseAmount * taxRate;
-            finalAmount = baseAmount + taxAmount;
-        } else { // remove
-            finalAmount = baseAmount;
-            initialAmount = baseAmount / (1 + taxRate);
-            taxAmount = finalAmount - initialAmount;
-        }
+            if (action === 'add') {
+                initialAmount = baseAmount;
+                taxAmount = baseAmount * taxRate;
+                finalAmount = baseAmount + taxAmount;
+            } else { // remove
+                finalAmount = baseAmount;
+                initialAmount = baseAmount / (1 + taxRate);
+                taxAmount = finalAmount - initialAmount;
+            }
 
-        const calculatedResult = { initialAmount, finalAmount, taxAmount };
-        
-        addHistory({
-            calculator: 'GST/Tax Calculator',
-            calculation: `${action === 'add' ? 'Add' : 'Remove'} ${rate}% GST on ${formatCurrency(baseAmount)}`,
-            inputs: { amount, rate, action }
-        });
-        
-        setShareText(`GST/Tax Calculation:\n- Action: ${action === 'add' ? 'Add' : 'Remove'} GST\n- Amount: ${formatCurrency(baseAmount)}\n- Rate: ${rate}%\n\nResult:\n- Initial Amount: ${formatCurrency(initialAmount)}\n- Tax Amount: ${formatCurrency(taxAmount)}\n- Final Amount: ${formatCurrency(finalAmount)}`);
+            const calculatedResult = { initialAmount, finalAmount, taxAmount };
+            
+            addHistory({
+                calculator: 'GST/Tax Calculator',
+                calculation: `${action === 'add' ? 'Add' : 'Remove'} ${rate}% GST on ${formatCurrency(baseAmount)}`,
+                inputs: { amount, rate, action }
+            });
+            
+            setShareText(`GST/Tax Calculation:\n- Action: ${action === 'add' ? 'Add' : 'Remove'} GST\n- Amount: ${formatCurrency(baseAmount)}\n- Rate: ${rate}%\n\nResult:\n- Initial Amount: ${formatCurrency(initialAmount)}\n- Tax Amount: ${formatCurrency(taxAmount)}\n- Final Amount: ${formatCurrency(finalAmount)}`);
+            return calculatedResult;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(calculatedResult);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res) setResult(res);
         } else {
-            setResult(calculatedResult);
+            const res = performCalculation();
+            if (res) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

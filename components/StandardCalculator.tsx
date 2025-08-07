@@ -3,15 +3,25 @@ import Display from './Display';
 import CalculatorButton from './CalculatorButton';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
+import { useAd } from '../contexts/AdContext';
+import InterstitialAdModal from './InterstitialAdModal';
+import VoiceInputButton from './VoiceInputButton';
 
-const StandardCalculator: React.FC = () => {
+const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
   const [displayValue, setDisplayValue] = useState('0');
   const [previousValue, setPreviousValue] = useState<null | number>(null);
   const [operator, setOperator] = useState<null | string>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [subDisplay, setSubDisplay] = useState('');
   const [shareText, setShareText] = useState('');
+  const [showAd, setShowAd] = useState(false);
+  const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+
   const { addHistory } = useContext(HistoryContext);
+  const { fuel, consumeFuel } = useFuel();
+  const { shouldShowAd } = useAd();
+  const fuelCost = isPremium ? 2 : 1;
 
   const handleDigit = (digit: string) => {
     if (waitingForOperand) {
@@ -101,8 +111,22 @@ const StandardCalculator: React.FC = () => {
   };
   
   const handleEquals = () => {
-    if (operator && previousValue !== null && !waitingForOperand) {
-        performCalculation('=');
+    const perform = () => {
+        if (operator && previousValue !== null && !waitingForOperand) {
+            performCalculation('=');
+        }
+    };
+
+    if (fuel >= fuelCost) {
+        consumeFuel(fuelCost);
+        perform();
+    } else {
+        if (shouldShowAd(isPremium)) {
+            setPendingCalculation(() => perform);
+            setShowAd(true);
+        } else {
+            perform();
+        }
     }
   }
 
@@ -150,8 +174,41 @@ const StandardCalculator: React.FC = () => {
     }
   };
 
+  const handleAdClose = () => {
+    if (pendingCalculation) {
+        pendingCalculation();
+        setPendingCalculation(null);
+    }
+    setShowAd(false);
+  };
+  
+    const handleVoiceInput = (transcript: string) => {
+        const cleaned = transcript.toLowerCase().replace(/point/g, '.').replace(/x/g, '*').trim();
+        
+        // Simple command parsing
+        if (cleaned.includes('clear')) return handleClear();
+        if (cleaned.includes('equals') || cleaned.includes('equal')) return handleEquals();
+        if (cleaned.includes('plus')) return handleOperator('+');
+        if (cleaned.includes('minus')) return handleOperator('-');
+        if (cleaned.includes('times')) return handleOperator('*');
+        if (cleaned.includes('divided by')) return handleOperator('/');
+
+        // Number parsing
+        const numbers = cleaned.match(/[\d.]+/g);
+        if (numbers) {
+            const spokenNumber = numbers.join('');
+            if (waitingForOperand) {
+                setDisplayValue(spokenNumber);
+                setWaitingForOperand(false);
+            } else {
+                setDisplayValue(displayValue === '0' ? spokenNumber : displayValue + spokenNumber);
+            }
+        }
+  };
+
   return (
     <div>
+      {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <Display value={displayValue} subValue={subDisplay} />
       <div className="grid grid-cols-4 gap-2 md:gap-3">
         <CalculatorButton label="C" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
@@ -174,7 +231,10 @@ const StandardCalculator: React.FC = () => {
         <CalculatorButton label="3" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
         <CalculatorButton label="+" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
 
-        <CalculatorButton label="0" onClick={handleClick} className="col-span-2 bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
+        <div className="col-span-2 grid grid-cols-2 gap-2 md:gap-3">
+            <CalculatorButton label="0" onClick={handleClick} className="col-span-1 bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
+            <VoiceInputButton onTranscript={handleVoiceInput} />
+        </div>
         <CalculatorButton label="." onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
         <CalculatorButton label="=" onClick={handleClick} className="bg-primary text-on-primary hover:bg-primary-light" />
       </div>

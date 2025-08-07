@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useAd } from '../contexts/AdContext';
@@ -6,6 +5,7 @@ import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
+import { useFuel } from '../contexts/FuelContext';
 
 type AreaUnit = 'sqft' | 'sqm';
 
@@ -17,9 +17,10 @@ interface AreaCostEstimatorState {
 
 interface AreaCostEstimatorProps {
     initialState?: AreaCostEstimatorState;
+    isPremium?: boolean;
 }
 
-const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState}) => {
+const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState, isPremium}) => {
     const [area, setArea] = useState('1200');
     const [unit, setUnit] = useState<AreaUnit>('sqft');
     const [costPerUnit, setCostPerUnit] = useState('1500');
@@ -30,6 +31,8 @@ const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState}) => 
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -41,28 +44,39 @@ const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState}) => 
     }, [initialState]);
 
     const handleCalculate = () => {
-        const totalArea = parseFloat(area);
-        const cost = parseFloat(costPerUnit);
+        const performCalculation = () => {
+            const totalArea = parseFloat(area);
+            const cost = parseFloat(costPerUnit);
 
-        if (isNaN(totalArea) || isNaN(cost) || totalArea <= 0 || cost <= 0) {
-            setResult(null);
-            return;
-        }
-        
-        const totalCost = totalArea * cost;
-        addHistory({
-            calculator: 'Area Cost Estimator',
-            calculation: `${totalArea} ${unit} @ ${formatCurrency(cost)} per ${unit} = ${formatCurrency(totalCost)}`,
-            inputs: { area, unit, costPerUnit }
-        });
-        
-        setShareText(`Area Cost Estimation:\n- Total Area: ${totalArea} ${unit}\n- Cost per ${unit}: ${formatCurrency(cost)}\n\nResult:\n- Total Estimated Cost: ${formatCurrency(totalCost)}`);
+            if (isNaN(totalArea) || isNaN(cost) || totalArea <= 0 || cost <= 0) {
+                return null;
+            }
+            
+            const totalCost = totalArea * cost;
+            addHistory({
+                calculator: 'Area Cost Estimator',
+                calculation: `${totalArea} ${unit} @ ${formatCurrency(cost)} per ${unit} = ${formatCurrency(totalCost)}`,
+                inputs: { area, unit, costPerUnit }
+            });
+            
+            setShareText(`Area Cost Estimation:\n- Total Area: ${totalArea} ${unit}\n- Cost per ${unit}: ${formatCurrency(cost)}\n\nResult:\n- Total Estimated Cost: ${formatCurrency(totalCost)}`);
+            return totalCost;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(totalCost);
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const res = performCalculation();
+            if (res !== null) setResult(res);
         } else {
-            setResult(totalCost);
+            const res = performCalculation();
+            if (res !== null) {
+                if (shouldShowAd(isPremium)) {
+                    setPendingResult(res);
+                    setShowAd(true);
+                } else {
+                    setResult(res);
+                }
+            }
         }
     };
     

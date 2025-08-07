@@ -6,6 +6,7 @@ import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import SaveDatesModal from './SaveDatesModal';
 import AgeCalculatorOnboarding from './AgeCalculatorOnboarding';
+import { useFuel } from '../contexts/FuelContext';
 
 interface AgeResult {
     years: number;
@@ -23,12 +24,15 @@ interface AgeCalculatorState {
 
 interface AgeCalculatorProps {
     initialState?: AgeCalculatorState;
+    isPremium?: boolean;
 }
 
-const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState }) => {
+const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }) => {
     const { savedDates } = useDateTracker();
     const { addHistory } = useContext(HistoryContext);
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     const [birthDate, setBirthDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [selectedPersonId, setSelectedPersonId] = useState<string>('');
@@ -115,20 +119,30 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState }) => {
     }
     
     const handleCalculate = () => {
-        const person = savedDates.find(p => p.id === selectedPersonId);
-        const name = person ? person.name : `Person born on ${new Date(birthDate).toLocaleDateString()}`;
-        
-        addHistory({
-            calculator: 'Age Calculator',
-            calculation: `Calculated age for ${name}`,
-            inputs: { birthDate, selectedPersonId }
-        });
+        const performCalculation = () => {
+            const person = savedDates.find(p => p.id === selectedPersonId);
+            const name = person ? person.name : `Person born on ${new Date(birthDate).toLocaleDateString()}`;
+            
+            addHistory({
+                calculator: 'Age Calculator',
+                calculation: `Calculated age for ${name}`,
+                inputs: { birthDate, selectedPersonId }
+            });
+            return birthDate;
+        };
 
-        if (shouldShowAd()) {
-            setPendingResult(birthDate); // store the date to start calculation after ad
-            setShowAd(true);
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            const dob = performCalculation();
+            startAgeUpdate(dob);
         } else {
-            startAgeUpdate(birthDate);
+            const dob = performCalculation();
+            if (shouldShowAd(isPremium)) {
+                setPendingResult(dob); // store the date to start calculation after ad
+                setShowAd(true);
+            } else {
+                startAgeUpdate(dob);
+            }
         }
     };
     
