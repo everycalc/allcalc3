@@ -7,6 +7,9 @@ interface FuelContextType {
   consumeFuel: (amount: number) => boolean; // Returns true if successful
   addFuel: (amount: number) => void;
   setFuel: (amount: number) => void; // For "continue anyway"
+  spinCount: number;
+  incrementSpinCount: () => void;
+  resetSpinCount: () => void;
 }
 
 export const FuelContext = createContext<FuelContextType>({
@@ -14,12 +17,16 @@ export const FuelContext = createContext<FuelContextType>({
   consumeFuel: () => false,
   addFuel: () => {},
   setFuel: () => {},
+  spinCount: 0,
+  incrementSpinCount: () => {},
+  resetSpinCount: () => {},
 });
 
 export const useFuel = () => useContext(FuelContext);
 
 export const FuelProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [fuel, setFuelState] = useState<number>(INITIAL_FUEL);
+  const [spinCount, setSpinCount] = useState<number>(0);
 
   useEffect(() => {
     try {
@@ -30,6 +37,12 @@ export const FuelProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('calculationFuel', String(INITIAL_FUEL));
         setFuelState(INITIAL_FUEL);
       }
+      
+      const storedSpinCount = sessionStorage.getItem('spinCount');
+      if (storedSpinCount) {
+        setSpinCount(parseInt(storedSpinCount, 10));
+      }
+
     } catch (error) {
       console.error("Failed to load fuel from localStorage", error);
       setFuelState(INITIAL_FUEL);
@@ -47,6 +60,7 @@ export const FuelProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const consumeFuel = (amount: number): boolean => {
+    incrementSpinCount(); // A calculation was performed
     if (fuel >= amount) {
       saveFuel(fuel - amount);
       return true;
@@ -62,8 +76,19 @@ export const FuelProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     saveFuel(amount);
   };
 
+  const incrementSpinCount = () => {
+    const newCount = spinCount + 1;
+    setSpinCount(newCount);
+    sessionStorage.setItem('spinCount', String(newCount));
+  };
+
+  const resetSpinCount = () => {
+    setSpinCount(0);
+    sessionStorage.setItem('spinCount', '0');
+  };
+
   return (
-    <FuelContext.Provider value={{ fuel, consumeFuel, addFuel, setFuel }}>
+    <FuelContext.Provider value={{ fuel, consumeFuel, addFuel, setFuel, spinCount, incrementSpinCount, resetSpinCount }}>
       {children}
     </FuelContext.Provider>
   );

@@ -1,7 +1,8 @@
 {
+  "requestFramePermissions": [
+    "microphone"
+  ],
   "name": "All Calculation",
-  "description": "A comprehensive collection of calculators for various needs, including geometry, health, math, and finance, presented in a clean, organized interface.",
-  "requestFramePermissions": [],
-  "prompt": "",
-  "version": "2.3.0"
+  "description": "",
+  "prompt": ""
 }

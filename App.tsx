@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import HomePage from './components/HomePage';
 import StandardCalculator from './components/StandardCalculator';
 import ScientificCalculator from './components/ScientificCalculator';
@@ -12,7 +12,7 @@ import { HistoryProvider, HistoryEntry } from './contexts/HistoryContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { DateTrackerProvider } from './contexts/DateTrackerContext';
 import { AdProvider, useAd } from './contexts/AdContext';
-import { FuelProvider } from './contexts/FuelContext';
+import { FuelProvider, useFuel } from './contexts/FuelContext';
 import { DailyRewardsProvider } from './contexts/DailyRewardsContext';
 import HistoryPanel from './components/HistoryPanel';
 import Sidebar from './components/Sidebar';
@@ -65,11 +65,18 @@ import DailyRewardsPage from './components/DailyRewardsPage';
 import ThemeModal from './components/ThemeModal';
 import SharePromptModal from './components/SharePromptModal';
 import OutOfFuelToast from './components/OutOfFuelToast';
+import CheatCodeModal from './components/CheatCodeModal';
 
 import PolicyPage from './components/PolicyPage';
 import { PrivacyPolicyContent, TermsOfServiceContent, AboutUsContent, DisclaimerContent } from './data/policyContent';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import OnboardingGuide from './components/OnboardingGuide';
+
+// New components for big update
+import ScratchCardModal from './components/ScratchCardModal';
+import ReferralModal from './components/ReferralModal';
+import EmbedModal from './components/EmbedModal';
+import RewardedAdModal from './components/RewardedAdModal';
 
 
 interface CalculatorProps {
@@ -158,8 +165,17 @@ const AppContent: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { showOutOfFuelToast, closeOutOfFuelToast } = useAd();
+  const [isCheatCodeModalOpen, setIsCheatCodeModalOpen] = useState(false);
+  const [isEmbedMode, setIsEmbedMode] = useState(false);
 
+  // New states for major update
+  const [isScratchCardOpen, setIsScratchCardOpen] = useState(false);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
+  const [isIdleAdPromptOpen, setIsIdleAdPromptOpen] = useState(false);
 
+  const { addFuel, fuel, spinCount, incrementSpinCount, resetSpinCount } = useFuel();
+  
   useEffect(() => {
     // Onboarding guide
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
@@ -170,6 +186,29 @@ const AppContent: React.FC = () => {
         return () => clearTimeout(timer);
     }
   }, []);
+  
+    // URL parameter handling for embed and referrals
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const embedCalculator = params.get('embed');
+    const refCode = params.get('ref');
+
+    if (embedCalculator && calculators[embedCalculator]) {
+      handleSelectCalculator(embedCalculator, false);
+      setIsEmbedMode(true);
+    }
+    
+    if (refCode) {
+        const hasUsedReferral = localStorage.getItem('hasUsedReferral');
+        if (!hasUsedReferral) {
+            addFuel(5); // Referred user gets 5 fuel
+            localStorage.setItem('hasUsedReferral', 'true');
+            // Here you might show a toast: "Welcome! You've received 5 bonus fuel!"
+        }
+    }
+
+  }, [addFuel]);
+
 
   useEffect(() => {
     // Online/offline listeners
@@ -213,7 +252,7 @@ const AppContent: React.FC = () => {
         window.history.replaceState({ page: 'home' }, '');
     }
 
-    // Exit-intent modal - Desktop only
+    // Exit-intent modal
     const handleMouseLeave = (e: MouseEvent) => {
         if (e.clientY <= 0 && !sessionStorage.getItem('hasSeenExitIntent')) {
             setIsExitIntentModalOpen(true);
@@ -221,22 +260,35 @@ const AppContent: React.FC = () => {
         }
     };
     
+    // Idle timer
+    let idleTimer: number;
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(() => setIsIdleAdPromptOpen(true), 60000); // 60 seconds
+    };
+
     const isDesktop = !('ontouchstart' in window);
-    let timer: number | undefined;
+    let desktopTimer: number | undefined;
 
     if (isDesktop) {
-        // Delay attaching the listener to avoid it firing on page load
-        timer = window.setTimeout(() => {
+        desktopTimer = window.setTimeout(() => {
             document.documentElement.addEventListener('mouseleave', handleMouseLeave);
         }, 30000); // Attach after 30 seconds
     }
+    
+    window.addEventListener('mousemove', resetIdleTimer);
+    window.addEventListener('keypress', resetIdleTimer);
+    resetIdleTimer();
 
     return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('popstate', handlePopState);
-        if (timer) window.clearTimeout(timer);
+        if (desktopTimer) window.clearTimeout(desktopTimer);
         document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
+        clearTimeout(idleTimer);
+        window.removeEventListener('mousemove', resetIdleTimer);
+        window.removeEventListener('keypress', resetIdleTimer);
     };
   }, []);
 
@@ -247,6 +299,17 @@ const AppContent: React.FC = () => {
       setTimeout(() => window.scrollTo(0, scrollPosition), 0);
     }
   }, [currentCalculator, showSavedDatesPage, policyPage, showDailyRewardsPage, scrollPosition]);
+  
+  // Daily reward prompt logic
+    useEffect(() => {
+        if (spinCount >= 3) {
+            // Using a simple alert for the prompt to keep it lightweight
+            if (window.confirm("You've made 3 calculations! Try today's scratch card for a fuel bonus?")) {
+                setIsScratchCardOpen(true);
+            }
+            resetSpinCount();
+        }
+    }, [spinCount, resetSpinCount]);
 
   const handleSelectCalculator = (name: string, isPremium: boolean = false) => {
     if (calculators[name]) {
@@ -257,12 +320,18 @@ const AppContent: React.FC = () => {
       setShowSavedDatesPage(false);
       setShowDailyRewardsPage(false);
       setPolicyPage(null);
-      window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
+      if(!isEmbedMode) {
+          window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
+      }
     }
   };
 
   const handleBackToHome = () => {
-    window.history.back();
+    setCurrentCalculator(null);
+    setShowSavedDatesPage(false);
+    setShowDailyRewardsPage(false);
+    setPolicyPage(null);
+    window.history.replaceState({ page: 'home' }, '', window.location.pathname);
   };
   
   const handleRestoreFromHistory = (entry: HistoryEntry) => {
@@ -319,6 +388,23 @@ const AppContent: React.FC = () => {
   };
   
   const renderContent = () => {
+    // If a calculator is selected, render it within the page wrapper
+    if (currentCalculator) {
+      const CalculatorComponent = calculators[currentCalculator];
+      return (
+        <CalculatorPageWrapper 
+          title={currentCalculator} 
+          onBack={handleBackToHome} 
+          isPremium={isCurrentPremium}
+          isEmbed={isEmbedMode}
+          onOpenEmbedModal={() => setIsEmbedModalOpen(true)}
+          onSelectCalculator={handleSelectCalculator}
+        >
+          <CalculatorComponent initialState={calculatorState} isPremium={isCurrentPremium} />
+        </CalculatorPageWrapper>
+      );
+    }
+    
     if (showSavedDatesPage) {
       return <SavedDatesPage onBack={handleBackToHome} />;
     }
@@ -332,15 +418,6 @@ const AppContent: React.FC = () => {
       return <PolicyPage title={title} onBack={handleBackToHome}>{content}</PolicyPage>;
     }
 
-    // If a calculator is selected, render it within the page wrapper
-    if (currentCalculator) {
-      const CalculatorComponent = calculators[currentCalculator];
-      return (
-        <CalculatorPageWrapper title={currentCalculator} onBack={handleBackToHome} isPremium={isCurrentPremium}>
-          <CalculatorComponent initialState={calculatorState} isPremium={isCurrentPremium} />
-        </CalculatorPageWrapper>
-      );
-    }
 
     // Otherwise, show the home page
     return <HomePage 
@@ -356,6 +433,15 @@ const AppContent: React.FC = () => {
       setShowOnboarding(false);
       localStorage.setItem('hasSeenOnboarding', 'true');
   };
+  
+   const handleIdleAdComplete = () => {
+      addFuel(3);
+      setIsIdleAdPromptOpen(false);
+  };
+  
+  if (isEmbedMode) {
+      return renderContent();
+  }
 
   return (
     <>
@@ -388,12 +474,25 @@ const AppContent: React.FC = () => {
           onShowPolicyPage={handleShowPolicyPage}
           onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
           onOpenThemeModal={() => setIsThemeModalOpen(true)}
+          onOpenCheatCodeModal={() => setIsCheatCodeModalOpen(true)}
+          onOpenScratchCardModal={() => setIsScratchCardOpen(true)}
+          onOpenReferralModal={() => setIsReferralModalOpen(true)}
         />
         <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
         <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
         <SharePromptModal isOpen={isExitIntentModalOpen} onClose={() => setIsExitIntentModalOpen(false)} />
         <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
         <OutOfFuelToast isOpen={showOutOfFuelToast} onClose={closeOutOfFuelToast} />
+        <CheatCodeModal isOpen={isCheatCodeModalOpen} onClose={() => setIsCheatCodeModalOpen(false)} />
+        <ScratchCardModal isOpen={isScratchCardOpen} onClose={() => setIsScratchCardOpen(false)} />
+        <ReferralModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} />
+        <EmbedModal isOpen={isEmbedModalOpen} onClose={() => setIsEmbedModalOpen(false)} calculatorName={currentCalculator} />
+        {isIdleAdPromptOpen && (
+            <RewardedAdModal 
+                onClose={() => setIsIdleAdPromptOpen(false)} 
+                onComplete={handleIdleAdComplete} 
+            />
+        )}
       </div>
     </>
   );

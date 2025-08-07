@@ -3,7 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>All Calculation</title>
+    <title>All Calculation: Your Free, Comprehensive Calculator Suite</title>
+    <meta name="description" content="A versatile collection of calculators for business, finance, health, and everyday use. Fast, customizable, and works offline.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://allcalculation.com/">
+    <meta property="og:title" content="All Calculation: Your Free, Comprehensive Calculator Suite">
+    <meta property="og:description" content="A versatile collection of calculators for business, finance, health, and everyday use. Fast, customizable, and works offline.">
+    <meta property="og:image" content="/icons/icon-512x512.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://allcalculation.com/">
+    <meta property="twitter:title" content="All Calculation: Your Free, Comprehensive Calculator Suite">
+    <meta property="twitter:description" content="A versatile collection of calculators for business, finance, health, and everyday use. Fast, customizable, and works offline.">
+    <meta property="twitter:image" content="/icons/icon-512x512.png">
+
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#F4A27E" />
     <link rel="apple-touch-icon" href="/icons/icon-512x512.png" />
@@ -273,8 +289,20 @@
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.25); }
       }
+
+      /* Spin the Wheel Animations */
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(3600deg); } /* 10 full spins */
+      }
+      .wheel-spinning {
+        animation-name: spin;
+        animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+        animation-fill-mode: forwards;
+      }
     </style>
-  </head>
+  <link rel="stylesheet" href="/index.css">
+</head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>

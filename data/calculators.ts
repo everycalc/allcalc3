@@ -31,83 +31,83 @@ export const calculatorsData = [
   {
     category: 'Business & E-commerce',
     items: [
-      { name: 'E-commerce Profit Calculator', icon: React.createElement(ECommerceIcon), isPremium: true },
-      { name: 'Product Cost Calculator', icon: React.createElement(ProductCostIcon), isPremium: true },
-      { name: 'Recipe Cost Calculator', icon: React.createElement(RecipeIcon) },
-      { name: 'CLV & CAC Calculator', icon: React.createElement(CLVCACIcon), isPremium: true },
-      { name: 'Inventory Management Calculator', icon: React.createElement(InventoryIcon), isPremium: true },
-      { name: 'Break-Even ROAS Calculator', icon: React.createElement(ROASIcon), isPremium: true },
-      { name: 'Break-Even Point Calculator', icon: React.createElement(BreakEvenIcon) },
-      { name: 'Profit Margin Calculator', icon: React.createElement(ProfitMarginIcon) },
-      { name: 'Discount Calculator', icon: React.createElement(DiscountIcon) },
-      { name: 'AOV Calculator', icon: React.createElement(AOVIcon) }, 
+      { name: 'E-commerce Profit Calculator', icon: React.createElement(ECommerceIcon), isPremium: true, related: ['Product Cost Calculator', 'Break-Even ROAS Calculator', 'AOV Calculator'] },
+      { name: 'Product Cost Calculator', icon: React.createElement(ProductCostIcon), isPremium: true, related: ['E-commerce Profit Calculator', 'Recipe Cost Calculator', 'Profit Margin Calculator'] },
+      { name: 'Recipe Cost Calculator', icon: React.createElement(RecipeIcon), related: ['Product Cost Calculator'] },
+      { name: 'CLV & CAC Calculator', icon: React.createElement(CLVCACIcon), isPremium: true, related: ['Break-Even ROAS Calculator', 'AOV Calculator'] },
+      { name: 'Inventory Management Calculator', icon: React.createElement(InventoryIcon), isPremium: true, related: ['E-commerce Profit Calculator'] },
+      { name: 'Break-Even ROAS Calculator', icon: React.createElement(ROASIcon), isPremium: true, related: ['Break-Even Point Calculator', 'CLV & CAC Calculator'] },
+      { name: 'Break-Even Point Calculator', icon: React.createElement(BreakEvenIcon), related: ['Break-Even ROAS Calculator', 'Profit Margin Calculator'] },
+      { name: 'Profit Margin Calculator', icon: React.createElement(ProfitMarginIcon), related: ['Break-Even Point Calculator', 'Discount Calculator', 'AOV Calculator'] },
+      { name: 'Discount Calculator', icon: React.createElement(DiscountIcon), related: ['Profit Margin Calculator', 'Percentage Calculator'] },
+      { name: 'AOV Calculator', icon: React.createElement(AOVIcon), related: ['E-commerce Profit Calculator', 'CLV & CAC Calculator'] }, 
     ]
   },
   {
     category: 'Finance & Investment',
     items: [
-      { name: 'SIP Calculator', icon: React.createElement(SIPFDRIcon) },
-      { name: 'FD/RD Calculator', icon: React.createElement(SIPFDRIcon) },
-      { name: 'Mutual Fund Returns Calculator', icon: React.createElement(ProfitMarginIcon) },
-      { name: 'Compound Interest Calculator', icon: React.createElement(ROASIcon) },
-      { name: 'Credit Card Interest Calculator', icon: React.createElement(DiscountIcon) },
-      { name: 'Home Loan EMI & Affordability', icon: React.createElement(HomeLoanIcon) },
-      { name: 'GST/Tax Calculator', icon: React.createElement(PercentageIcon) },
-      { name: 'Loan Calculator', icon: React.createElement(LoanIcon) },
+      { name: 'SIP Calculator', icon: React.createElement(SIPFDRIcon), related: ['Mutual Fund Returns Calculator', 'Compound Interest Calculator', 'FD/RD Calculator'] },
+      { name: 'FD/RD Calculator', icon: React.createElement(SIPFDRIcon), related: ['SIP Calculator', 'Compound Interest Calculator'] },
+      { name: 'Mutual Fund Returns Calculator', icon: React.createElement(ProfitMarginIcon), related: ['SIP Calculator', 'Compound Interest Calculator'] },
+      { name: 'Compound Interest Calculator', icon: React.createElement(ROASIcon), related: ['SIP Calculator', 'FD/RD Calculator', 'Loan Calculator'] },
+      { name: 'Credit Card Interest Calculator', icon: React.createElement(DiscountIcon), related: ['Loan Calculator', 'Home Loan EMI & Affordability'] },
+      { name: 'Home Loan EMI & Affordability', icon: React.createElement(HomeLoanIcon), related: ['Loan Calculator', 'Rent vs Buy Calculator'] },
+      { name: 'GST/Tax Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator'] },
+      { name: 'Loan Calculator', icon: React.createElement(LoanIcon), related: ['Home Loan EMI & Affordability', 'Credit Card Interest Calculator', 'Compound Interest Calculator'] },
     ]
   },
   {
     category: 'Real Estate & Construction',
     items: [
-      { name: 'Area Cost Estimator', icon: React.createElement(HomeLoanIcon) },
-      { name: 'Rent vs Buy Calculator', icon: React.createElement(RentBuyIcon) },
-      { name: 'Carpet Area vs Built-up Area', icon: React.createElement(AreaIcon) },
+      { name: 'Area Cost Estimator', icon: React.createElement(HomeLoanIcon), related: ['All Shapes Area Calculator', 'Carpet Area vs Built-up Area'] },
+      { name: 'Rent vs Buy Calculator', icon: React.createElement(RentBuyIcon), related: ['Home Loan EMI & Affordability', 'Loan Calculator'] },
+      { name: 'Carpet Area vs Built-up Area', icon: React.createElement(AreaIcon), related: ['All Shapes Area Calculator', 'Area Cost Estimator'] },
     ]
   },
   {
     category: 'Math & Education',
     items: [
-      { name: 'Percentage Calculator', icon: React.createElement(PercentageIcon) },
-      { name: 'Average Calculator', icon: React.createElement(StandardIcon) },
-      { name: 'Median & Mode Calculator', icon: React.createElement(ScientificIcon) },
-      { name: 'Logarithm & Trigonometry', icon: React.createElement(BmiIcon) },
-      { name: 'Standard Calculator', icon: React.createElement(StandardIcon) },
-      { name: 'Scientific Calculator', icon: React.createElement(ScientificIcon) },
+      { name: 'Percentage Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator', 'Average Calculator'] },
+      { name: 'Average Calculator', icon: React.createElement(StandardIcon), related: ['Median & Mode Calculator'] },
+      { name: 'Median & Mode Calculator', icon: React.createElement(ScientificIcon), related: ['Average Calculator'] },
+      { name: 'Logarithm & Trigonometry', icon: React.createElement(BmiIcon), related: ['Scientific Calculator'] },
+      { name: 'Standard Calculator', icon: React.createElement(StandardIcon), related: ['Scientific Calculator'] },
+      { name: 'Scientific Calculator', icon: React.createElement(ScientificIcon), related: ['Standard Calculator', 'Logarithm & Trigonometry'] },
     ]
   },
   {
     category: 'Science',
     items: [
-      { name: 'Force & Acceleration', icon: React.createElement(ScienceIcon) },
-      { name: 'Velocity & Distance', icon: React.createElement(ScienceIcon) },
+      { name: 'Force & Acceleration', icon: React.createElement(ScienceIcon), related: ['Velocity & Distance'] },
+      { name: 'Velocity & Distance', icon: React.createElement(ScienceIcon), related: ['Force & Acceleration'] },
     ]
   },
   {
     category: 'Geometry',
     items: [
-      { name: 'All Shapes Area Calculator', icon: React.createElement(AreaIcon) },
-      { name: 'All Shapes Volume Calculator', icon: React.createElement(VolumeIcon) },
+      { name: 'All Shapes Area Calculator', icon: React.createElement(AreaIcon), related: ['All Shapes Volume Calculator', 'Area Cost Estimator', 'Carpet Area vs Built-up Area'] },
+      { name: 'All Shapes Volume Calculator', icon: React.createElement(VolumeIcon), related: ['All Shapes Area Calculator'] },
     ]
   },
   {
     category: 'Health',
     items: [
-      { name: 'BMI Calculator', icon: React.createElement(BmiIcon) },
-      { name: 'Age Calculator', icon: React.createElement(AgeIcon) },
+      { name: 'BMI Calculator', icon: React.createElement(BmiIcon), related: ['Age Calculator'] },
+      { name: 'Age Calculator', icon: React.createElement(AgeIcon), related: ['BMI Calculator'] },
     ]
   },
   {
     category: 'Converters',
     items: [
-      { name: 'Unit Converter', icon: React.createElement(UnitIcon) },
-      { name: 'Currency Converter', icon: React.createElement(CurrencyIcon) },
+      { name: 'Unit Converter', icon: React.createElement(UnitIcon), related: ['Currency Converter'] },
+      { name: 'Currency Converter', icon: React.createElement(CurrencyIcon), related: ['Unit Converter'] },
     ]
   },
   {
     category: 'Everyday Use',
     items: [
-      { name: 'Fuel Cost Calculator', icon: React.createElement(FuelIcon) },
-      { name: 'Trip Expense Splitter', icon: React.createElement(CLVCACIcon) },
+      { name: 'Fuel Cost Calculator', icon: React.createElement(FuelIcon), related: ['Trip Expense Splitter'] },
+      { name: 'Trip Expense Splitter', icon: React.createElement(CLVCACIcon), related: ['Fuel Cost Calculator', 'Discount Calculator'] },
     ]
   },
 ];
