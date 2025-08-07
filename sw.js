@@ -1,4 +1,4 @@
-const CACHE_NAME = 'all-in-one-calculator-v2.4.1'; 
+const CACHE_NAME = 'all-in-one-calculator-v2.4.3'; 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,7 +7,6 @@ const urlsToCache = [
   '/types.ts',
   '/metadata.json',
   '/manifest.json',
-  '/ads.txt',
   '/data/calculators.ts',
   '/data/policyContent.tsx',
   '/data/calculatorDescriptions.ts',
