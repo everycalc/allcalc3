@@ -114,8 +114,6 @@ const CarpetAreaCalculator: React.FC<{initialState?: CarpetAreaCalculatorState, 
         }
     };
     
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -129,34 +127,34 @@ const CarpetAreaCalculator: React.FC<{initialState?: CarpetAreaCalculatorState, 
                 />
             )}
 
-            <div className="flex justify-center bg-theme-primary p-1 rounded-lg">
-                <button onClick={() => handleModeChange('builtUpToCarpet')} className={`w-1/2 py-2 rounded-md transition text-sm ${mode === 'builtUpToCarpet' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Built-up to Carpet</button>
-                <button onClick={() => handleModeChange('carpetToBuiltUp')} className={`w-1/2 py-2 rounded-md transition text-sm ${mode === 'carpetToBuiltUp' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Carpet to Built-up</button>
+            <div className="toggle-group flex justify-center p-1 rounded-lg">
+                <button onClick={() => handleModeChange('builtUpToCarpet')} className={`toggle-button w-1/2 py-2 rounded-md transition text-sm ${mode === 'builtUpToCarpet' ? 'toggle-button-active' : ''}`}>Built-up to Carpet</button>
+                <button onClick={() => handleModeChange('carpetToBuiltUp')} className={`toggle-button w-1/2 py-2 rounded-md transition text-sm ${mode === 'carpetToBuiltUp' ? 'toggle-button-active' : ''}`}>Carpet to Built-up</button>
             </div>
 
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-theme-secondary mb-1">
+                    <label className="block text-sm font-medium text-on-surface-variant mb-1">
                         {mode === 'builtUpToCarpet' ? 'Built-up Area' : 'Carpet Area'} (sq. ft / sq. m)
                     </label>
-                    <input type="number" value={area} onChange={e => setArea(e.target.value)} className={inputClasses}/>
+                    <input type="number" value={area} onChange={e => setArea(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label className="text-sm font-medium text-theme-secondary">Wall & Other Area Percentage (%)</label>
+                        <label className="text-sm font-medium text-on-surface-variant">Wall & Other Area Percentage (%)</label>
                         <InfoTooltip text="The percentage of the built-up area occupied by walls, balconies, etc. Typically 15-25%." />
                     </div>
-                    <input type="number" value={nonCarpetPercent} onChange={e => setNonCarpetPercent(e.target.value)} className={inputClasses}/>
+                    <input type="number" value={nonCarpetPercent} onChange={e => setNonCarpetPercent(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
 
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate
             </button>
             
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Area Breakdown</h3>
+                <div className="result-card p-6 rounded-lg space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Area Breakdown</h3>
                     <div className="py-4">
                       <PieChart data={[
                           { label: 'Carpet Area', value: result.carpetArea, color: '#3b82f6' },
@@ -164,14 +162,14 @@ const CarpetAreaCalculator: React.FC<{initialState?: CarpetAreaCalculatorState, 
                       ]} />
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Carpet Area:</span>
-                        <span className="text-lg font-medium text-theme-primary">{result.carpetArea.toFixed(2)} sq. unit</span>
+                        <span className="text-on-surface-variant">Carpet Area:</span>
+                        <span className="text-lg font-medium text-on-surface">{result.carpetArea.toFixed(2)} sq. unit</span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Built-up Area:</span>
+                        <span className="text-on-surface-variant">Built-up Area:</span>
                         <span className="text-2xl font-bold text-primary">{result.builtUpArea.toFixed(2)} sq. unit</span>
                     </div>
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                         <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain

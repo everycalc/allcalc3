@@ -88,20 +88,18 @@ const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState, isPr
         setShowAd(false);
     };
 
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="area" className="block text-sm font-medium text-theme-secondary mb-1">Total Area</label>
-                        <input type="number" id="area" value={area} onChange={e => setArea(e.target.value)} className={inputClasses}/>
+                        <label htmlFor="area" className="block text-sm font-medium text-on-surface-variant mb-1">Total Area</label>
+                        <input type="number" id="area" value={area} onChange={e => setArea(e.target.value)} className="input-base w-full"/>
                     </div>
                     <div>
-                        <label htmlFor="unit" className="block text-sm font-medium text-theme-secondary mb-1">Unit</label>
-                        <select id="unit" value={unit} onChange={e => setUnit(e.target.value as AreaUnit)} className={inputClasses}>
+                        <label htmlFor="unit" className="block text-sm font-medium text-on-surface-variant mb-1">Unit</label>
+                        <select id="unit" value={unit} onChange={e => setUnit(e.target.value as AreaUnit)} className="select-base w-full">
                             <option value="sqft">Square Feet</option>
                             <option value="sqm">Square Meters</option>
                         </select>
@@ -109,18 +107,18 @@ const AreaCostEstimator: React.FC<AreaCostEstimatorProps> = ({initialState, isPr
                 </div>
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="costPerUnit" className="block text-sm font-medium text-theme-secondary">Cost per {unit} ({currencySymbol})</label>
+                        <label htmlFor="costPerUnit" className="block text-sm font-medium text-on-surface-variant">Cost per {unit} ({currencySymbol})</label>
                         <InfoTooltip text="The estimated cost for construction or materials for one square foot or square meter." />
                     </div>
-                    <input type="number" id="costPerUnit" value={costPerUnit} onChange={e => setCostPerUnit(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="costPerUnit" value={costPerUnit} onChange={e => setCostPerUnit(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Estimate Cost
             </button>
             {result !== null && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2">Total Estimated Cost</h3>
+                <div className="result-card p-6 text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Total Estimated Cost</h3>
                     <p className="text-4xl font-bold text-primary">{formatCurrency(result)}</p>
                     <ShareButton textToShare={shareText} />
                 </div>

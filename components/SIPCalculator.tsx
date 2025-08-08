@@ -1,18 +1,14 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { GoogleGenAI, Type } from '@google/genai';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
-import InsufficientFuelModal from './InsufficientFuelModal';
-import RewardedAdModal from './RewardedAdModal';
+import InterstitialAdModal from './InterstitialAdModal';
 
 interface Result {
     totalInvestment: number;
@@ -45,20 +41,17 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
     const [goalSeekError, setGoalSeekError] = useState('');
 
     const [result, setResult] = useState<Result | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
-    const [showRewardedAd, setShowRewardedAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
-    const [showInsufficientFuelModal, setShowInsufficientFuelModal] = useState(false);
+
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
     
     const { addHistory } = useContext(HistoryContext);
-    const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
-    const { fuel, consumeFuel, setFuel } = useFuel();
-    
-    const isExpertTool = mode === 'goalSeek';
-    const fuelCost = isExpertTool ? 2 : 1;
+    const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
         if (initialState) {
@@ -72,6 +65,14 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
         }
     }, [initialState]);
     
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
+
     const handleModeChange = (newMode: 'calculate' | 'goalSeek') => {
         setMode(newMode);
         setResult(null);
@@ -86,7 +87,8 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
             const years = parseFloat(timePeriod);
 
             if (isNaN(P) || isNaN(annualRate) || isNaN(years) || P <= 0 || annualRate <= 0 || years <= 0) {
-                return null;
+                setResult(null);
+                return;
             }
 
             const n = years * 12;
@@ -96,6 +98,7 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
             const totalInvestment = P * n;
             const estimatedReturns = maturityValue - totalInvestment;
             const calculatedResult = { totalInvestment, estimatedReturns, maturityValue };
+            setResult(calculatedResult);
 
             addHistory({
                 calculator: 'SIP Calculator',
@@ -103,43 +106,22 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
                 inputs: { mode, monthlyInvestment, returnRate, timePeriod }
             });
             setShareText(`SIP Calculation:\n- Monthly Investment: ${formatCurrency(P)}\n- Return Rate: ${annualRate}% p.a.\n- Time Period: ${years} years\n\nResult:\n- Total Investment: ${formatCurrency(totalInvestment)}\n- Estimated Returns: ${formatCurrency(estimatedReturns)}\n- Maturity Value: ${formatCurrency(maturityValue)}`);
-            return calculatedResult;
         };
         
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const res = performCalculation();
-            if (res) setResult(res);
+            performCalculation();
         } else {
-            const res = performCalculation();
-            if (res) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(res);
-                    setShowAd(true);
-                } else {
-                    setResult(res);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
     };
     
-    const handleGoalSeekCalculate = async (bypassFuelCheck = false) => {
-        if (!bypassFuelCheck) {
-            if (fuel > 0 && fuel < fuelCost) {
-                setShowInsufficientFuelModal(true);
-                return;
-            }
-            if (fuel >= fuelCost) {
-                consumeFuel(fuelCost);
-            } else { // fuel is 0, now check for ads
-                 if (shouldShowAd(true)) { // Expert tools always show ad when out of fuel
-                    setPendingResult('goalSeek'); // special flag
-                    setShowAd(true);
-                    return;
-                }
-            }
-        }
-        
+    const handleGoalSeekCalculate = async () => {
         setIsGoalSeeking(true);
         setGoalSeekResult(null);
         setGoalSeekError('');
@@ -189,48 +171,9 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
         }
     };
 
-    const handleAdClose = () => {
-        if (pendingResult === 'goalSeek') {
-            handleGoalSeekCalculate(true); // Bypass checks as ad has been shown
-        } else if (pendingResult) {
-            setResult(pendingResult);
-        }
-        setPendingResult(null);
-        setShowAd(false);
-    };
-
-    const handleContinueAnyway = () => {
-        setFuel(0); // This activates ad mode
-        setShowInsufficientFuelModal(false);
-        handleGoalSeekCalculate(true); // Now we can proceed
-    };
-    
-    const handleWatchAdToUse = () => {
-        setShowInsufficientFuelModal(false);
-        setPendingResult('goalSeek');
-        setShowRewardedAd(true);
-    };
-
-    const handleRewardedAdComplete = () => {
-        setShowRewardedAd(false);
-        handleGoalSeekCalculate(true);
-    }
-
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showRewardedAd && <RewardedAdModal duration={5} rewardAmount={0} onClose={() => setShowRewardedAd(false)} onComplete={handleRewardedAdComplete}/>}
-            {showInsufficientFuelModal && (
-                 <InsufficientFuelModal
-                    isOpen={true}
-                    onClose={() => setShowInsufficientFuelModal(false)}
-                    onWatchAd={handleWatchAdToUse}
-                    onContinue={handleContinueAnyway}
-                    onRefuel={() => setShowInsufficientFuelModal(false)}
-                />
-            )}
             {isExplainModalOpen && result && mode === 'calculate' && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -240,29 +183,29 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
                     result={result}
                 />
             )}
-            <div className="flex justify-center bg-theme-primary p-1 rounded-lg">
-                <button onClick={() => handleModeChange('calculate')} className={`w-1/2 py-2 rounded-md transition text-sm ${mode === 'calculate' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Calculate Future Value</button>
-                <button onClick={() => handleModeChange('goalSeek')} className={`w-1/2 py-2 rounded-md transition text-sm ${mode === 'goalSeek' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Plan a Goal (AI Expert)</button>
+            <div className="toggle-group flex justify-center p-1 rounded-lg">
+                <button onClick={() => handleModeChange('calculate')} className={`toggle-button w-1/2 py-2 rounded-md transition text-sm ${mode === 'calculate' ? 'toggle-button-active' : ''}`}>Calculate Future Value</button>
+                <button onClick={() => handleModeChange('goalSeek')} className={`toggle-button w-1/2 py-2 rounded-md transition text-sm ${mode === 'goalSeek' ? 'toggle-button-active' : ''}`}>Plan a Goal (AI Expert)</button>
             </div>
 
             {mode === 'calculate' ? (
                 <div className="space-y-4">
                     <div>
                          <div className="flex items-center space-x-2 mb-1">
-                            <label htmlFor="monthlyInvestment" className="block text-sm font-medium text-theme-secondary">Monthly Investment ({currencySymbol})</label>
+                            <label htmlFor="monthlyInvestment" className="block text-sm font-medium text-on-surface-variant">Monthly Investment ({currencySymbol})</label>
                             <InfoTooltip text="The fixed amount you plan to invest every month." />
                         </div>
-                        <input type="number" id="monthlyInvestment" value={monthlyInvestment} onChange={e => setMonthlyInvestment(e.target.value)} className={inputClasses}/>
+                        <input type="number" id="monthlyInvestment" value={monthlyInvestment} onChange={e => setMonthlyInvestment(e.target.value)} className="input-base w-full"/>
                     </div>
                 </div>
             ) : (
                 <div className="space-y-4">
                     <div>
                          <div className="flex items-center space-x-2 mb-1">
-                            <label htmlFor="targetAmount" className="block text-sm font-medium text-theme-secondary">I want to have... ({currencySymbol})</label>
+                            <label htmlFor="targetAmount" className="block text-sm font-medium text-on-surface-variant">I want to have... ({currencySymbol})</label>
                             <InfoTooltip text="Your financial goal amount." />
                         </div>
-                        <input type="number" id="targetAmount" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className={inputClasses}/>
+                        <input type="number" id="targetAmount" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className="input-base w-full"/>
                     </div>
                 </div>
             )}
@@ -270,52 +213,52 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="returnRate" className="block text-sm font-medium text-theme-secondary">Expected Return Rate (% p.a.)</label>
+                        <label htmlFor="returnRate" className="block text-sm font-medium text-on-surface-variant">Expected Return Rate (% p.a.)</label>
                         <InfoTooltip text="The annual rate of return you expect from your investment. This is an estimate." />
                     </div>
-                    <input type="number" id="returnRate" value={returnRate} onChange={e => setReturnRate(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="returnRate" value={returnRate} onChange={e => setReturnRate(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="timePeriod" className="block text-sm font-medium text-theme-secondary">Time Period (Years)</label>
+                        <label htmlFor="timePeriod" className="block text-sm font-medium text-on-surface-variant">Time Period (Years)</label>
                         <InfoTooltip text="The total duration for which you plan to invest." />
                     </div>
-                    <input type="number" id="timePeriod" value={timePeriod} onChange={e => setTimePeriod(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="timePeriod" value={timePeriod} onChange={e => setTimePeriod(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
 
             {mode === 'calculate' ? (
-                 <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors duration-200 text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                 <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-lg text-lg shadow-md">
                     Calculate
                 </button>
             ) : (
-                <button onClick={() => handleGoalSeekCalculate(false)} disabled={isGoalSeeking} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors duration-200 text-lg disabled:bg-theme-tertiary shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <button onClick={() => handleGoalSeekCalculate()} disabled={isGoalSeeking} className="btn-primary w-full font-bold py-3 px-4 rounded-lg text-lg disabled:opacity-50 shadow-md">
                     {isGoalSeeking ? 'Calculating...' : 'Find Monthly SIP'}
                 </button>
             )}
 
             {result && mode === 'calculate' && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Investment Projection</h3>
-                    <div id="pdf-pie-chart-sip" className="py-4 bg-theme-secondary">
+                <div className="result-card p-6 space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Investment Projection</h3>
+                    <div id="pdf-pie-chart-sip" className="py-4">
                       <PieChart data={[
                           { label: 'Total Investment', value: result.totalInvestment, color: '#3b82f6' },
                           { label: 'Estimated Returns', value: result.estimatedReturns, color: '#16a34a' }
                       ]} />
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Total Investment:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalInvestment)}</span>
+                        <span className="text-on-surface-variant">Total Investment:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalInvestment)}</span>
                     </div>
                      <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Estimated Returns:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.estimatedReturns)}</span>
+                        <span className="text-on-surface-variant">Estimated Returns:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.estimatedReturns)}</span>
                     </div>
-                    <div className="flex justify-between items-center border-t border-theme pt-4 mt-4">
-                        <span className="text-theme-secondary">Maturity Value:</span>
+                    <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-4">
+                        <span className="text-on-surface-variant">Maturity Value:</span>
                         <span className="text-2xl font-bold text-primary">{formatCurrency(result.maturityValue)}</span>
                     </div>
-                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                          <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain Calculation
@@ -326,18 +269,18 @@ const SIPCalculator: React.FC<SIPCalculatorProps> = ({ initialState, isPremium }
             )}
             
             {isGoalSeeking && (
-                <div className="flex items-center justify-center space-x-2 text-theme-primary p-4">
+                <div className="flex items-center justify-center space-x-2 text-on-surface p-4">
                     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <p>AI is planning your goal...</p>
                 </div>
             )}
             {goalSeekError && <p className="text-red-500 text-center text-sm">{goalSeekError}</p>}
             {goalSeekResult && mode === 'goalSeek' && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in text-center">
-                    <h3 className="text-lg font-semibold text-theme-secondary">To Reach Your Goal, You Need to Invest</h3>
+                <div className="result-card p-6 space-y-4 animate-fade-in text-center">
+                    <h3 className="text-lg font-semibold text-on-surface-variant">To Reach Your Goal, You Need to Invest</h3>
                     <p className="text-4xl font-bold text-primary">{formatCurrency(goalSeekResult.monthlyInvestment)}</p>
-                    <p className="text-theme-secondary font-semibold">per month</p>
-                    <p className="text-sm text-theme-primary pt-4 border-t border-theme mt-4">{goalSeekResult.explanation}</p>
+                    <p className="text-on-surface-variant font-semibold">per month</p>
+                    <p className="text-sm text-on-surface pt-4 border-t border-outline-variant mt-4">{goalSeekResult.explanation}</p>
                     <ShareButton textToShare={shareText} />
                 </div>
             )}

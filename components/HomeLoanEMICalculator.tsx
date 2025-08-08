@@ -120,8 +120,6 @@ const HomeLoanEMICalculator: React.FC<HomeLoanEMICalculatorProps> = ({ isPremium
         }
         setShowAd(false);
     };
-    
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
     return (
         <div className="space-y-6">
@@ -137,51 +135,51 @@ const HomeLoanEMICalculator: React.FC<HomeLoanEMICalculatorProps> = ({ isPremium
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
-                    <label className="block text-sm font-medium text-theme-secondary mb-1">Loan Amount ({currencySymbol})</label>
-                    <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className={inputClasses}/>
+                    <label className="block text-sm font-medium text-on-surface-variant mb-1">Loan Amount ({currencySymbol})</label>
+                    <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-theme-secondary mb-1">Interest Rate (% p.a.)</label>
-                    <input type="number" value={rate} onChange={e => setRate(e.target.value)} className={inputClasses}/>
+                    <label className="block text-sm font-medium text-on-surface-variant mb-1">Interest Rate (% p.a.)</label>
+                    <input type="number" value={rate} onChange={e => setRate(e.target.value)} className="input-base w-full"/>
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-theme-secondary mb-1">Loan Tenure (Years)</label>
-                    <input type="number" value={tenure} onChange={e => setTenure(e.target.value)} className={inputClasses}/>
+                    <label className="block text-sm font-medium text-on-surface-variant mb-1">Loan Tenure (Years)</label>
+                    <input type="number" value={tenure} onChange={e => setTenure(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <details className="bg-theme-secondary rounded-lg group">
-                <summary className="font-semibold text-theme-primary p-3 cursor-pointer list-none flex justify-between items-center">
+            <details className="bg-surface-container rounded-lg group">
+                <summary className="font-semibold text-on-surface p-3 cursor-pointer list-none flex justify-between items-center">
                     <span>Affordability Check (Optional)</span>
                      <InfoTooltip text="Check if the EMI is manageable based on your income. Lenders generally recommend that your total EMIs do not exceed 50% of your net monthly income." />
                 </summary>
-                <div className="p-4 border-t border-theme grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 border-t border-outline-variant grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-theme-secondary mb-1">Your Net Monthly Income ({currencySymbol})</label>
-                        <input type="number" value={income} onChange={e => setIncome(e.target.value)} className={inputClasses}/>
+                        <label className="block text-sm font-medium text-on-surface-variant mb-1">Your Net Monthly Income ({currencySymbol})</label>
+                        <input type="number" value={income} onChange={e => setIncome(e.target.value)} className="input-base w-full"/>
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-theme-secondary mb-1">Other Existing EMIs ({currencySymbol})</label>
-                        <input type="number" value={otherEmi} onChange={e => setOtherEmi(e.target.value)} className={inputClasses}/>
+                        <label className="block text-sm font-medium text-on-surface-variant mb-1">Other Existing EMIs ({currencySymbol})</label>
+                        <input type="number" value={otherEmi} onChange={e => setOtherEmi(e.target.value)} className="input-base w-full"/>
                     </div>
                 </div>
             </details>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Calculate EMI
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Loan Details</h3>
+                <div className="result-card p-6 space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Loan Details</h3>
                      <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Monthly EMI:</span>
+                        <span className="text-on-surface-variant">Monthly EMI:</span>
                         <span className="text-2xl font-bold text-primary">{formatCurrency(result.emi)}</span>
                     </div>
                      <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Total Interest:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalInterest)}</span>
+                        <span className="text-on-surface-variant">Total Interest:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalInterest)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Total Payment:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalPayment)}</span>
+                        <span className="text-on-surface-variant">Total Payment:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalPayment)}</span>
                     </div>
                     {result.isAffordable !== undefined && (
                         <div className={`text-center p-3 mt-4 rounded-lg ${result.isAffordable ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -189,7 +187,7 @@ const HomeLoanEMICalculator: React.FC<HomeLoanEMICalculatorProps> = ({ isPremium
                             <p className="text-xs mt-1">{result.isAffordable ? 'Your total EMIs are within 50% of your income.' : 'Your total EMIs exceed 50% of your income.'}</p>
                         </div>
                     )}
-                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                          <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain

@@ -1,12 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 interface AOVCalculatorState {
     revenue: string;
@@ -14,21 +14,22 @@ interface AOVCalculatorState {
 }
 
 interface AOVCalculatorProps {
-    isPremium?: boolean;
     initialState?: AOVCalculatorState;
+    isPremium?: boolean;
 }
 
-const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }) => {
+const AOVCalculator: React.FC<AOVCalculatorProps> = ({ initialState, isPremium }) => {
     const [revenue, setRevenue] = useState('10000');
     const [orders, setOrders] = useState('200');
     const [result, setResult] = useState<number | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
-    const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
+    const { shouldShowAd } = useAd();
     const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
 
@@ -40,16 +41,27 @@ const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }
         }
     }, [initialState]);
 
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
+
     const handleCalculate = () => {
         const performCalculation = () => {
             const rev = parseFloat(revenue);
             const ord = parseFloat(orders);
 
             if (isNaN(rev) || isNaN(ord) || ord <= 0) {
-                return null;
+                setResult(null);
+                return;
             }
 
             const aov = rev / ord;
+            setResult(aov);
+
             addHistory({
                 calculator: 'AOV Calculator',
                 calculation: `AOV: ${formatCurrency(rev)} / ${ord} = ${formatCurrency(aov)}`,
@@ -57,36 +69,21 @@ const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }
             });
             
             setShareText(`AOV Calculation:\n- Total Revenue: ${formatCurrency(rev)}\n- Total Orders: ${ord}\n\nResult:\n- Average Order Value (AOV): ${formatCurrency(aov)}`);
-            return aov;
         };
-
+        
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const res = performCalculation();
-            if (res !== null) setResult(res);
+            performCalculation();
         } else {
-            const res = performCalculation();
-            if (res !== null) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(res);
-                    setShowAd(true);
-                } else {
-                    setResult(res);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
     };
     
-    const handleAdClose = () => {
-        if (pendingResult !== null) {
-            setResult(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
-    };
-    
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -102,25 +99,25 @@ const AOVCalculator: React.FC<AOVCalculatorProps> = ({ isPremium, initialState }
             <div className="space-y-4">
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="revenue" className="block text-sm font-medium text-theme-secondary">Total Revenue ({currencySymbol})</label>
+                        <label htmlFor="revenue" className="block text-sm font-medium text-on-surface-variant">Total Revenue ({currencySymbol})</label>
                         <InfoTooltip text="The total revenue generated from all orders over a specific period." />
                     </div>
-                    <input type="number" id="revenue" value={revenue} onChange={e => setRevenue(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="revenue" value={revenue} onChange={e => setRevenue(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="orders" className="block text-sm font-medium text-theme-secondary">Total Number of Orders</label>
+                        <label htmlFor="orders" className="block text-sm font-medium text-on-surface-variant">Total Number of Orders</label>
                         <InfoTooltip text="The total count of orders placed during the same period." />
                     </div>
-                    <input type="number" id="orders" value={orders} onChange={e => setOrders(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="orders" value={orders} onChange={e => setOrders(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Calculate
             </button>
             {result !== null && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2">Average Order Value (AOV)</h3>
+                <div className="result-card p-6 text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Average Order Value (AOV)</h3>
                     <p className="text-4xl font-bold text-primary">{formatCurrency(result)}</p>
                     <div className="flex justify-between items-center mt-4">
                         <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import CalculatorCard from './CalculatorCard';
 import { useTheme } from '../contexts/ThemeContext';
 import AdsensePlaceholder from './AdsensePlaceholder';
@@ -6,9 +6,10 @@ import RecentHistory from './RecentHistory';
 import { HistoryEntry } from '../contexts/HistoryContext';
 import { calculatorsData } from '../data/calculators';
 import Logo from './Logo';
+import SearchModal from './SearchModal';
+import { blogPosts } from '../data/blogPosts';
+import BlogCard from './BlogCard';
 import CalculatorCarousel from './CalculatorCarousel';
-import VoiceInputButton from './VoiceInputButton';
-
 
 interface HomePageProps {
   onSelectCalculator: (name: string, isPremium?: boolean) => void;
@@ -16,6 +17,7 @@ interface HomePageProps {
   onToggleHistoryPanel: () => void;
   onRestoreFromHistory: (entry: HistoryEntry) => void;
   onShowPolicyPage: (page: string) => void;
+  onShowBlogPage: (page: string, slug?: string) => void;
 }
 
 const suggestedCalculatorNames = [
@@ -28,11 +30,13 @@ const suggestedCalculatorNames = [
     'E-commerce Profit Calculator',
 ];
 
-const Footer: React.FC<{ onShowPolicyPage: (page: string) => void }> = ({ onShowPolicyPage }) => {
+const Footer: React.FC<{ onShowPolicyPage: (page: string) => void; onShowBlogPage: (page: string) => void }> = ({ onShowPolicyPage, onShowBlogPage }) => {
   return (
-    <footer className="w-full mt-12 py-6 border-t border-theme text-center text-sm text-theme-secondary">
+    <footer className="w-full mt-12 py-6 border-t border-outline-variant text-center text-sm text-on-surface-variant">
       <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-2">
         <button onClick={() => onShowPolicyPage('about')} className="hover:text-primary hover:underline">About Us</button>
+        <span className="opacity-50 hidden sm:inline">|</span>
+        <button onClick={() => onShowBlogPage('list')} className="hover:text-primary hover:underline">Blog</button>
         <span className="opacity-50 hidden sm:inline">|</span>
         <button onClick={() => onShowPolicyPage('privacy')} className="hover:text-primary hover:underline">Privacy Policy</button>
         <span className="opacity-50 hidden sm:inline">|</span>
@@ -46,54 +50,10 @@ const Footer: React.FC<{ onShowPolicyPage: (page: string) => void }> = ({ onShow
 };
 
 
-const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory, onShowPolicyPage }) => {
-    const { homeLayout, pinnedCalculators } = useTheme();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filter, setFilter] = useState('All');
-    const searchContainerRef = useRef<HTMLDivElement>(null);
-    const filterRef = useRef<HTMLDivElement>(null);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [isSearchVisible, setIsSearchVisible] = useState(false);
+const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory, onShowPolicyPage, onShowBlogPage }) => {
+    const { pinnedCalculators } = useTheme();
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     
-    // Improved search bar: close on scroll or outside click
-    useEffect(() => {
-        const handleScroll = () => {
-            if (isSearchVisible) {
-                setIsSearchVisible(false);
-            }
-        };
-
-        const handleClickOutside = (event: MouseEvent) => {
-            if (isSearchVisible && searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-                setIsSearchVisible(false);
-            }
-        };
-
-        if (isSearchVisible) {
-            window.addEventListener('scroll', handleScroll, { passive: true });
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isSearchVisible]);
-
-
-    // Close filter dropdown if clicked outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-                setIsFilterOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
     const allCalculatorsFlat = useMemo(() => calculatorsData.flatMap(cat => cat.items), []);
     
     const suggestedCalculators = useMemo(() => {
@@ -107,165 +67,107 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
             .map(pinName => allCalculatorsFlat.find(calc => calc.name === pinName))
             .filter((item): item is NonNullable<typeof item> => !!item);
     }, [pinnedCalculators, allCalculatorsFlat]);
-
-
-    const filteredAndSortedSections = useMemo(() => {
-        const lowerCaseQuery = searchQuery.toLowerCase();
-        
-        let sections = calculatorsData
-            .map(category => ({
-                ...category,
-                items: category.items.filter(item => 
-                    item.name.toLowerCase().includes(lowerCaseQuery)
-                )
-            }))
-            .filter(category => category.items.length > 0);
-
-        if (filter !== 'All') {
-            sections = sections.filter(c => c.category === filter);
-        }
-        
-        return sections;
-
-    }, [searchQuery, filter]);
     
-    const renderCalculators = (category: any) => {
-        const expertBadge = <span className="ml-2 text-xs font-bold uppercase text-on-primary bg-primary px-1.5 py-0.5 rounded-full flex-shrink-0">Expert</span>;
+    const latestBlogs = blogPosts.slice(0, 2);
 
-        switch(homeLayout) {
-            case 'detailedList':
-                return (
-                    <div className="space-y-1">
-                        {category.items.map((item: any) => (
-                            <button key={item.name} onClick={() => onSelectCalculator(item.name, item.isPremium)} className="w-full flex items-center p-3 rounded-lg hover:bg-theme-secondary transition-colors text-left">
-                               <div className="mr-4 flex-shrink-0 w-8 h-8">{item.icon}</div>
-                               <div className="flex items-center justify-between flex-grow min-w-0">
-                                   <span className="font-medium text-theme-primary truncate">{item.name}</span>
-                                   {item.isPremium && expertBadge}
-                               </div>
-                            </button>
-                        ))}
-                    </div>
-                );
-            case 'compactList':
-                return (
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-2">
-                        {category.items.map((item: any) => (
-                            <li key={item.name}>
-                                <button onClick={() => onSelectCalculator(item.name, item.isPremium)} className="w-full text-left p-1.5 rounded-md hover:bg-theme-secondary transition-colors text-sm text-theme-primary flex items-center">
-                                    <div className="flex items-center justify-between flex-grow min-w-0">
-                                        <span className="truncate">{item.name}</span>
-                                        {item.isPremium && expertBadge}
-                                    </div>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                );
-            case 'grid':
-            default:
-                return (
-                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                        {category.items.map((item: any) => (
-                            <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
-                        ))}
-                    </div>
-                );
-        }
-    }
-    
-    const renderAllSections = () => {
-        return filteredAndSortedSections.map((category, index) => (
-            <React.Fragment key={category.category}>
-                <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
-                    <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-theme-primary`}>{category.category}</h2>
-                    {renderCalculators(category)}
-                </section>
-                {(index + 1) % 2 === 0 && <AdsensePlaceholder />}
-            </React.Fragment>
-        ));
-    };
-    
+    const realEstateIndex = calculatorsData.findIndex(cat => cat.category === 'Real Estate & Construction');
+    const categoriesBeforeBlog = realEstateIndex !== -1 ? calculatorsData.slice(0, realEstateIndex + 1) : calculatorsData;
+    const categoriesAfterBlog = realEstateIndex !== -1 ? calculatorsData.slice(realEstateIndex + 1) : [];
+
     return (
         <div className="flex flex-col min-h-screen">
+            <SearchModal 
+                isOpen={isSearchModalOpen} 
+                onClose={() => setIsSearchModalOpen(false)}
+                onSelectCalculator={onSelectCalculator}
+            />
              <header 
                 id="onboarding-header"
-                className={`sticky top-0 z-20 flex items-center justify-between p-4 shadow-md bg-primary text-on-primary transition-colors`}
+                className="home-header flex items-center justify-between p-4"
             >
-                <button onClick={onToggleSidebar} id="onboarding-sidebar-toggle" className="p-2 rounded-full hover:bg-black/10 transition-colors" aria-label="Open sidebar menu">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button onClick={onToggleSidebar} id="onboarding-sidebar-toggle" className="p-2 rounded-full hover:bg-surface-container-high transition-colors" aria-label="Open sidebar menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-on-surface" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-primary">
                     <Logo />
                     <h1 className="text-xl font-bold">All Calculation</h1>
                 </div>
-                <button onClick={() => setIsSearchVisible(p => !p)} id="onboarding-search-toggle" className="p-2 rounded-full hover:bg-black/10 transition-colors" aria-label="Search calculators">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </button>
+                <div className="flex items-center">
+                    <button onClick={() => setIsSearchModalOpen(true)} id="onboarding-search-toggle" className="p-2 rounded-full hover:bg-surface-container-high transition-colors" aria-label="Search calculators">
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-on-surface" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" /></svg>
+                    </button>
+                    <button onClick={onToggleHistoryPanel} className="p-2 rounded-full hover:bg-surface-container-high transition-colors" aria-label="View history">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-on-surface" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                </div>
             </header>
 
-            <main className="flex-grow p-4">
-                {isSearchVisible && (
-                     <div ref={searchContainerRef} className="bg-theme-secondary/80 backdrop-blur-sm p-4 rounded-xl shadow sticky top-20 z-10 mb-6 animate-fade-in-down">
-                        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                            <div className="relative w-full">
-                                <input
-                                    type="text"
-                                    placeholder="Search for a calculator..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-theme-primary text-theme-primary rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition pr-12"
-                                />
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-                                     <VoiceInputButton onTranscript={setSearchQuery} />
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <div className="relative" ref={filterRef}>
-                                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="p-3 bg-theme-primary rounded-md hover:bg-theme-tertiary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-theme-secondary" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" /></svg>
-                                    </button>
-                                    {isFilterOpen && (
-                                        <div className="absolute right-0 mt-2 w-48 bg-theme-secondary rounded-md shadow-lg z-20 py-1">
-                                            <button onClick={() => {setFilter('All'); setIsFilterOpen(false);}} className="block w-full text-left px-4 py-2 text-sm text-theme-primary hover:bg-theme-tertiary">All</button>
-                                            {calculatorsData.map(c => <button key={c.category} onClick={() => {setFilter(c.category); setIsFilterOpen(false);}} className="block w-full text-left px-4 py-2 text-sm text-theme-primary hover:bg-theme-tertiary">{c.category}</button>)}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                
+            <main className="flex-grow p-4 sm:p-6 lg:p-8">
                 {pinnedCalculators.length > 0 && (
                     <section className="mb-8" aria-labelledby="pinned-calculators">
-                        <h2 id="pinned-calculators" className="text-2xl font-semibold mb-4 text-theme-primary flex items-center">
+                        <h2 id="pinned-calculators" className="text-2xl font-semibold mb-2 text-on-surface flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5.586l2.293-2.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 9.586V4a1 1 0 011-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
                             Pinned
                         </h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                            {pinnedCalculatorsData.map((item) => (
-                                <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
-                            ))}
-                        </div>
+                        <CalculatorCarousel items={pinnedCalculatorsData} onSelectCalculator={onSelectCalculator} />
                     </section>
                 )}
 
                 <section className="mb-8" aria-labelledby="suggested-calculators">
-                    <h2 id="suggested-calculators" className="text-2xl font-semibold mb-4 text-theme-primary flex items-center">
+                    <h2 id="suggested-calculators" className="text-2xl font-semibold mb-2 text-on-surface flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1V3a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V6H6a1 1 0 110-2h1V3a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0V6h1a1 1 0 100-2h-1V3zM4 12a1 1 0 011-1h1v-1a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H5a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1v-1z" clipRule="evenodd" /></svg>
                         Suggested For You
                     </h2>
-                    <CalculatorCarousel items={suggestedCalculators} onSelectCalculator={onSelectCalculator} pinTargetName={pinnedCalculators.length === 0 ? suggestedCalculatorNames[0] : undefined}/>
+                     <CalculatorCarousel items={suggestedCalculators} onSelectCalculator={onSelectCalculator} pinId={'onboarding-pin-target'} />
                 </section>
                
                 <RecentHistory onToggleHistoryPanel={onToggleHistoryPanel} onRestore={onRestoreFromHistory} />
                 
-                <div id="onboarding-main-content">{renderAllSections()}</div>
+                <div id="onboarding-main-content">
+                    {categoriesBeforeBlog.map((category, index) => (
+                        <React.Fragment key={category.category}>
+                            <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
+                                <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-on-surface`}>{category.category}</h2>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {category.items.map((item: any) => (
+                                        <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
+                                    ))}
+                                </div>
+                            </section>
+                            {(index + 1) % 2 === 0 && <AdsensePlaceholder />}
+                        </React.Fragment>
+                    ))}
 
-                <Footer onShowPolicyPage={onShowPolicyPage} />
+                    <section className="my-12" aria-labelledby="latest-blogs">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 id="latest-blogs" className="text-2xl font-semibold text-on-surface">Latest From Our Blog</h2>
+                            <button onClick={() => onShowBlogPage('list')} className="text-sm font-semibold text-primary hover:underline">View All</button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                            {latestBlogs.map(post => (
+                                <BlogCard key={post.slug} post={post} onSelect={() => onShowBlogPage('post', post.slug)} />
+                            ))}
+                        </div>
+                    </section>
+
+                     {categoriesAfterBlog.map((category, index) => (
+                        <React.Fragment key={category.category}>
+                            <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
+                                <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-on-surface`}>{category.category}</h2>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {category.items.map((item: any) => (
+                                        <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
+                                    ))}
+                                </div>
+                            </section>
+                            {(index + 1) % 2 !== 0 && <AdsensePlaceholder />}
+                        </React.Fragment>
+                    ))}
+                </div>
+
+                <Footer onShowPolicyPage={onShowPolicyPage} onShowBlogPage={onShowBlogPage} />
             </main>
         </div>
     );

@@ -94,30 +94,28 @@ const ForceAccelerationCalculator: React.FC<{initialState?: any; isPremium?: boo
         setResult(null);
     }
     
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             <div>
-                <label htmlFor="calculate" className="block text-sm font-medium text-theme-secondary mb-1">Calculate</label>
-                <select id="calculate" value={calculate} onChange={handleSelectChange} className={inputClasses}>
+                <label htmlFor="calculate" className="block text-sm font-medium text-on-surface-variant mb-1">Calculate</label>
+                <select id="calculate" value={calculate} onChange={handleSelectChange} className="select-base w-full">
                     <option value="force">Force (F)</option>
                     <option value="mass">Mass (m)</option>
                     <option value="acceleration">Acceleration (a)</option>
                 </select>
             </div>
             <div className="space-y-4">
-                {calculate !== 'force' && <div><label className="text-sm font-medium text-theme-secondary mb-1">Force (Newtons)</label><input type="number" value={force} onChange={e => setForce(e.target.value)} className={inputClasses}/></div>}
-                {calculate !== 'mass' && <div><label className="text-sm font-medium text-theme-secondary mb-1">Mass (kg)</label><input type="number" value={mass} onChange={e => setMass(e.target.value)} className={inputClasses}/></div>}
-                {calculate !== 'acceleration' && <div><label className="text-sm font-medium text-theme-secondary mb-1">Acceleration (m/s²)</label><input type="number" value={acceleration} onChange={e => setAcceleration(e.target.value)} className={inputClasses}/></div>}
+                {calculate !== 'force' && <div><label className="text-sm font-medium text-on-surface-variant mb-1">Force (Newtons)</label><input type="number" value={force} onChange={e => setForce(e.target.value)} className="input-base w-full"/></div>}
+                {calculate !== 'mass' && <div><label className="text-sm font-medium text-on-surface-variant mb-1">Mass (kg)</label><input type="number" value={mass} onChange={e => setMass(e.target.value)} className="input-base w-full"/></div>}
+                {calculate !== 'acceleration' && <div><label className="text-sm font-medium text-on-surface-variant mb-1">Acceleration (m/s²)</label><input type="number" value={acceleration} onChange={e => setAcceleration(e.target.value)} className="input-base w-full"/></div>}
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate
             </button>
             {result && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2 capitalize">{calculate}</h3>
+                <div className="result-card p-6 rounded-lg text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2 capitalize">{calculate}</h3>
                     <p className="text-4xl font-bold text-primary">{result} <span className="text-2xl">{calculate === 'force' ? 'N' : calculate === 'mass' ? 'kg' : 'm/s²'}</span></p>
                     <ShareButton textToShare={shareText} />
                 </div>

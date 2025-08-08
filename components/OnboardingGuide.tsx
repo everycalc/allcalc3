@@ -59,6 +59,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ isOpen, onClose, onOp
         borderRadius: '8px',
         transition: 'all 0.3s ease-in-out',
         pointerEvents: 'none',
+        zIndex: 9998,
       });
 
       let top = 0, left = 0, transform = '';
@@ -97,14 +98,14 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ isOpen, onClose, onOp
       <div style={spotlightStyle}></div>
       <div
         style={contentStyle}
-        className="fixed w-72 bg-theme-secondary rounded-lg shadow-2xl p-4 text-center z-[9999] animate-fade-in"
+        className="onboarding-content-box fixed w-72 rounded-lg shadow-2xl p-4 text-center z-[9999] animate-fade-in"
       >
         <h3 className="font-bold text-lg text-primary mb-2">{currentStepData.title}</h3>
-        <p className="text-sm text-theme-primary mb-4">{currentStepData.content}</p>
+        <p className="text-sm mb-4">{currentStepData.content}</p>
         <div className="flex justify-between items-center">
-            <button onClick={onClose} className="text-xs text-theme-secondary hover:underline">Skip</button>
-            <span className="text-xs text-theme-secondary">{step + 1} / {guideSteps.length}</span>
-            <button onClick={handleNext} className="text-sm bg-primary text-on-primary font-bold py-1.5 px-4 rounded-md hover:bg-primary-light transition-colors">
+            <button onClick={onClose} className="text-xs hover:underline">Skip</button>
+            <span className="text-xs">{step + 1} / {guideSteps.length}</span>
+            <button onClick={handleNext} className="btn-primary text-sm font-bold py-1.5 px-4 rounded-md">
               {step === guideSteps.length - 1 ? 'Finish' : 'Next'}
             </button>
         </div>

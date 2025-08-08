@@ -81,12 +81,12 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         onClick={handleClose}
       />
       <div
-        className="relative w-full max-w-lg bg-theme-secondary rounded-xl shadow-2xl p-6 transform transition-transform animate-fade-in-down"
+        className="modal-content relative w-full max-w-lg rounded-xl shadow-2xl p-6 transform transition-transform animate-fade-in-down"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-theme-primary">Feedback & Requests</h2>
-          <button onClick={handleClose} className="p-2 rounded-full hover:bg-black/10 text-theme-secondary">
+          <h2 className="text-xl font-bold">Feedback & Requests</h2>
+          <button onClick={handleClose} className="p-2 rounded-full hover:bg-surface-container-high">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -95,19 +95,19 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         
         {response ? (
             <div className="text-center space-y-4">
-                <p className="text-theme-primary">{response}</p>
-                <button onClick={handleClose} className="bg-primary text-on-primary font-bold py-2 px-6 rounded-md hover:bg-primary-light transition-colors">Close</button>
+                <p>{response}</p>
+                <button onClick={handleClose} className="btn-primary font-bold py-2 px-6 rounded-md">Close</button>
             </div>
         ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="feedback" className="block text-sm font-medium text-theme-secondary mb-1">Have an idea for a new calculator or feedback for us?</label>
+                <label htmlFor="feedback" className="block text-sm font-medium text-on-surface-variant mb-1">Have an idea for a new calculator or feedback for us?</label>
                 <textarea 
                   id="feedback" 
                   value={feedback} 
                   onChange={e => setFeedback(e.target.value)} 
                   rows={5} 
-                  className="w-full bg-theme-primary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition"
+                  className="textarea-base w-full p-3 transition"
                   placeholder="e.g., 'I'd love a crypto profit/loss calculator!' or 'The history panel is great!'"
                   disabled={isSubmitting}
                 />
@@ -116,7 +116,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg disabled:bg-theme-tertiary disabled:cursor-not-allowed"
+                className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Submitting...' : 'Send Feedback'}
               </button>

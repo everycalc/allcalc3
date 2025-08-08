@@ -33,7 +33,7 @@ const AgeCalculatorOnboarding: React.FC<AgeCalculatorOnboardingProps> = ({ isOpe
         aria-hidden="true"
       />
       <div
-        className="relative w-full max-w-sm bg-theme-secondary rounded-xl shadow-2xl p-6 text-center space-y-4 transform transition-transform animate-fade-in-down"
+        className="modal-content relative w-full max-w-sm p-6 text-center space-y-4 transform transition-transform animate-fade-in-down"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -41,14 +41,14 @@ const AgeCalculatorOnboarding: React.FC<AgeCalculatorOnboardingProps> = ({ isOpe
       >
         <div className="text-5xl">🎂</div>
         <h2 id="onboarding-title" className="text-2xl font-bold text-primary">Save Birthdays!</h2>
-        <p className="text-theme-secondary">
+        <p className="text-on-surface-variant">
           Tired of typing dates? Save birthdays and anniversaries to calculate ages and track events with a single click.
         </p>
         <div className="space-y-2 pt-2">
-            <button onClick={handleManageDatesClick} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors">
+            <button onClick={handleManageDatesClick} className="btn-primary w-full font-bold py-3 px-4 rounded-lg">
                 Manage Saved Dates
             </button>
-            <button onClick={onClose} className="w-full text-sm text-theme-secondary font-semibold py-2 px-4 rounded-md hover:bg-theme-tertiary transition-colors">
+            <button onClick={onClose} className="btn-secondary w-full text-sm font-semibold py-2 px-4 rounded-md">
                 Maybe Later
             </button>
         </div>

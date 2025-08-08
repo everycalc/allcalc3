@@ -112,8 +112,6 @@ const CreditCardInterestCalculator: React.FC<CreditCardInterestCalculatorProps> 
         setShowAd(false);
     };
     
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -129,33 +127,33 @@ const CreditCardInterestCalculator: React.FC<CreditCardInterestCalculatorProps> 
             <div className="space-y-4">
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="balance" className="block text-sm font-medium text-theme-secondary">Outstanding Balance ({currencySymbol})</label>
+                        <label htmlFor="balance" className="block text-sm font-medium text-on-surface-variant">Outstanding Balance ({currencySymbol})</label>
                         <InfoTooltip text="The current amount of debt on your credit card." />
                     </div>
-                    <input type="number" id="balance" value={balance} onChange={e => setBalance(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="balance" value={balance} onChange={e => setBalance(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="apr" className="block text-sm font-medium text-theme-secondary">Annual Percentage Rate (APR %)</label>
+                        <label htmlFor="apr" className="block text-sm font-medium text-on-surface-variant">Annual Percentage Rate (APR %)</label>
                         <InfoTooltip text="The yearly interest rate charged on your card balance." />
                     </div>
-                    <input type="number" id="apr" value={apr} onChange={e => setApr(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="apr" value={apr} onChange={e => setApr(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="monthlyPayment" className="block text-sm font-medium text-theme-secondary">Monthly Payment ({currencySymbol})</label>
+                        <label htmlFor="monthlyPayment" className="block text-sm font-medium text-on-surface-variant">Monthly Payment ({currencySymbol})</label>
                         <InfoTooltip text="The amount you plan to pay towards your card each month." />
                     </div>
-                    <input type="number" id="monthlyPayment" value={monthlyPayment} onChange={e => setMonthlyPayment(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="monthlyPayment" value={monthlyPayment} onChange={e => setMonthlyPayment(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
             {error && <p className="text-red-500 text-sm font-semibold">{error}</p>}
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate Payoff
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Debt Payoff Schedule</h3>
+                <div className="result-card p-6 rounded-lg space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Debt Payoff Schedule</h3>
                     <div className="py-4">
                       <PieChart data={[
                           { label: 'Principal Paid', value: parseFloat(balance), color: '#3b82f6' },
@@ -164,16 +162,16 @@ const CreditCardInterestCalculator: React.FC<CreditCardInterestCalculatorProps> 
                     </div>
                     <div className="flex justify-between items-center text-center">
                         <div className="w-1/2">
-                            <span className="text-theme-secondary block">Time to Pay Off</span>
+                            <span className="text-on-surface-variant block">Time to Pay Off</span>
                             <span className="text-3xl font-bold text-primary">{result.monthsToPayOff}</span>
-                            <span className="text-theme-secondary block text-sm">months</span>
+                            <span className="text-on-surface-variant block text-sm">months</span>
                         </div>
-                        <div className="w-1/2 border-l border-theme">
-                             <span className="text-theme-secondary block">Total Interest Paid</span>
+                        <div className="w-1/2 border-l border-outline-variant">
+                             <span className="text-on-surface-variant block">Total Interest Paid</span>
                             <span className="text-2xl font-bold text-primary">{formatCurrency(result.totalInterest)}</span>
                         </div>
                     </div>
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                          <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain

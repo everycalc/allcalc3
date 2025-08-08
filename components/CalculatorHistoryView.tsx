@@ -1,7 +1,5 @@
-
 import React, { useContext, useMemo } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import AdsensePlaceholder from './AdsensePlaceholder';
 
 interface CalculatorHistoryViewProps {
     calculatorName: string;
@@ -15,27 +13,22 @@ const CalculatorHistoryView: React.FC<CalculatorHistoryViewProps> = ({ calculato
     }, [history, calculatorName]);
 
     return (
-        <div className="max-h-96 overflow-y-auto pr-2">
+        <div className="calculator-wrapper-card p-4 md:p-6 max-h-[32rem] overflow-y-auto">
             {filteredHistory.length === 0 ? (
-                <div className="text-center text-theme-secondary py-10">
+                <div className="text-center text-on-surface-variant py-10">
                     <p>No history for this calculator yet.</p>
                 </div>
             ) : (
-                <>
-                    <ul className="space-y-3">
-                        {filteredHistory.map(entry => (
-                            <li key={entry.id} className="bg-theme-primary p-3 rounded-lg animate-fade-in">
-                                <p className="text-theme-primary break-words">{entry.calculation}</p>
-                                <p className="text-xs text-theme-secondary text-right">
-                                    {new Date(entry.timestamp).toLocaleString()}
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-4">
-                        <AdsensePlaceholder />
-                    </div>
-                </>
+                <ul className="space-y-3">
+                    {filteredHistory.map(entry => (
+                        <li key={entry.id} className="history-view-item p-4 rounded-2xl animate-fade-in">
+                            <p className="text-on-surface break-words">{entry.calculation}</p>
+                            <p className="text-xs text-on-surface-variant text-right mt-2">
+                                {new Date(entry.timestamp).toLocaleString()}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
             )}
         </div>
     );

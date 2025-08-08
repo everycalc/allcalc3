@@ -96,21 +96,19 @@ const PercentageCalculator: React.FC<PercentageCalculatorProps> = ({initialState
         setResult(null);
     };
 
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     const renderInputs = () => {
         switch (mode) {
             case 'percentOf': return (<>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">What is</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className={inputClasses}/></div>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">% of</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className={inputClasses}/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">What is</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className="input-base w-full"/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">% of</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className="input-base w-full"/></div>
             </>);
             case 'isWhatPercent': return (<>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">Value</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className={inputClasses}/></div>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">is what % of</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className={inputClasses}/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">Value</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className="input-base w-full"/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">is what % of</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className="input-base w-full"/></div>
             </>);
             case 'percentChange': return (<>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">From</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className={inputClasses}/></div>
-                <div><label className="text-sm font-medium text-theme-secondary mb-1">To</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className={inputClasses}/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">From</label><input type="number" name="val1" value={inputs.val1} onChange={handleInputChange} className="input-base w-full"/></div>
+                <div><label className="text-sm font-medium text-on-surface-variant mb-1">To</label><input type="number" name="val2" value={inputs.val2} onChange={handleInputChange} className="input-base w-full"/></div>
             </>);
         }
     };
@@ -118,18 +116,20 @@ const PercentageCalculator: React.FC<PercentageCalculatorProps> = ({initialState
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            <div className="grid grid-cols-3 text-center bg-theme-primary p-1 rounded-lg">
-                <button onClick={() => handleModeChange('percentOf')} className={`py-2 rounded-md transition text-sm ${mode === 'percentOf' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>% of X</button>
-                <button onClick={() => handleModeChange('isWhatPercent')} className={`py-2 rounded-md transition text-sm ${mode === 'isWhatPercent' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>X is what %</button>
-                <button onClick={() => handleModeChange('percentChange')} className={`py-2 rounded-md transition text-sm ${mode === 'percentChange' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>% Change</button>
+            <div className="toggle-group flex justify-center p-1 rounded-lg">
+                <button onClick={() => handleModeChange('percentOf')} className={`toggle-button w-1/3 py-2 rounded-md transition text-sm ${mode === 'percentOf' ? 'toggle-button-active' : ''}`}>% of a Number</button>
+                <button onClick={() => handleModeChange('isWhatPercent')} className={`toggle-button w-1/3 py-2 rounded-md transition text-sm ${mode === 'isWhatPercent' ? 'toggle-button-active' : ''}`}>X is what % of Y</button>
+                <button onClick={() => handleModeChange('percentChange')} className={`toggle-button w-1/3 py-2 rounded-md transition text-sm ${mode === 'percentChange' ? 'toggle-button-active' : ''}`}>% Change</button>
             </div>
-            <div className="grid grid-cols-2 gap-4">{renderInputs()}</div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <div className="grid grid-cols-2 gap-4 items-end">
+                {renderInputs()}
+            </div>
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate
             </button>
-            {result !== null && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2">Result</h3>
+            {result && (
+                <div className="result-card p-6 rounded-lg text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Result</h3>
                     <p className="text-4xl font-bold text-primary">{result}</p>
                     <ShareButton textToShare={shareText} />
                 </div>

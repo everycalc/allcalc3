@@ -7,9 +7,9 @@ interface DisplayProps {
 
 const Display: React.FC<DisplayProps> = ({ value, subValue }) => {
   return (
-    <div className="bg-theme-primary/50 rounded-lg p-4 mb-4 text-right overflow-hidden break-words">
-      <div className="text-theme-secondary text-xl h-7">{subValue || ''}</div>
-      <div className="text-theme-primary text-5xl font-light tracking-wider" style={{ minHeight: '3.75rem' }}>
+    <div className="calculator-display rounded-3xl p-6 mb-4 text-right overflow-hidden break-words min-h-[120px] flex flex-col justify-end">
+      <div className="text-on-surface-variant text-2xl h-8 font-medium">{subValue || ''}</div>
+      <div className="text-on-surface text-6xl font-semibold tracking-wide" style={{ minHeight: '4.5rem' }}>
         {value}
       </div>
     </div>

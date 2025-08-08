@@ -77,31 +77,29 @@ const LogTrigCalculator: React.FC<{initialState?: any, isPremium?: boolean}> = (
         setShowAd(false);
     };
 
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 text-center text-2xl font-bold focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             <div>
-                <label htmlFor="input" className="block text-sm font-medium text-theme-secondary mb-1 text-center">Enter Value</label>
-                <input type="number" id="input" value={input} onChange={e => setInput(e.target.value)} className={inputClasses} />
+                <label htmlFor="input" className="block text-sm font-medium text-on-surface-variant mb-1 text-center">Enter Value</label>
+                <input type="number" id="input" value={input} onChange={e => setInput(e.target.value)} className="input-base w-full text-center text-2xl font-bold" />
             </div>
-             <div className="flex justify-center bg-theme-secondary p-1 rounded-lg">
-                <button onClick={() => setIsDeg(true)} className={`w-1/2 py-2 rounded-md transition ${isDeg ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Degrees</button>
-                <button onClick={() => setIsDeg(false)} className={`w-1/2 py-2 rounded-md transition ${!isDeg ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Radians</button>
+             <div className="toggle-group flex justify-center p-1 rounded-lg">
+                <button onClick={() => setIsDeg(true)} className={`toggle-button w-1/2 py-2 rounded-md transition ${isDeg ? 'toggle-button-active' : ''}`}>Degrees</button>
+                <button onClick={() => setIsDeg(false)} className={`toggle-button w-1/2 py-2 rounded-md transition ${!isDeg ? 'toggle-button-active' : ''}`}>Radians</button>
             </div>
             <div className="grid grid-cols-3 gap-2">
-                <button onClick={() => handleCalculate('sin')} className="p-4 bg-theme-tertiary rounded-lg font-semibold hover:bg-primary hover:text-on-primary transition">sin</button>
-                <button onClick={() => handleCalculate('cos')} className="p-4 bg-theme-tertiary rounded-lg font-semibold hover:bg-primary hover:text-on-primary transition">cos</button>
-                <button onClick={() => handleCalculate('tan')} className="p-4 bg-theme-tertiary rounded-lg font-semibold hover:bg-primary hover:text-on-primary transition">tan</button>
+                <button onClick={() => handleCalculate('sin')} className="btn-secondary p-4 rounded-lg font-semibold">sin</button>
+                <button onClick={() => handleCalculate('cos')} className="btn-secondary p-4 rounded-lg font-semibold">cos</button>
+                <button onClick={() => handleCalculate('tan')} className="btn-secondary p-4 rounded-lg font-semibold">tan</button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-                 <button onClick={() => handleCalculate('log')} className="p-4 bg-theme-tertiary rounded-lg font-semibold hover:bg-primary hover:text-on-primary transition">log₁₀</button>
-                 <button onClick={() => handleCalculate('ln')} className="p-4 bg-theme-tertiary rounded-lg font-semibold hover:bg-primary hover:text-on-primary transition">ln</button>
+                 <button onClick={() => handleCalculate('log')} className="btn-secondary p-4 rounded-lg font-semibold">log₁₀</button>
+                 <button onClick={() => handleCalculate('ln')} className="btn-secondary p-4 rounded-lg font-semibold">ln</button>
             </div>
             {result && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2">Result</h3>
+                <div className="result-card p-6 rounded-lg text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Result</h3>
                     <p className="text-4xl font-bold text-primary break-all">{result}</p>
                     <ShareButton textToShare={shareText} />
                 </div>

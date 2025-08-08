@@ -114,44 +114,42 @@ const GSTTaxCalculator: React.FC<GSTTaxCalculatorProps> = ({initialState, isPrem
         setResult(null);
     };
 
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            <div className="flex justify-center bg-theme-primary p-1 rounded-lg">
-                <button onClick={() => handleActionChange('add')} className={`w-1/2 py-2 rounded-md transition ${action === 'add' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Add GST</button>
-                <button onClick={() => handleActionChange('remove')} className={`w-1/2 py-2 rounded-md transition ${action === 'remove' ? 'bg-primary text-on-primary' : 'hover:bg-theme-tertiary'}`}>Remove GST</button>
+            <div className="toggle-group flex justify-center p-1 rounded-lg">
+                <button onClick={() => handleActionChange('add')} className={`toggle-button w-1/2 py-2 rounded-md transition ${action === 'add' ? 'toggle-button-active' : ''}`}>Add GST</button>
+                <button onClick={() => handleActionChange('remove')} className={`toggle-button w-1/2 py-2 rounded-md transition ${action === 'remove' ? 'toggle-button-active' : ''}`}>Remove GST</button>
             </div>
             <div className="space-y-4">
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="amount" className="block text-sm font-medium text-theme-secondary">{action === 'add' ? 'Initial Amount' : 'Final Amount'} ({currencySymbol})</label>
+                        <label htmlFor="amount" className="block text-sm font-medium text-on-surface-variant">{action === 'add' ? 'Initial Amount' : 'Final Amount'} ({currencySymbol})</label>
                         <InfoTooltip text={action === 'add' ? "The price before tax is applied." : "The price after tax has been included."} />
                     </div>
-                    <input type="number" id="amount" value={amount} onChange={e => setAmount(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="amount" value={amount} onChange={e => setAmount(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
-                    <label htmlFor="rate" className="block text-sm font-medium text-theme-secondary mb-1">GST / Tax Rate (%)</label>
-                    <input type="number" id="rate" value={rate} onChange={e => setRate(e.target.value)} className={inputClasses}/>
+                    <label htmlFor="rate" className="block text-sm font-medium text-on-surface-variant mb-1">GST / Tax Rate (%)</label>
+                    <input type="number" id="rate" value={rate} onChange={e => setRate(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Tax Calculation</h3>
+                <div className="result-card p-6 rounded-lg space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Tax Calculation</h3>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Initial Amount:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.initialAmount)}</span>
+                        <span className="text-on-surface-variant">Initial Amount:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.initialAmount)}</span>
                     </div>
                      <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">GST/Tax Amount:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.taxAmount)}</span>
+                        <span className="text-on-surface-variant">GST/Tax Amount:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.taxAmount)}</span>
                     </div>
-                    <div className="flex justify-between items-center border-t border-theme pt-4 mt-4">
-                        <span className="text-theme-secondary">Final Amount:</span>
+                    <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-4">
+                        <span className="text-on-surface-variant">Final Amount:</span>
                         <span className="text-2xl font-bold text-primary">{formatCurrency(result.finalAmount)}</span>
                     </div>
                     <ShareButton textToShare={shareText} />

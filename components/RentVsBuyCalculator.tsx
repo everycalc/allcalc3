@@ -126,8 +126,6 @@ const RentVsBuyCalculator: React.FC<RentVsBuyCalculatorProps> = ({ isPremium, in
         setShowAd(false);
     };
 
-    const inputClasses = "w-full bg-theme-primary text-theme-primary border-theme rounded-md p-2 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -141,34 +139,34 @@ const RentVsBuyCalculator: React.FC<RentVsBuyCalculatorProps> = ({ isPremium, in
                 />
             )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4 p-4 bg-theme-secondary/50 rounded-lg">
+                <div className="space-y-4 p-4 bg-surface-container rounded-lg">
                     <h3 className="text-xl font-bold text-center text-primary">Buying Costs</h3>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Property Price ({currencySymbol})</label><input type="number" name="propertyPrice" value={inputs.propertyPrice} onChange={handleInputChange} className={inputClasses} /></div>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Down Payment ({currencySymbol})</label><input type="number" name="downPayment" value={inputs.downPayment} onChange={handleInputChange} className={inputClasses} /></div>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Loan Term (Years)</label><input type="number" name="loanTerm" value={inputs.loanTerm} onChange={handleInputChange} className={inputClasses} /></div>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Interest Rate (% p.a.)</label><input type="number" name="interestRate" value={inputs.interestRate} onChange={handleInputChange} className={inputClasses} /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Property Price ({currencySymbol})</label><input type="number" name="propertyPrice" value={inputs.propertyPrice} onChange={handleInputChange} className="input-base w-full" /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Down Payment ({currencySymbol})</label><input type="number" name="downPayment" value={inputs.downPayment} onChange={handleInputChange} className="input-base w-full" /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Loan Term (Years)</label><input type="number" name="loanTerm" value={inputs.loanTerm} onChange={handleInputChange} className="input-base w-full" /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Interest Rate (% p.a.)</label><input type="number" name="interestRate" value={inputs.interestRate} onChange={handleInputChange} className="input-base w-full" /></div>
                 </div>
-                <div className="space-y-4 p-4 bg-theme-secondary/50 rounded-lg">
+                <div className="space-y-4 p-4 bg-surface-container rounded-lg">
                     <h3 className="text-xl font-bold text-center text-primary">Renting Costs</h3>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Monthly Rent ({currencySymbol})</label><input type="number" name="monthlyRent" value={inputs.monthlyRent} onChange={handleInputChange} className={inputClasses} /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Monthly Rent ({currencySymbol})</label><input type="number" name="monthlyRent" value={inputs.monthlyRent} onChange={handleInputChange} className="input-base w-full" /></div>
                     
                     <h3 className="text-xl font-bold text-center text-primary pt-4">Comparison</h3>
-                    <div><label className="text-sm font-medium text-theme-secondary mb-1">Comparison Period (Years)</label><input type="number" name="comparisonYears" value={inputs.comparisonYears} onChange={handleInputChange} className={inputClasses} /></div>
+                    <div><label className="text-sm font-medium text-on-surface-variant mb-1">Comparison Period (Years)</label><input type="number" name="comparisonYears" value={inputs.comparisonYears} onChange={handleInputChange} className="input-base w-full" /></div>
                 </div>
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Compare
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Comparison over {inputs.comparisonYears} years</h3>
+                <div className="result-card p-6 space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Comparison over {inputs.comparisonYears} years</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                        <div className="bg-theme-primary p-4 rounded-lg">
-                            <p className="text-theme-secondary font-semibold">Total Cost of Renting</p>
+                        <div className="bg-surface-container-low p-4 rounded-lg">
+                            <p className="text-on-surface-variant font-semibold">Total Cost of Renting</p>
                             <p className="text-2xl font-bold text-primary">{formatCurrency(result.totalRentCost)}</p>
                         </div>
-                        <div className="bg-theme-primary p-4 rounded-lg">
-                            <p className="text-theme-secondary font-semibold">Total Cost of Buying</p>
+                        <div className="bg-surface-container-low p-4 rounded-lg">
+                            <p className="text-on-surface-variant font-semibold">Total Cost of Buying</p>
                             <p className="text-2xl font-bold text-primary">{formatCurrency(result.totalBuyCost)}</p>
                         </div>
                     </div>
@@ -177,7 +175,7 @@ const RentVsBuyCalculator: React.FC<RentVsBuyCalculatorProps> = ({ isPremium, in
                             {result.totalBuyCost < result.totalRentCost ? 'Buying is cheaper' : 'Renting is cheaper'} by {formatCurrency(Math.abs(result.totalBuyCost - result.totalRentCost))}.
                         </p>
                     </div>
-                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                          <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                            Explain

@@ -1,17 +1,13 @@
 import React, { useState, useCallback, useContext, useMemo, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import PieChart from './PieChart';
 import ExplanationModal from './ExplanationModal';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
+import InterstitialAdModal from './InterstitialAdModal';
 
 interface LoanCalculatorState {
     principal: string;
@@ -29,19 +25,17 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
     const [interestRate, setInterestRate] = useState('5');
     const [loanTerm, setLoanTerm] = useState('30');
     const [result, setResult] = useState<{ monthlyPayment: number; totalInterest: number; totalPayment: number } | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);
-    const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-    const [showRefuelModal, setShowRefuelModal] = useState(false);
 
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
 
     const { addHistory } = useContext(HistoryContext);
-    const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
-    const { fuel, consumeFuel, addFuel } = useFuel();
+    const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
@@ -53,6 +47,14 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
             setShowSchedule(false);
         }
     }, [initialState]);
+    
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
 
     const amortizationSchedule = useMemo(() => {
         if (!result) return [];
@@ -76,71 +78,54 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
         return schedule;
     }, [result, principal, interestRate, loanTerm]);
 
-    const calculateLoan = useCallback(() => {
+    const calculateLoan = () => {
+        setShowSchedule(false);
+        const p = parseFloat(principal);
+        const annualRate = parseFloat(interestRate);
+        const years = parseFloat(loanTerm);
+
+        if (p <= 0 || annualRate <= 0 || years <= 0) {
+            setResult(null);
+            return;
+        }
+
         const performCalculation = () => {
-            setShowSchedule(false);
-            const p = parseFloat(principal);
-            const annualRate = parseFloat(interestRate);
-            const years = parseFloat(loanTerm);
+            const monthlyRate = annualRate / 100 / 12;
+            const numberOfPayments = years * 12;
 
-            if (p > 0 && annualRate > 0 && years > 0) {
-                const monthlyRate = annualRate / 100 / 12;
-                const numberOfPayments = years * 12;
+            const monthlyPayment = p * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+            const totalPayment = monthlyPayment * numberOfPayments;
+            const totalInterest = totalPayment - p;
 
-                const monthlyPayment = p * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-                const totalPayment = monthlyPayment * numberOfPayments;
-                const totalInterest = totalPayment - p;
+            const calculatedResult = { monthlyPayment, totalInterest, totalPayment };
+            
+            const historyText = `Loan: ${formatCurrency(p)} @ ${annualRate}% for ${years} years -> ${formatCurrency(monthlyPayment)}/mo`;
+            addHistory({
+                calculator: 'Loan Calculator',
+                calculation: historyText,
+                inputs: { principal, interestRate, loanTerm }
+            });
+            
+            setShareText(`Loan Calculation:\n- Loan Amount: ${formatCurrency(p)}\n- Interest Rate: ${annualRate}%\n- Term: ${years} years\n\n- Monthly Payment: ${formatCurrency(monthlyPayment)}\n- Total Interest: ${formatCurrency(totalInterest)}`);
+            setResult(calculatedResult);
+        }
 
-                const calculatedResult = { monthlyPayment, totalInterest, totalPayment };
-                
-                const historyText = `Loan: ${formatCurrency(p)} @ ${annualRate}% for ${years} years -> ${formatCurrency(monthlyPayment)}/mo`;
-                addHistory({
-                    calculator: 'Loan Calculator',
-                    calculation: historyText,
-                    inputs: { principal, interestRate, loanTerm }
-                });
-                
-                setShareText(`Loan Calculation:\n- Loan Amount: ${formatCurrency(p)}\n- Interest Rate: ${annualRate}%\n- Term: ${years} years\n\n- Monthly Payment: ${formatCurrency(monthlyPayment)}\n- Total Interest: ${formatCurrency(totalInterest)}`);
-                return calculatedResult;
-            }
-            return null;
-        };
-        
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const calculatedResult = performCalculation();
-            if (calculatedResult) {
-                setResult(calculatedResult);
-            }
+            performCalculation();
         } else {
-            const calculatedResult = performCalculation();
-            if (calculatedResult) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(calculatedResult);
-                    setShowAd(true);
-                } else {
-                    setResult(calculatedResult);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
-
-    }, [principal, interestRate, loanTerm, addHistory, shouldShowAd, formatCurrency, fuel, consumeFuel, fuelCost, isPremium]);
-
-    const handleAdClose = () => {
-        if (pendingResult) {
-            setResult(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
     };
-
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
 
     return (
         <div className="space-y-6">
-            {showAd && <InterstitialAdModal onClose={handleAdClose} />}
-            {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={5} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-            {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
+             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             {isExplainModalOpen && result && (
                 <ExplanationModal
                     isOpen={isExplainModalOpen}
@@ -153,51 +138,51 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
             <div className="space-y-4">
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="principal" className="block text-sm font-medium text-theme-secondary">Loan Amount ({currencySymbol})</label>
+                        <label htmlFor="principal" className="block text-sm font-medium text-on-surface-variant">Loan Amount ({currencySymbol})</label>
                         <InfoTooltip text="The total amount of money you are borrowing." />
                     </div>
-                    <input type="number" id="principal" value={principal} onChange={(e) => setPrincipal(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="principal" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="interestRate" className="block text-sm font-medium text-theme-secondary">Annual Interest Rate (%)</label>
+                        <label htmlFor="interestRate" className="block text-sm font-medium text-on-surface-variant">Annual Interest Rate (%)</label>
                          <InfoTooltip text="The yearly interest rate for the loan." />
                     </div>
-                    <input type="number" id="interestRate" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="interestRate" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="loanTerm" className="block text-sm font-medium text-theme-secondary">Loan Term (Years)</label>
+                        <label htmlFor="loanTerm" className="block text-sm font-medium text-on-surface-variant">Loan Term (Years)</label>
                         <InfoTooltip text="The number of years you have to repay the loan." />
                     </div>
-                    <input type="number" id="loanTerm" value={loanTerm} onChange={(e) => setLoanTerm(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="loanTerm" value={loanTerm} onChange={(e) => setLoanTerm(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <button onClick={calculateLoan} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-theme-primary ring-primary text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+            <button onClick={calculateLoan} className="w-full btn-primary font-bold py-4 px-4 rounded-full text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                 Calculate
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Results</h3>
-                    <div id="pdf-pie-chart" className="py-4 bg-theme-secondary">
+                <div className="result-card p-6 rounded-3xl space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Results</h3>
+                    <div id="pdf-pie-chart" className="py-4">
                       <PieChart data={[
                           { label: 'Principal', value: parseFloat(principal), color: '#3b82f6' },
                           { label: 'Total Interest', value: result.totalInterest, color: '#ef4444' }
                       ]} />
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Monthly Payment:</span>
+                        <span className="text-on-surface-variant">Monthly Payment:</span>
                         <span className="text-2xl font-bold text-primary">{formatCurrency(result.monthlyPayment)}</span>
                     </div>
-                     <div className="flex justify-between items-center border-t border-theme pt-4 mt-4">
-                        <span className="text-theme-secondary">Total Payment:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalPayment)}</span>
+                     <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-4">
+                        <span className="text-on-surface-variant">Total Payment:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalPayment)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Total Interest Paid:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalInterest)}</span>
+                        <span className="text-on-surface-variant">Total Interest Paid:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalInterest)}</span>
                     </div>
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                         <button onClick={() => setShowSchedule(s => !s)} className="text-sm font-semibold text-primary hover:underline">
                              {showSchedule ? 'Hide' : 'View'} Schedule
                         </button>
@@ -210,12 +195,12 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
                 </div>
             )}
              {result && showSchedule && (
-                <div className="bg-theme-secondary p-4 rounded-lg animate-fade-in mt-4">
+                <div className="result-card p-4 rounded-3xl animate-fade-in mt-4">
                     <h4 className="text-lg font-semibold text-center mb-2">Amortization Schedule</h4>
                     <div className="max-h-60 overflow-y-auto text-sm amortization-table">
                         <table className="w-full text-left">
                            <thead>
-                                <tr className="border-b border-theme">
+                                <tr className="border-b border-outline-variant">
                                     <th className="p-2">Month</th>
                                     <th className="p-2 text-right">Principal</th>
                                     <th className="p-2 text-right">Interest</th>
@@ -224,7 +209,7 @@ const LoanCalculator: React.FC<LoanCalculatorProps> = ({ initialState, isPremium
                            </thead>
                            <tbody>
                                {amortizationSchedule.map(row => (
-                                   <tr key={row.month} className="border-b border-theme-primary/10">
+                                   <tr key={row.month} className="border-b border-surface-container-highest">
                                        <td className="p-2">{row.month}</td>
                                        <td className="p-2 text-right">{formatCurrency(row.principal)}</td>
                                        <td className="p-2 text-right">{formatCurrency(row.interest)}</td>

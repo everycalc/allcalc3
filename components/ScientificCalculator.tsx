@@ -3,11 +3,11 @@ import Display from './Display';
 import CalculatorButton from './CalculatorButton';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
-import { useFuel } from '../contexts/FuelContext';
 import { useAd } from '../contexts/AdContext';
+import { useFuel } from '../contexts/FuelContext';
 import InterstitialAdModal from './InterstitialAdModal';
 
-const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
+const ScientificCalculator: React.FC<{ isPremium?: boolean }> = ({ isPremium }) => {
     const [displayValue, setDisplayValue] = useState('0');
     const [previousValue, setPreviousValue] = useState<null | number>(null);
     const [operator, setOperator] = useState<null | string>(null);
@@ -15,13 +15,36 @@ const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) =>
     const [subDisplay, setSubDisplay] = useState('');
     const [isDeg, setIsDeg] = useState(true);
     const [shareText, setShareText] = useState('');
-    const [showAd, setShowAd] = useState(false);
+
     const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
 
     const { addHistory } = useContext(HistoryContext);
-    const { fuel, consumeFuel } = useFuel();
     const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
+
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
+
+    const withAdCheck = (calculationFn: () => void) => {
+        if (fuel >= fuelCost) {
+            consumeFuel(fuelCost);
+            calculationFn();
+        } else {
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => calculationFn);
+                setShowAd(true);
+            } else {
+                calculationFn();
+            }
+        }
+    };
 
     const handleDigit = (digit: string) => {
         if (waitingForOperand) {
@@ -80,44 +103,36 @@ const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) =>
     };
 
     const handleOperator = (nextOperator: string) => {
-        const inputValue = parseFloat(displayValue);
-    
-        if (operator && waitingForOperand) {
+        const calculationFn = () => {
+            const inputValue = parseFloat(displayValue);
+        
+            if (operator && waitingForOperand) {
+                setOperator(nextOperator);
+                setSubDisplay(`${previousValue} ${nextOperator}`);
+                return;
+            }
+        
+            if (previousValue === null) {
+                setPreviousValue(inputValue);
+            } else if (operator) {
+                performCalculation();
+            }
+        
+            setWaitingForOperand(true);
             setOperator(nextOperator);
-            setSubDisplay(`${previousValue} ${nextOperator}`);
-            return;
-        }
-    
-        if (previousValue === null) {
-            setPreviousValue(inputValue);
-        } else if (operator) {
-            performCalculation();
-        }
-    
-        setWaitingForOperand(true);
-        setOperator(nextOperator);
-        setSubDisplay(`${displayValue} ${nextOperator}`);
+            setSubDisplay(`${displayValue} ${nextOperator}`);
+        };
+        withAdCheck(calculationFn);
     };
 
     const handleEquals = () => {
-        const perform = () => {
-            if (operator && previousValue !== null && !waitingForOperand) {
+        const calculationFn = () => {
+             if (operator && previousValue !== null && !waitingForOperand) {
                 performCalculation(true);
                 setWaitingForOperand(true);
             }
-        };
-
-        if (fuel >= fuelCost) {
-            consumeFuel(fuelCost);
-            perform();
-        } else {
-            if (shouldShowAd(isPremium)) {
-                setPendingCalculation(() => perform);
-                setShowAd(true);
-            } else {
-                perform();
-            }
         }
+        withAdCheck(calculationFn);
     }
 
     const handleClear = () => {
@@ -130,16 +145,16 @@ const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) =>
     };
 
     const handleUnary = (operation: (a: number) => number, opString?: string) => {
-        const perform = () => {
+        const calculationFn = () => {
             const value = parseFloat(displayValue);
             const result = operation(value);
             const resultString = String(parseFloat(result.toPrecision(15)));
             const calculationString = `${opString || ''}(${displayValue}) = ${resultString}`;
             
             addHistory({
-              calculator: 'Scientific Calculator',
-              calculation: calculationString,
-              inputs: null
+                calculator: 'Scientific Calculator',
+                calculation: calculationString,
+                inputs: null
             });
             setShareText(`Scientific Calculation:\n${calculationString}`);
 
@@ -147,26 +162,7 @@ const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) =>
             setDisplayValue(resultString);
             setWaitingForOperand(true);
         };
-
-        if (fuel >= fuelCost) {
-            consumeFuel(fuelCost);
-            perform();
-        } else {
-            if (shouldShowAd(isPremium)) {
-                setPendingCalculation(() => perform);
-                setShowAd(true);
-            } else {
-                perform();
-            }
-        }
-    };
-
-    const handleAdClose = () => {
-        if (pendingCalculation) {
-            pendingCalculation();
-            setPendingCalculation(null);
-        }
-        setShowAd(false);
+        withAdCheck(calculationFn);
     };
     
     const handleClick = (label: string) => {
@@ -191,40 +187,40 @@ const ScientificCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) =>
     <div>
       {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <Display value={displayValue} subValue={subDisplay} />
-      <div className="grid grid-cols-5 gap-2">
-        <CalculatorButton label={isDeg ? 'Deg' : 'Rad'} onClick={() => setIsDeg(!isDeg)} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="sin" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="cos" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="tan" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="AC" onClick={handleClick} className="bg-red-500 text-white hover:bg-red-400" />
+      <div className="grid grid-cols-5 gap-3">
+        <CalculatorButton label={isDeg ? 'Deg' : 'Rad'} onClick={() => setIsDeg(!isDeg)} className="btn-function" />
+        <CalculatorButton label="sin" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="cos" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="tan" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="AC" onClick={handleClick} className="btn-clear" />
         
-        <CalculatorButton label="ln" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="log" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="π" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="e" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="/" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="ln" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="log" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="π" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="e" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="/" onClick={handleClick} className="btn-operator" />
 
-        <CalculatorButton label="x²" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="7" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="8" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="9" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="*" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="x²" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="7" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="8" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="9" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="*" onClick={handleClick} className="btn-operator" />
 
-        <CalculatorButton label="√x" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="4" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="5" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="6" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="-" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="√x" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="4" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="5" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="6" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="-" onClick={handleClick} className="btn-operator" />
 
-        <CalculatorButton label="y^x" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="1" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="2" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="3" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="+" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="y^x" onClick={handleClick} className="btn-function" />
+        <CalculatorButton label="1" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="2" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="3" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="+" onClick={handleClick} className="btn-operator" />
 
-        <CalculatorButton label="0" onClick={handleClick} className="col-span-2 bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="." onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="=" onClick={handleClick} className="col-span-2 bg-primary text-on-primary hover:bg-primary-light" />
+        <CalculatorButton label="0" onClick={handleClick} className="col-span-2 btn-number" />
+        <CalculatorButton label="." onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="=" onClick={handleClick} className="col-span-2 btn-equals" />
       </div>
       {shareText && <ShareButton textToShare={shareText} />}
     </div>

@@ -2,10 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import { HistoryContext, HistoryEntry } from '../contexts/HistoryContext';
 import jsPDF from 'jspdf';
 import HistoryExportGuide from './HistoryExportGuide';
-import { useFuel } from '../contexts/FuelContext';
-import PdfFuelModal from './PdfFuelModal';
-import RewardedAdModal from './RewardedAdModal';
-import AdsensePlaceholder from './AdsensePlaceholder';
 
 interface HistoryPanelProps {
   isOpen: boolean;
@@ -15,15 +11,10 @@ interface HistoryPanelProps {
 
 const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore }) => {
   const { history, clearHistory } = useContext(HistoryContext);
-  const { fuel, consumeFuel, addFuel } = useFuel();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showHistoryExportGuide, setShowHistoryExportGuide] = useState(false);
-  const [showPdfFuelModal, setShowPdfFuelModal] = useState(false);
-  const [showRefuelModal, setShowRefuelModal] = useState(false);
   
-  const PDF_COST = 12;
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -126,22 +117,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
     setSelectedIds(new Set()); // Clear selection after export
   };
 
-  const handleExportClick = () => {
-    if (selectedIds.size === 0) return;
-    
-    if (fuel >= PDF_COST) {
-        consumeFuel(PDF_COST);
-        generatePdf();
-    } else {
-        setShowPdfFuelModal(true);
-    }
-  };
-  
   const handleClear = () => {
     if (window.confirm('Are you sure you want to clear all history? This cannot be undone.')) {
         clearHistory();
     }
   }
+  
+  const historyCheckboxClasses = "appearance-none bg-surface-container border-2 border-outline w-5 h-5 rounded-md cursor-pointer relative transition-all duration-200 checked:bg-primary checked:border-primary after:content-['✓'] after:absolute after:text-on-primary after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-sm after:font-bold after:opacity-0 checked:after:opacity-100";
 
   return (
     <>
@@ -152,19 +134,17 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
             sessionStorage.setItem('hasSeenHistoryExportGuide', 'true');
         }}
       />
-      {showPdfFuelModal && <PdfFuelModal isOpen={showPdfFuelModal} onClose={() => setShowPdfFuelModal(false)} cost={PDF_COST} onRefuel={() => { setShowPdfFuelModal(false); setShowRefuelModal(true); }} />}
-      {showRefuelModal && <RewardedAdModal onClose={() => setShowRefuelModal(false)} onComplete={() => { addFuel(3); setShowRefuelModal(false); }} />}
       <div 
         className={`fixed inset-0 bg-black/60 z-30 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
       <div
-        className={`fixed top-0 left-0 h-full w-full max-w-sm bg-theme-secondary text-theme-primary shadow-xl z-40 transform transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`panel-base fixed top-0 left-0 h-full w-full max-w-sm shadow-xl z-40 transform transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col h-full">
-          <header className="flex items-center justify-between p-4 border-b border-theme">
+          <header className="flex items-center justify-between p-4 border-b border-outline-variant">
             <h2 className="text-xl font-bold">History</h2>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-black/10">
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-container-high">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -172,7 +152,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
           </header>
           <main className="flex-grow overflow-y-auto p-4">
             {history.length === 0 ? (
-              <div className="text-center text-theme-secondary h-full flex items-center justify-center">
+              <div className="text-center text-on-surface-variant h-full flex items-center justify-center">
                 <p>No history yet. Your calculations will appear here.</p>
               </div>
             ) : (
@@ -181,7 +161,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
                     <input 
                         type="checkbox" 
                         id="select-all" 
-                        className="history-checkbox"
+                        className={historyCheckboxClasses}
                         checked={selectedIds.size === history.length && history.length > 0}
                         onChange={handleToggleAll}
                     />
@@ -189,41 +169,40 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
                 </div>
                 {Object.entries(groupedHistory).map(([date, entries]) => (
                   <div key={date} className="mb-6">
-                    <h3 className="text-sm font-semibold text-theme-secondary uppercase tracking-wider mb-2">{date}</h3>
+                    <h3 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-2">{date}</h3>
                     <ul className="space-y-2">
                       {entries.map((entry, index) => (
                         <React.Fragment key={entry.id}>
-                          <li className="bg-theme-primary rounded-lg overflow-hidden">
+                          <li className="bg-surface-container-low rounded-lg overflow-hidden">
                             <div className="flex items-start p-3">
                                 <input 
                                     type="checkbox" 
-                                    className="history-checkbox mr-3 mt-1"
+                                    className={`${historyCheckboxClasses} mr-3 mt-1 flex-shrink-0`}
                                     checked={selectedIds.has(entry.id)}
                                     onChange={() => handleToggleSelection(entry.id)}
                                 />
                                 <div className="flex-grow" onClick={() => onRestore(entry)}>
                                     <p className="text-xs text-primary font-semibold cursor-pointer hover:underline">{entry.calculator}</p>
-                                    <p className="text-theme-primary break-words cursor-pointer">{entry.calculation}</p>
+                                    <p className="text-on-surface break-words cursor-pointer">{entry.calculation}</p>
                                 </div>
-                                <button onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)} className="p-1 text-theme-secondary hover:text-primary">
+                                <button onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)} className="p-1 text-on-surface-variant hover:text-primary">
                                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${expandedId === entry.id ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
                                 </button>
                             </div>
                             {expandedId === entry.id && (
-                              <div className="bg-theme-secondary/50 p-3 text-xs space-y-1 border-t border-theme">
-                                  <h4 className="font-bold text-theme-primary">Inputs:</h4>
+                              <div className="bg-surface-container-highest p-3 text-xs space-y-1 border-t border-outline-variant">
+                                  <h4 className="font-bold text-on-surface">Inputs:</h4>
                                   {entry.inputs && Object.keys(entry.inputs).length > 0 ? (
                                       Object.entries(entry.inputs).map(([key, value]) => (
-                                          <div key={key} className="flex text-theme-secondary break-all">
+                                          <div key={key} className="flex text-on-surface-variant break-all">
                                               <strong className="mr-2 flex-shrink-0">{key}:</strong> 
                                               <span className="truncate">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
                                           </div>
                                       ))
-                                  ) : <p className="text-theme-secondary">Not available.</p>}
+                                  ) : <p className="text-on-surface-variant">Not available.</p>}
                               </div>
                             )}
                           </li>
-                          {(index + 1) % 3 === 0 && <AdsensePlaceholder />}
                         </React.Fragment>
                       ))}
                     </ul>
@@ -233,13 +212,12 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
             )}
           </main>
           {history.length > 0 && (
-            <footer className="p-4 border-t border-theme">
+            <footer className="p-4 border-t border-outline-variant">
               <div className="flex space-x-2">
-                <button id="history-export-button" onClick={handleExportClick} disabled={selectedIds.size === 0} className="w-1/2 bg-primary text-on-primary font-bold py-2 px-4 rounded-md hover:bg-primary-light transition-colors disabled:bg-theme-tertiary disabled:text-theme-secondary disabled:cursor-not-allowed flex items-center justify-center">
+                <button id="history-export-button" onClick={generatePdf} disabled={selectedIds.size === 0} className="w-1/2 btn-primary font-bold py-2 px-4 rounded-full hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                     Export PDF ({selectedIds.size})
-                    <span className="ml-1.5 text-xs font-bold text-red-500">(-{PDF_COST} ⛽)</span>
                 </button>
-                <button onClick={handleClear} className="w-1/2 bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-500 transition-colors">
+                <button onClick={handleClear} className="w-1/2 btn-clear font-bold py-2 px-4 rounded-full hover:shadow-lg transition-shadow">
                     Clear All
                 </button>
               </div>

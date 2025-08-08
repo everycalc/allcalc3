@@ -18,11 +18,11 @@ const AdsensePlaceholder: React.FC = () => {
         if ((window as any).adsbygoogle) {
           ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
         } else {
-            adContainer.innerHTML = '<div class="text-center text-xs text-theme-secondary p-4 h-full flex items-center justify-center">Advertisement</div>';
+            adContainer.innerHTML = '<div class="text-center text-xs text-on-surface-variant p-4 h-full flex items-center justify-center">Advertisement</div>';
         }
       } catch (e) {
         console.error("AdSense push error:", e);
-        adContainer.innerHTML = '<div class="text-center text-xs text-theme-secondary p-4 h-full flex items-center justify-center">Ad could not be displayed.</div>';
+        adContainer.innerHTML = '<div class="text-center text-xs text-on-surface-variant p-4 h-full flex items-center justify-center">Ad could not be displayed.</div>';
       }
     }, 150);
 
@@ -30,7 +30,7 @@ const AdsensePlaceholder: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-[100px] my-4 flex items-center justify-center bg-theme-secondary/20 rounded-lg">
+    <div className="adsense-placeholder w-full min-h-[100px] my-4 flex items-center justify-center rounded-2xl">
       <div ref={adRef} className="w-full h-full">
         <ins
           className="adsbygoogle"

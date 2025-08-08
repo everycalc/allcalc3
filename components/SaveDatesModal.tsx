@@ -28,12 +28,12 @@ const SaveDatesModal: React.FC<SaveDatesModalProps> = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-lg bg-theme-secondary rounded-xl shadow-2xl p-6 transform transition-transform animate-fade-in-down"
+        className="modal-content relative w-full max-w-lg p-6 transform transition-transform animate-fade-in-down"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-theme-primary">Manage Dates</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/10 text-theme-secondary" aria-label="Close date manager">
+          <h2 className="text-xl font-bold text-on-surface">Manage Dates</h2>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant" aria-label="Close date manager">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>

@@ -3,25 +3,48 @@ import Display from './Display';
 import CalculatorButton from './CalculatorButton';
 import { HistoryContext } from '../contexts/HistoryContext';
 import ShareButton from './ShareButton';
-import { useFuel } from '../contexts/FuelContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import VoiceInputButton from './VoiceInputButton';
+import { useAd } from '../contexts/AdContext';
+import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
-const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
+const StandardCalculator: React.FC<{ isPremium?: boolean }> = ({ isPremium }) => {
   const [displayValue, setDisplayValue] = useState('0');
   const [previousValue, setPreviousValue] = useState<null | number>(null);
   const [operator, setOperator] = useState<null | string>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [subDisplay, setSubDisplay] = useState('');
   const [shareText, setShareText] = useState('');
-  const [showAd, setShowAd] = useState(false);
+
   const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+  const [showAd, setShowAd] = useState(false);
 
   const { addHistory } = useContext(HistoryContext);
-  const { fuel, consumeFuel } = useFuel();
   const { shouldShowAd } = useAd();
+  const { fuel, consumeFuel } = useFuel();
   const fuelCost = isPremium ? 2 : 1;
+
+  const handleAdClose = () => {
+    setShowAd(false);
+    if (pendingCalculation) {
+      pendingCalculation();
+      setPendingCalculation(null);
+    }
+  };
+
+  const withAdCheck = (calculationFn: () => void) => {
+    if (fuel >= fuelCost) {
+      consumeFuel(fuelCost);
+      calculationFn();
+    } else {
+      if (shouldShowAd(isPremium)) {
+        setPendingCalculation(() => calculationFn);
+        setShowAd(true);
+      } else {
+        calculationFn();
+      }
+    }
+  };
 
   const handleDigit = (digit: string) => {
     if (waitingForOperand) {
@@ -99,8 +122,10 @@ const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
       return;
     }
     
+    const calculationFn = () => performCalculation(nextOperator);
+
     if (previousValue !== null && !waitingForOperand) {
-        performCalculation(nextOperator);
+        withAdCheck(calculationFn);
     } else {
         const inputValue = parseFloat(displayValue);
         setPreviousValue(inputValue);
@@ -111,22 +136,8 @@ const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
   };
   
   const handleEquals = () => {
-    const perform = () => {
-        if (operator && previousValue !== null && !waitingForOperand) {
-            performCalculation('=');
-        }
-    };
-
-    if (fuel >= fuelCost) {
-        consumeFuel(fuelCost);
-        perform();
-    } else {
-        if (shouldShowAd(isPremium)) {
-            setPendingCalculation(() => perform);
-            setShowAd(true);
-        } else {
-            perform();
-        }
+    if (operator && previousValue !== null && !waitingForOperand) {
+        withAdCheck(() => performCalculation('='));
     }
   }
 
@@ -144,16 +155,19 @@ const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
   };
   
   const handlePercent = () => {
-    const currentValue = parseFloat(displayValue);
-    let result;
-    if (previousValue !== null && (operator === '+' || operator === '-')) {
-        result = previousValue * (currentValue / 100);
-    } else if (previousValue !== null && (operator === '*' || operator === '/')) {
-        result = currentValue / 100;
-    } else {
-        result = currentValue / 100;
-    }
-    setDisplayValue(String(result));
+    const calculationFn = () => {
+        const currentValue = parseFloat(displayValue);
+        let result;
+        if (previousValue !== null && (operator === '+' || operator === '-')) {
+            result = previousValue * (currentValue / 100);
+        } else if (previousValue !== null && (operator === '*' || operator === '/')) {
+            result = currentValue / 100;
+        } else {
+            result = currentValue / 100;
+        }
+        setDisplayValue(String(result));
+    };
+    withAdCheck(calculationFn);
   };
 
   const handleClick = (label: string) => {
@@ -174,69 +188,61 @@ const StandardCalculator: React.FC<{isPremium?: boolean}> = ({ isPremium }) => {
     }
   };
 
-  const handleAdClose = () => {
-    if (pendingCalculation) {
-        pendingCalculation();
-        setPendingCalculation(null);
-    }
-    setShowAd(false);
-  };
-  
-    const handleVoiceInput = (transcript: string) => {
-        const cleaned = transcript.toLowerCase().replace(/point/g, '.').replace(/x/g, '*').trim();
-        
-        // Simple command parsing
-        if (cleaned.includes('clear')) return handleClear();
-        if (cleaned.includes('equals') || cleaned.includes('equal')) return handleEquals();
-        if (cleaned.includes('plus')) return handleOperator('+');
-        if (cleaned.includes('minus')) return handleOperator('-');
-        if (cleaned.includes('times')) return handleOperator('*');
-        if (cleaned.includes('divided by')) return handleOperator('/');
+  const handleVoiceInput = (transcript: string) => {
+      const cleaned = transcript.toLowerCase().replace(/point/g, '.').replace(/x/g, '*').trim();
+      
+      // Simple command parsing
+      if (cleaned.includes('clear')) return handleClear();
+      if (cleaned.includes('equals') || cleaned.includes('equal')) return handleEquals();
+      if (cleaned.includes('plus')) return handleOperator('+');
+      if (cleaned.includes('minus')) return handleOperator('-');
+      if (cleaned.includes('times')) return handleOperator('*');
+      if (cleaned.includes('divided by')) return handleOperator('/');
 
-        // Number parsing
-        const numbers = cleaned.match(/[\d.]+/g);
-        if (numbers) {
-            const spokenNumber = numbers.join('');
-            if (waitingForOperand) {
-                setDisplayValue(spokenNumber);
-                setWaitingForOperand(false);
-            } else {
-                setDisplayValue(displayValue === '0' ? spokenNumber : displayValue + spokenNumber);
-            }
-        }
+      // Number parsing
+      const numbers = cleaned.match(/[\d.]+/g);
+      if (numbers) {
+          const spokenNumber = numbers.join('');
+          if (waitingForOperand) {
+              setDisplayValue(spokenNumber);
+              setWaitingForOperand(false);
+          } else {
+              setDisplayValue(displayValue === '0' ? spokenNumber : displayValue + spokenNumber);
+          }
+      }
   };
 
   return (
     <div>
       {showAd && <InterstitialAdModal onClose={handleAdClose} />}
       <Display value={displayValue} subValue={subDisplay} />
-      <div className="grid grid-cols-4 gap-2 md:gap-3">
-        <CalculatorButton label="C" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="+/-" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="%" onClick={handleClick} className="bg-theme-tertiary text-theme-primary hover:bg-opacity-80" />
-        <CalculatorButton label="/" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+      <div className="grid grid-cols-4 gap-4">
+        <CalculatorButton label="C" onClick={handleClick} className="btn-action" />
+        <CalculatorButton label="+/-" onClick={handleClick} className="btn-action" />
+        <CalculatorButton label="%" onClick={handleClick} className="btn-action" />
+        <CalculatorButton label="/" onClick={handleClick} className="btn-operator" />
         
-        <CalculatorButton label="7" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="8" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="9" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="*" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="7" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="8" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="9" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="*" onClick={handleClick} className="btn-operator" />
 
-        <CalculatorButton label="4" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="5" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="6" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="-" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="4" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="5" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="6" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="-" onClick={handleClick} className="btn-operator" />
         
-        <CalculatorButton label="1" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="2" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="3" onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="+" onClick={handleClick} className="bg-accent text-white hover:bg-accent-dark" />
+        <CalculatorButton label="1" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="2" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="3" onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="+" onClick={handleClick} className="btn-operator" />
 
-        <div className="col-span-2 grid grid-cols-2 gap-2 md:gap-3">
-            <CalculatorButton label="0" onClick={handleClick} className="col-span-1 bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
+        <div className="col-span-2 grid grid-cols-2 gap-4">
+            <CalculatorButton label="0" onClick={handleClick} className="col-span-1 btn-number" />
             <VoiceInputButton onTranscript={handleVoiceInput} />
         </div>
-        <CalculatorButton label="." onClick={handleClick} className="bg-theme-secondary text-theme-primary hover:bg-theme-tertiary" />
-        <CalculatorButton label="=" onClick={handleClick} className="bg-primary text-on-primary hover:bg-primary-light" />
+        <CalculatorButton label="." onClick={handleClick} className="btn-number" />
+        <CalculatorButton label="=" onClick={handleClick} className="btn-equals" />
       </div>
       {shareText && <ShareButton textToShare={shareText} />}
     </div>

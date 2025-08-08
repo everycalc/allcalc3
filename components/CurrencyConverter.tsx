@@ -92,8 +92,6 @@ const CurrencyConverter: React.FC<{initialState?: any; isPremium?: boolean}> = (
       setToCurrency(fromCurrency);
   }
 
-  const commonSelectClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
   return (
     <div className="space-y-6">
        {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -102,25 +100,25 @@ const CurrencyConverter: React.FC<{initialState?: any; isPremium?: boolean}> = (
       </div>
       <div className="flex items-center space-x-4">
         <div className="w-full space-y-2">
-            <label className="text-sm font-medium text-theme-secondary mb-1">From</label>
-            <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value as Currency)} className={commonSelectClasses}>
+            <label className="text-sm font-medium text-on-surface-variant mb-1">From</label>
+            <select value={fromCurrency} onChange={e => setFromCurrency(e.target.value as Currency)} className="select-base w-full">
                 {Object.keys(staticRates).map(curr => <option key={curr} value={curr}>{curr}</option>)}
             </select>
-            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className={commonSelectClasses} />
+            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="input-base w-full" />
         </div>
-        <button onClick={handleSwap} className="mt-8 p-2 rounded-full bg-theme-tertiary hover:bg-primary transition text-theme-primary hover:text-on-primary">
+        <button onClick={handleSwap} className="btn-secondary mt-8 p-2 rounded-full transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
         </button>
         <div className="w-full space-y-2">
-            <label className="text-sm font-medium text-theme-secondary mb-1">To</label>
-            <select value={toCurrency} onChange={e => setToCurrency(e.target.value as Currency)} className={commonSelectClasses}>
+            <label className="text-sm font-medium text-on-surface-variant mb-1">To</label>
+            <select value={toCurrency} onChange={e => setToCurrency(e.target.value as Currency)} className="select-base w-full">
                 {Object.keys(staticRates).map(curr => <option key={curr} value={curr}>{curr}</option>)}
             </select>
-            <input type="text" value={result} readOnly className={`${commonSelectClasses} bg-theme-primary cursor-not-allowed`} placeholder="Result" />
+            <input type="text" value={result} readOnly className="input-base w-full bg-surface-container cursor-not-allowed" placeholder="Result" />
         </div>
       </div>
       <div className="text-center">
-        <button onClick={handleConvert} className="bg-primary text-on-primary font-bold py-2 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+        <button onClick={handleConvert} className="btn-primary font-bold py-2 px-4 rounded-md shadow-lg">
             Convert
         </button>
       </div>

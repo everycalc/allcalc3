@@ -9,8 +9,8 @@ export interface PieChartData {
 const PieChart: React.FC<{ data: PieChartData[]; size?: number; }> = ({ data, size = 160 }) => {
     const total = data.reduce((acc, item) => acc + item.value, 0);
     if (total === 0) return (
-        <div className="flex items-center justify-center text-sm text-theme-secondary" style={{height: `${size}px`, width: `${size}px`}}>
-             <div className="h-full w-full rounded-full bg-theme-tertiary flex items-center justify-center">No Data</div>
+        <div className="flex items-center justify-center text-sm text-on-surface-variant" style={{height: `${size}px`, width: `${size}px`}}>
+             <div className="h-full w-full rounded-full bg-surface-container-highest flex items-center justify-center">No Data</div>
         </div>
     );
 
@@ -49,7 +49,7 @@ const PieChart: React.FC<{ data: PieChartData[]; size?: number; }> = ({ data, si
                 {data.map(item => (
                     item.value > 0 && <div key={item.label} className="flex items-center">
                         <div className="w-3 h-3 rounded-sm mr-2" style={{ backgroundColor: item.color }}></div>
-                        <span className="text-theme-secondary">{item.label}: <b className="text-theme-primary">{((item.value / total) * 100).toFixed(1)}%</b></span>
+                        <span className="text-on-surface-variant">{item.label}: <b className="text-on-surface">{((item.value / total) * 100).toFixed(1)}%</b></span>
                     </div>
                 ))}
             </div>

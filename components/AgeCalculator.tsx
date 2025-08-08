@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { useDateTracker, SavedDate } from '../contexts/DateTrackerContext';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import SaveDatesModal from './SaveDatesModal';
 import AgeCalculatorOnboarding from './AgeCalculatorOnboarding';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 interface AgeResult {
     years: number;
@@ -30,9 +30,6 @@ interface AgeCalculatorProps {
 const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }) => {
     const { savedDates } = useDateTracker();
     const { addHistory } = useContext(HistoryContext);
-    const { shouldShowAd } = useAd();
-    const { fuel, consumeFuel } = useFuel();
-    const fuelCost = isPremium ? 2 : 1;
 
     const [birthDate, setBirthDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [selectedPersonId, setSelectedPersonId] = useState<string>('');
@@ -42,8 +39,11 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
 
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
     const [showAd, setShowAd] = useState(false);
+    const { shouldShowAd } = useAd();
+    const { fuel, consumeFuel } = useFuel();
+    const fuelCost = isPremium ? 2 : 1;
 
     useEffect(() => {
       const hasSeen = sessionStorage.getItem('hasSeenAgeCalculatorOnboarding');
@@ -68,6 +68,14 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
             if (intervalId) clearInterval(intervalId);
         };
     }, [intervalId]);
+
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
 
     const stopAgeUpdate = () => {
         if (intervalId) {
@@ -128,32 +136,22 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
                 calculation: `Calculated age for ${name}`,
                 inputs: { birthDate, selectedPersonId }
             });
-            return birthDate;
+            startAgeUpdate(birthDate);
         };
 
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const dob = performCalculation();
-            startAgeUpdate(dob);
+            performCalculation();
         } else {
-            const dob = performCalculation();
             if (shouldShowAd(isPremium)) {
-                setPendingResult(dob); // store the date to start calculation after ad
+                setPendingCalculation(() => performCalculation);
                 setShowAd(true);
             } else {
-                startAgeUpdate(dob);
+                performCalculation();
             }
         }
     };
     
-    const handleAdClose = () => {
-        if (pendingResult) {
-            startAgeUpdate(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
-    };
-
     const nextBirthday = useMemo(() => {
         if (!birthDate || !result) return null;
         const today = new Date();
@@ -189,8 +187,6 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
         setResult(null);
     }
 
-    const commonInputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -199,8 +195,8 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
 
             <div className="space-y-4">
                 <div>
-                    <label htmlFor="person" className="block text-sm font-medium text-theme-secondary mb-1">Select a Saved Person (Optional)</label>
-                    <select id="person" value={selectedPersonId} onChange={handlePersonChange} className={commonInputClasses}>
+                    <label htmlFor="person" className="block text-sm font-medium text-on-surface-variant mb-1">Select a Saved Person (Optional)</label>
+                    <select id="person" value={selectedPersonId} onChange={handlePersonChange} className="select-base w-full">
                         <option value="">-- Enter date manually --</option>
                         {savedDates.filter(d => d.type === 'Birthday').map(p => (
                             <option key={p.id} value={p.id}>{p.name}</option>
@@ -208,33 +204,33 @@ const AgeCalculator: React.FC<AgeCalculatorProps> = ({ initialState, isPremium }
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="birthdate" className="block text-sm font-medium text-theme-secondary mb-1">Date of Birth</label>
-                    <input type="date" id="birthdate" value={birthDate} onChange={handleDateChange} className={commonInputClasses} />
+                    <label htmlFor="birthdate" className="block text-sm font-medium text-on-surface-variant mb-1">Date of Birth</label>
+                    <input type="date" id="birthdate" value={birthDate} onChange={handleDateChange} className="input-base w-full" />
                 </div>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2">
-                <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+                <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                     Calculate Age
                 </button>
-                <button onClick={() => setIsDateModalOpen(true)} className="w-full sm:w-auto bg-theme-tertiary text-theme-primary font-bold py-3 px-4 rounded-md hover:bg-opacity-80 transition-colors duration-200 shadow-lg flex-shrink-0">
+                <button onClick={() => setIsDateModalOpen(true)} className="btn-secondary w-full sm:w-auto font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg flex-shrink-0">
                     Manage Dates
                 </button>
             </div>
             
             {result && result.years >= 0 && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg space-y-4 text-center animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary mb-2">Calculated Age</h3>
+                <div className="result-card p-6 rounded-lg space-y-4 text-center animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface-variant mb-2">Calculated Age</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
                         {Object.entries(result).map(([unit, value]) => (
-                             <div key={unit} className="bg-theme-secondary p-3 rounded-lg">
+                             <div key={unit} className="bg-surface-container p-3 rounded-lg">
                                 <span className="text-3xl font-bold text-primary">{value}</span>
-                                <span className="block text-sm text-theme-secondary capitalize">{unit}</span>
+                                <span className="block text-sm text-on-surface-variant capitalize">{unit}</span>
                             </div>
                         ))}
                     </div>
                      {nextBirthday !== null && result && (
-                        <div className="mt-4 bg-theme-secondary p-3 rounded-lg">
+                        <div className="mt-4 bg-surface-container p-3 rounded-lg">
                             <p className="font-semibold text-primary">{nextBirthday === 0 ? "🎉 Happy Birthday! 🎉" : `${nextBirthday} days until next birthday.`}</p>
                         </div>
                     )}

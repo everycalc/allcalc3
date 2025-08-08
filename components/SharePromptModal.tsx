@@ -30,7 +30,7 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
         aria-hidden="true"
       />
       <div
-        className="relative w-full max-w-sm bg-theme-secondary rounded-xl shadow-2xl p-6 text-center transform transition-transform animate-fade-in-down"
+        className="modal-content relative w-full max-w-sm rounded-xl shadow-2xl p-6 text-center transform transition-transform animate-fade-in-down"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

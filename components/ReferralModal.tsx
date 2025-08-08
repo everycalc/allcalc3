@@ -65,28 +65,28 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-md bg-theme-secondary rounded-xl shadow-2xl p-6 text-center"
+        className="modal-content relative w-full max-w-md p-6 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-primary mb-2">Refer a Friend, Get Fuel!</h2>
-        <p className="text-theme-secondary mb-4">Share the app with a friend. When they visit your link, they get <strong className="text-theme-primary">+5 Fuel</strong> to start. You get <strong className="text-theme-primary">+5 Fuel</strong> instantly just for sharing!</p>
+        <p className="text-on-surface-variant mb-4">Share the app with a friend. When they visit your link, they get <strong className="text-on-surface">+5 Fuel</strong> to start. You get <strong className="text-on-surface">+5 Fuel</strong> instantly just for sharing!</p>
         
         <div className="space-y-3">
             {canShare && (
-                <button onClick={handleShare} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-lg hover:bg-primary-light transition-colors">
+                <button onClick={handleShare} className="btn-primary w-full font-bold py-3 px-4 rounded-lg">
                     Share Link & Get +5 Fuel
                 </button>
             )}
-            <div className="flex bg-theme-primary p-2 rounded-lg">
+            <div className="flex bg-surface-container-highest p-2 rounded-lg">
               <input 
                 type="text" 
                 readOnly 
                 value={referralLink} 
-                className="w-full bg-transparent text-theme-primary focus:outline-none text-sm"
+                className="w-full bg-transparent text-on-surface focus:outline-none text-sm"
               />
               <button
                 onClick={handleCopy}
-                className="bg-theme-tertiary text-theme-primary font-bold py-2 px-4 rounded-md hover:bg-opacity-80 transition-colors flex-shrink-0"
+                className="btn-secondary font-bold py-2 px-4 rounded-md flex-shrink-0"
               >
                 Copy
               </button>
@@ -95,7 +95,7 @@ const ReferralModal: React.FC<ReferralModalProps> = ({ isOpen, onClose }) => {
 
         {status && <p className="text-sm text-green-400 mt-3 animate-fade-in">{status}</p>}
         
-        <button onClick={onClose} className="mt-6 text-sm text-theme-secondary hover:underline">Close</button>
+        <button onClick={onClose} className="mt-6 text-sm text-on-surface-variant hover:underline">Close</button>
       </div>
     </div>
   );

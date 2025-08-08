@@ -81,19 +81,19 @@ const AverageCalculator: React.FC<AverageCalculatorProps> = ({initialState, isPr
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             <div>
-                <label htmlFor="numbers" className="block text-sm font-medium text-theme-secondary mb-1">Enter numbers, separated by commas</label>
-                <textarea id="numbers" value={numbers} onChange={e => setNumbers(e.target.value)} rows={4} className="w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition" />
+                <label htmlFor="numbers" className="block text-sm font-medium text-on-surface-variant mb-1">Enter numbers, separated by commas</label>
+                <textarea id="numbers" value={numbers} onChange={e => setNumbers(e.target.value)} rows={4} className="textarea-base w-full" />
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate Average
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Results</h3>
-                    <div className="grid grid-cols-3 text-center divide-x divide-theme">
-                        <div><p className="text-theme-secondary text-sm">Average</p><p className="text-2xl font-bold text-primary">{result.average.toFixed(2)}</p></div>
-                        <div><p className="text-theme-secondary text-sm">Sum</p><p className="text-2xl font-bold text-theme-primary">{result.sum.toLocaleString()}</p></div>
-                        <div><p className="text-theme-secondary text-sm">Count</p><p className="text-2xl font-bold text-theme-primary">{result.count}</p></div>
+                <div className="result-card p-6 rounded-lg space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Results</h3>
+                    <div className="grid grid-cols-3 text-center divide-x divide-outline-variant">
+                        <div><p className="text-on-surface-variant text-sm">Average</p><p className="text-2xl font-bold text-primary">{result.average.toFixed(2)}</p></div>
+                        <div><p className="text-on-surface-variant text-sm">Sum</p><p className="text-2xl font-bold text-on-surface">{result.sum.toLocaleString()}</p></div>
+                        <div><p className="text-on-surface-variant text-sm">Count</p><p className="text-2xl font-bold text-on-surface">{result.count}</p></div>
                     </div>
                     <ShareButton textToShare={shareText} />
                 </div>

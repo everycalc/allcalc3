@@ -84,45 +84,43 @@ const TripExpenseSplitter: React.FC<{initialState?: any; isPremium?: boolean}> =
         setShowAd(false);
     };
 
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
             <div className="space-y-4">
                 <div>
                      <div className="flex items-center space-x-2 mb-1">
-                        <label className="text-sm font-medium text-theme-secondary">Total Bill Amount ({currencySymbol})</label>
+                        <label className="text-sm font-medium text-on-surface-variant">Total Bill Amount ({currencySymbol})</label>
                         <InfoTooltip text="The total amount of the bill before adding any tip." />
                     </div>
-                    <input type="number" value={billAmount} onChange={e => setBillAmount(e.target.value)} className={inputClasses}/>
+                    <input type="number" value={billAmount} onChange={e => setBillAmount(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-theme-secondary mb-1">Number of People</label>
-                    <input type="number" value={people} onChange={e => setPeople(e.target.value)} className={inputClasses}/>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1">Number of People</label>
+                    <input type="number" value={people} onChange={e => setPeople(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-theme-secondary mb-1">Tip (%)</label>
-                    <input type="number" value={tipPercent} onChange={e => setTipPercent(e.target.value)} className={inputClasses}/>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1">Tip (%)</label>
+                    <input type="number" value={tipPercent} onChange={e => setTipPercent(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Split Expense
             </button>
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Expense Split</h3>
+                <div className="result-card p-6 space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Expense Split</h3>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Cost per Person:</span>
+                        <span className="text-on-surface-variant">Cost per Person:</span>
                         <span className="text-3xl font-bold text-primary">{formatCurrency(result.perPersonCost)}</span>
                     </div>
-                     <div className="flex justify-between items-center border-t border-theme pt-4 mt-4">
-                        <span className="text-theme-secondary">Total Bill + Tip:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.totalWithTip)}</span>
+                     <div className="flex justify-between items-center border-t border-outline-variant pt-4 mt-4">
+                        <span className="text-on-surface-variant">Total Bill + Tip:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.totalWithTip)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-theme-secondary">Tip Amount:</span>
-                        <span className="text-lg font-medium text-theme-primary">{formatCurrency(result.tipAmount)}</span>
+                        <span className="text-on-surface-variant">Tip Amount:</span>
+                        <span className="text-lg font-medium text-on-surface">{formatCurrency(result.tipAmount)}</span>
                     </div>
                      <ShareButton textToShare={shareText} />
                 </div>

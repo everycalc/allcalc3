@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import { useTheme } from '../contexts/ThemeContext';
 import InfoTooltip from './InfoTooltip';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 interface Result {
     breakEvenUnits: number | null;
@@ -20,23 +20,24 @@ interface BreakEvenCalculatorState {
 }
 
 interface BreakEvenCalculatorProps {
-    isPremium?: boolean;
     initialState?: BreakEvenCalculatorState;
+    isPremium?: boolean;
 }
 
-const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, initialState }) => {
+const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ initialState, isPremium }) => {
     const [fixedCosts, setFixedCosts] = useState('10000');
     const [pricePerUnit, setPricePerUnit] = useState('50');
     const [variableCostPerUnit, setVariableCostPerUnit] = useState('30');
     const [result, setResult] = useState<Result | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
 
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
+
     const { addHistory } = useContext(HistoryContext);
-    const { shouldShowAd } = useAd();
     const { formatCurrency, currencySymbol } = useTheme();
+    const { shouldShowAd } = useAd();
     const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
 
@@ -49,6 +50,14 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
         }
     }, [initialState]);
 
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
+
     const handleCalculate = () => {
         const performCalculation = () => {
             const fc = parseFloat(fixedCosts);
@@ -58,13 +67,15 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
             const contributionMargin = ppu - vcu;
 
             if (isNaN(fc) || isNaN(ppu) || isNaN(vcu) || contributionMargin <= 0) {
-                return { breakEvenUnits: null, breakEvenRevenue: null };
+                setResult({ breakEvenUnits: null, breakEvenRevenue: null });
+                return;
             }
 
             const units = fc / contributionMargin;
             const revenue = units * ppu;
             
             const calculatedResult = { breakEvenUnits: units, breakEvenRevenue: revenue };
+            setResult(calculatedResult);
             
             addHistory({
                 calculator: 'Break-Even Point Calculator',
@@ -73,36 +84,21 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
             });
 
             setShareText(`Break-Even Point Calculation:\n- Fixed Costs: ${formatCurrency(fc)}\n- Price Per Unit: ${formatCurrency(ppu)}\n- Variable Cost Per Unit: ${formatCurrency(vcu)}\n\nResult:\n- Break-Even Units: ${Math.ceil(units).toLocaleString()}\n- Break-Even Revenue: ${formatCurrency(revenue)}`);
-            return calculatedResult;
         };
-
-        if (fuel >= fuelCost) {
+        
+         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const res = performCalculation();
-            if (res) setResult(res);
+            performCalculation();
         } else {
-            const res = performCalculation();
-            if (res) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(res);
-                    setShowAd(true);
-                } else {
-                    setResult(res);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
     };
     
-    const handleAdClose = () => {
-        if (pendingResult) {
-            setResult(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
-    };
-
-    const inputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition";
-
     return (
         <div className="space-y-6">
             {showAd && <InterstitialAdModal onClose={handleAdClose} />}
@@ -118,47 +114,47 @@ const BreakEvenCalculator: React.FC<BreakEvenCalculatorProps> = ({ isPremium, in
             <div className="space-y-4">
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="fixedCosts" className="block text-sm font-medium text-theme-secondary">Total Fixed Costs ({currencySymbol})</label>
+                        <label htmlFor="fixedCosts" className="block text-sm font-medium text-on-surface-variant">Total Fixed Costs ({currencySymbol})</label>
                         <InfoTooltip text="Costs that do not change with the number of units produced (e.g., rent, salaries)." />
                     </div>
-                    <input type="number" id="fixedCosts" value={fixedCosts} onChange={(e) => setFixedCosts(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="fixedCosts" value={fixedCosts} onChange={(e) => setFixedCosts(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="pricePerUnit" className="block text-sm font-medium text-theme-secondary">Sale Price Per Unit ({currencySymbol})</label>
+                        <label htmlFor="pricePerUnit" className="block text-sm font-medium text-on-surface-variant">Sale Price Per Unit ({currencySymbol})</label>
                         <InfoTooltip text="The price at which you sell one unit of your product." />
                     </div>
-                    <input type="number" id="pricePerUnit" value={pricePerUnit} onChange={(e) => setPricePerUnit(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="pricePerUnit" value={pricePerUnit} onChange={(e) => setPricePerUnit(e.target.value)} className="input-base w-full"/>
                 </div>
                 <div>
                     <div className="flex items-center space-x-2 mb-1">
-                        <label htmlFor="variableCostPerUnit" className="block text-sm font-medium text-theme-secondary">Variable Cost Per Unit ({currencySymbol})</label>
+                        <label htmlFor="variableCostPerUnit" className="block text-sm font-medium text-on-surface-variant">Variable Cost Per Unit ({currencySymbol})</label>
                          <InfoTooltip text="The costs that change directly with the number of units produced (e.g., materials, direct labor)." />
                     </div>
-                    <input type="number" id="variableCostPerUnit" value={variableCostPerUnit} onChange={(e) => setVariableCostPerUnit(e.target.value)} className={inputClasses}/>
+                    <input type="number" id="variableCostPerUnit" value={variableCostPerUnit} onChange={(e) => setVariableCostPerUnit(e.target.value)} className="input-base w-full"/>
                 </div>
             </div>
             
-            <button onClick={handleCalculate} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={handleCalculate} className="btn-primary w-full font-bold py-3 px-4 rounded-md shadow-lg">
                 Calculate
             </button>
             
             {result && (
-                <div className="bg-theme-secondary p-6 rounded-lg space-y-4 animate-fade-in">
-                    <h3 className="text-xl font-semibold text-theme-primary text-center mb-4">Results</h3>
+                <div className="result-card p-6 space-y-4 animate-fade-in">
+                    <h3 className="text-xl font-semibold text-on-surface text-center mb-4">Results</h3>
                     {result.breakEvenUnits !== null ? (
                         <>
                             <div className="flex justify-between items-center text-center">
                                 <div className="w-1/2">
-                                    <span className="text-theme-secondary block">Break-Even Units</span>
+                                    <span className="text-on-surface-variant block">Break-Even Units</span>
                                     <span className="text-3xl font-bold text-primary">{Math.ceil(result.breakEvenUnits).toLocaleString()}</span>
                                 </div>
-                                <div className="w-1/2 border-l border-theme">
-                                    <span className="text-theme-secondary block">Break-Even Revenue</span>
+                                <div className="w-1/2 border-l border-outline-variant">
+                                    <span className="text-on-surface-variant block">Break-Even Revenue</span>
                                     <span className="text-3xl font-bold text-primary">{formatCurrency(result.breakEvenRevenue!)}</span>
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-theme">
+                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant">
                                 <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                    Explain

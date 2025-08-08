@@ -159,7 +159,7 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
     
     const itemInputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-2 focus:ring-2 focus:ring-primary focus:border-primary transition text-sm";
     const TabButton: React.FC<{ name: string; label: string }> = ({ name, label }) => (
-        <button onClick={() => setActiveTab(name)} className={`w-1/4 py-2 text-center text-sm font-semibold transition-colors rounded-md ${activeTab === name ? 'bg-primary text-on-primary' : 'text-theme-secondary hover:bg-theme-tertiary'}`}>{label}</button>
+        <button onClick={() => setActiveTab(name)} className={`sub-tab-button ${activeTab === name ? 'sub-tab-button-active' : ''}`}>{label}</button>
     );
     const ResultLine: React.FC<{ label: string; value: string }> = ({ label, value }) => (
         <div className="flex justify-between py-2 border-b border-theme"><span className="text-theme-secondary">{label}</span><span className="font-bold text-theme-primary">{value}</span></div>
@@ -179,11 +179,11 @@ const ProductCostCalculator: React.FC<{initialState?: any, isPremium?: boolean}>
                 />
             )}
             <div>
-                <label htmlFor="productName" className="block text-sm font-medium text-theme-secondary mb-1">Product Name</label>
-                <input type="text" id="productName" value={productName} onChange={e => setProductName(e.target.value)} className={`${itemInputClasses} text-base p-3`} />
+                <label htmlFor="productName" className="block text-sm font-medium text-on-surface-variant mb-1">Product Name</label>
+                <input type="text" id="productName" value={productName} onChange={e => setProductName(e.target.value)} className="input-base w-full text-base p-3" />
             </div>
 
-            <div className="flex justify-around bg-theme-secondary p-1 rounded-lg">
+            <div className="sub-tabs-container">
                 <TabButton name="materials" label="Materials" />
                 <TabButton name="labor" label="Labor" />
                 <TabButton name="overheads" label="Overheads" />

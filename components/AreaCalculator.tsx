@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 type Shape = 'Circle' | 'Square' | 'Rectangle' | 'Triangle';
 
@@ -21,11 +21,11 @@ interface AreaCalculatorState {
 }
 
 interface AreaCalculatorProps {
-    isPremium?: boolean;
     initialState?: AreaCalculatorState;
+    isPremium?: boolean;
 }
 
-const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState }) => {
+const AreaCalculator: React.FC<AreaCalculatorProps> = ({ initialState, isPremium }) => {
     const [shape, setShape] = useState<Shape>('Circle');
     const [inputs, setInputs] = useState({
         radius: '10',
@@ -36,11 +36,12 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
         height: '5',
     });
     const [result, setResult] = useState<number | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
+
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
     const { shouldShowAd } = useAd();
     const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
@@ -52,6 +53,14 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
             setResult(null);
         }
     }, [initialState]);
+
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputs(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -106,63 +115,48 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
             });
             
             setShareText(`Area Calculation:\n${shareDetails}\n\nResult:\nArea = ${calculatedArea.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
-            return calculatedArea;
+            setResult(calculatedArea);
         };
 
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const res = performCalculation();
-            if (res !== null) setResult(res);
+            performCalculation();
         } else {
-            const res = performCalculation();
-            if (res !== null) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(res);
-                    setShowAd(true);
-                } else {
-                    setResult(res);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
     };
     
-    const handleAdClose = () => {
-        if (pendingResult !== null) {
-            setResult(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
-    };
-
-    const commonInputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition text-lg";
-
     const renderInputs = () => {
-        // ... (input rendering logic remains the same)
         switch (shape) {
             case 'Circle':
                 return (
                     <div>
-                        <label htmlFor="radius" className="block text-sm font-medium text-theme-secondary mb-2">Radius</label>
-                        <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className={commonInputClasses} />
+                        <label htmlFor="radius" className="block text-sm font-medium text-on-surface-variant mb-2">Radius</label>
+                        <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className="input-base w-full text-lg" />
                     </div>
                 );
             case 'Square':
                  return (
                     <div>
-                        <label htmlFor="side" className="block text-sm font-medium text-theme-secondary mb-2">Side</label>
-                        <input type="number" id="side" name="side" value={inputs.side} onChange={handleInputChange} className={commonInputClasses} />
+                        <label htmlFor="side" className="block text-sm font-medium text-on-surface-variant mb-2">Side</label>
+                        <input type="number" id="side" name="side" value={inputs.side} onChange={handleInputChange} className="input-base w-full text-lg" />
                     </div>
                 );
             case 'Rectangle':
                 return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="length" className="block text-sm font-medium text-theme-secondary mb-2">Length</label>
-                            <input type="number" id="length" name="length" value={inputs.length} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="length" className="block text-sm font-medium text-on-surface-variant mb-2">Length</label>
+                            <input type="number" id="length" name="length" value={inputs.length} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                         <div>
-                            <label htmlFor="width" className="block text-sm font-medium text-theme-secondary mb-2">Width</label>
-                            <input type="number" id="width" name="width" value={inputs.width} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="width" className="block text-sm font-medium text-on-surface-variant mb-2">Width</label>
+                            <input type="number" id="width" name="width" value={inputs.width} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                     </div>
                 );
@@ -170,12 +164,12 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
                 return (
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="base" className="block text-sm font-medium text-theme-secondary mb-2">Base</label>
-                            <input type="number" id="base" name="base" value={inputs.base} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="base" className="block text-sm font-medium text-on-surface-variant mb-2">Base</label>
+                            <input type="number" id="base" name="base" value={inputs.base} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                         <div>
-                            <label htmlFor="height" className="block text-sm font-medium text-theme-secondary mb-2">Height</label>
-                            <input type="number" id="height" name="height" value={inputs.height} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="height" className="block text-sm font-medium text-on-surface-variant mb-2">Height</label>
+                            <input type="number" id="height" name="height" value={inputs.height} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                     </div>
                 );
@@ -197,8 +191,8 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
                 />
             )}
              <div>
-                <label htmlFor="shape" className="block text-sm font-medium text-theme-secondary mb-2">Shape</label>
-                <select id="shape" value={shape} onChange={(e) => { setShape(e.target.value as Shape); setResult(null); }} className={commonInputClasses}>
+                <label htmlFor="shape" className="block text-sm font-medium text-on-surface-variant mb-2">Shape</label>
+                <select id="shape" value={shape} onChange={(e) => { setShape(e.target.value as Shape); setResult(null); }} className="select-base w-full text-lg">
                     <option>Circle</option>
                     <option>Square</option>
                     <option>Rectangle</option>
@@ -208,13 +202,13 @@ const AreaCalculator: React.FC<AreaCalculatorProps> = ({ isPremium, initialState
             
             {renderInputs()}
 
-            <button onClick={calculateArea} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={calculateArea} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate Area
             </button>
             
             {result !== null && (
-                 <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                     <h3 className="text-lg font-semibold text-theme-secondary mb-2">Area</h3>
+                 <div className="result-card p-6 rounded-lg text-center animate-fade-in">
+                     <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Area</h3>
                      <p className="text-4xl font-bold text-primary">{result.toLocaleString(undefined, { maximumFractionDigits: 4 })}</p>
                      <div className="flex justify-between items-center mt-4">
                         <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">

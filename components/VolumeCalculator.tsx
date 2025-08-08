@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
-import { useAd } from '../contexts/AdContext';
-import InterstitialAdModal from './InterstitialAdModal';
 import ShareButton from './ShareButton';
 import ExplanationModal from './ExplanationModal';
+import { useAd } from '../contexts/AdContext';
 import { useFuel } from '../contexts/FuelContext';
+import InterstitialAdModal from './InterstitialAdModal';
 
 type Shape = 'Sphere' | 'Cube' | 'Cylinder' | 'Cone';
 
@@ -18,11 +18,11 @@ interface VolumeCalculatorState {
 }
 
 interface VolumeCalculatorProps {
-    isPremium?: boolean;
     initialState?: VolumeCalculatorState;
+    isPremium?: boolean;
 }
 
-const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialState }) => {
+const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ initialState, isPremium }) => {
     const [shape, setShape] = useState<Shape>('Sphere');
     const [inputs, setInputs] = useState({
         radius: '5',
@@ -30,14 +30,16 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
         height: '10',
     });
     const [result, setResult] = useState<number | null>(null);
-    const [pendingResult, setPendingResult] = useState<any | null>(null);
-    const [showAd, setShowAd] = useState(false);
     const [shareText, setShareText] = useState('');
     const [isExplainModalOpen, setIsExplainModalOpen] = useState(false);
     const { addHistory } = useContext(HistoryContext);
+
+    const [pendingCalculation, setPendingCalculation] = useState<(() => void) | null>(null);
+    const [showAd, setShowAd] = useState(false);
     const { shouldShowAd } = useAd();
     const { fuel, consumeFuel } = useFuel();
     const fuelCost = isPremium ? 2 : 1;
+
 
     useEffect(() => {
         if (initialState) {
@@ -46,6 +48,14 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
             setResult(null);
         }
     }, [initialState]);
+
+    const handleAdClose = () => {
+        setShowAd(false);
+        if (pendingCalculation) {
+            pendingCalculation();
+            setPendingCalculation(null);
+        }
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputs(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -98,51 +108,36 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
             });
             
             setShareText(`Volume Calculation:\n${shareDetails}\n\nResult:\nVolume = ${calculatedVolume.toLocaleString(undefined, { maximumFractionDigits: 4 })}`);
-            return calculatedVolume;
+            setResult(calculatedVolume);
         };
-
+        
         if (fuel >= fuelCost) {
             consumeFuel(fuelCost);
-            const res = performCalculation();
-            if (res !== null) setResult(res);
+            performCalculation();
         } else {
-            const res = performCalculation();
-            if (res !== null) {
-                if (shouldShowAd(isPremium)) {
-                    setPendingResult(res);
-                    setShowAd(true);
-                } else {
-                    setResult(res);
-                }
+            if (shouldShowAd(isPremium)) {
+                setPendingCalculation(() => performCalculation);
+                setShowAd(true);
+            } else {
+                performCalculation();
             }
         }
     };
     
-    const handleAdClose = () => {
-        if (pendingResult !== null) {
-            setResult(pendingResult);
-            setPendingResult(null);
-        }
-        setShowAd(false);
-    };
-
-    const commonInputClasses = "w-full bg-theme-secondary text-theme-primary border-theme rounded-md p-3 focus:ring-2 focus:ring-primary focus:border-primary transition text-lg";
-
     const renderInputs = () => {
-        // ... (input rendering logic remains the same)
         switch (shape) {
             case 'Sphere':
                 return (
                     <div>
-                        <label htmlFor="radius" className="block text-sm font-medium text-theme-secondary mb-2">Radius</label>
-                        <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className={commonInputClasses} />
+                        <label htmlFor="radius" className="block text-sm font-medium text-on-surface-variant mb-2">Radius</label>
+                        <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className="input-base w-full text-lg" />
                     </div>
                 );
             case 'Cube':
                 return (
                     <div>
-                        <label htmlFor="side" className="block text-sm font-medium text-theme-secondary mb-2">Side Length</label>
-                        <input type="number" id="side" name="side" value={inputs.side} onChange={handleInputChange} className={commonInputClasses} />
+                        <label htmlFor="side" className="block text-sm font-medium text-on-surface-variant mb-2">Side Length</label>
+                        <input type="number" id="side" name="side" value={inputs.side} onChange={handleInputChange} className="input-base w-full text-lg" />
                     </div>
                 );
             case 'Cylinder':
@@ -150,12 +145,12 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
                 return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="radius" className="block text-sm font-medium text-theme-secondary mb-2">Radius</label>
-                            <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="radius" className="block text-sm font-medium text-on-surface-variant mb-2">Radius</label>
+                            <input type="number" id="radius" name="radius" value={inputs.radius} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                         <div>
-                            <label htmlFor="height" className="block text-sm font-medium text-theme-secondary mb-2">Height</label>
-                            <input type="number" id="height" name="height" value={inputs.height} onChange={handleInputChange} className={commonInputClasses} />
+                            <label htmlFor="height" className="block text-sm font-medium text-on-surface-variant mb-2">Height</label>
+                            <input type="number" id="height" name="height" value={inputs.height} onChange={handleInputChange} className="input-base w-full text-lg" />
                         </div>
                     </div>
                 );
@@ -177,8 +172,8 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
                 />
             )}
             <div>
-                <label htmlFor="shape" className="block text-sm font-medium text-theme-secondary mb-2">Shape</label>
-                <select id="shape" value={shape} onChange={(e) => { setShape(e.target.value as Shape); setResult(null); }} className={commonInputClasses}>
+                <label htmlFor="shape" className="block text-sm font-medium text-on-surface-variant mb-2">Shape</label>
+                <select id="shape" value={shape} onChange={(e) => { setShape(e.target.value as Shape); setResult(null); }} className="select-base w-full text-lg">
                     <option>Sphere</option>
                     <option>Cube</option>
                     <option>Cylinder</option>
@@ -188,13 +183,13 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ isPremium, initialS
 
             {renderInputs()}
 
-            <button onClick={calculateVolume} className="w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-md hover:bg-primary-light transition-colors duration-200 shadow-lg">
+            <button onClick={calculateVolume} className="btn-primary w-full font-bold py-3 px-4 rounded-md transition-colors duration-200 shadow-lg">
                 Calculate Volume
             </button>
             
             {result !== null && (
-                <div className="bg-theme-primary/50 p-6 rounded-lg text-center animate-fade-in">
-                    <h3 className="text-lg font-semibold text-theme-secondary mb-2">Volume</h3>
+                <div className="result-card p-6 rounded-lg text-center animate-fade-in">
+                    <h3 className="text-lg font-semibold text-on-surface-variant mb-2">Volume</h3>
                     <p className="text-4xl font-bold text-primary">{result.toLocaleString(undefined, { maximumFractionDigits: 4 })}</p>
                      <div className="flex justify-between items-center mt-4">
                         <button onClick={() => setIsExplainModalOpen(true)} className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
