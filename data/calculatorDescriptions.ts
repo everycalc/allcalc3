@@ -1,6 +1,6 @@
 export const calculatorDescriptions: { [key: string]: { description: string; faqs: { q: string; a: string }[] } } = {
     'E-commerce Profit Calculator': {
-        description: 'Analyze your per-order profitability with precision. This calculator accounts for all major e-commerce costs, including COGS, shipping (both forward and reverse), payment gateway fees, and RTO losses, giving you a true picture of your blended profit per order.',
+        description: 'Gain a crystal-clear understanding of your e-commerce profitability on a per-order basis. This expert-level tool goes beyond simple revenue-minus-cost calculations. It meticulously accounts for the complex variables that determine true profit in an online business, including the cost of goods (COGS), packaging, forward shipping to the customer, and variable fees from payment gateways and marketplaces. Crucially, it also factors in the financial impact of Return-to-Origin (RTO) orders—a major profit leak for many businesses. By calculating losses from RTO shipping and determining if the product cost is also lost, this tool provides a "blended profit" per order. This blended figure is an average that represents your profitability across both successful deliveries and costly returns, giving you an accurate and realistic picture of your business\'s financial health. Use these insights to optimize pricing, reduce RTOs, and make data-driven decisions to boost your bottom line.',
         faqs: [
             {
                 q: 'What is blended profit?',
@@ -9,11 +9,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'Why is my Return-to-Origin (RTO) rate so important?',
                 a: 'A high RTO rate can severely damage profitability. For every RTO, you lose money on forward shipping, reverse shipping, packaging, and potentially the cost of the product itself if it\'s damaged. Reducing your RTO rate is one of the fastest ways to increase profits.'
-            }
+            },
+            { q: 'What should be included in COGS?', a: 'Cost of Goods Sold (COGS) should include all direct costs related to the product itself. This means the purchase price from your supplier, any raw material costs, and manufacturing labor. It should not include indirect costs like marketing or rent.' },
+            { q: 'What is the difference between a Payment Gateway Fee and a Marketplace Fee?', a: 'A Payment Gateway Fee (e.g., Stripe, Razorpay) is what you pay to process the customer\'s credit/debit card transaction. A Marketplace Fee (e.g., Amazon, Etsy) is the commission the platform takes for listing and selling your product on their site.'},
+            { q: 'How can I reduce my RTO shipping costs?', a: 'Negotiate with your courier partners for better reverse shipping rates. Some couriers offer lower RTO rates than forward shipping. Also, implementing better address verification at checkout can reduce delivery failures, which are a primary cause of RTOs.'}
         ]
     },
     'Product Cost Calculator': {
-        description: 'Calculate the total cost to produce one unit of your product. This tool breaks down costs into materials, labor, packaging, and overheads, providing a clear cost-per-unit. Use this to set a profitable selling price by adding your desired profit margin.',
+        description: 'Unlock the true cost of creating your product with this comprehensive calculator. Accurately determining your cost per unit is the cornerstone of a sustainable business strategy. This tool enables you to break down your expenses into four critical categories: Materials (the raw components of your product), Labor (the work involved in assembly), Packaging (the final presentation and protection), and Overheads (indirect costs like rent or utilities spread across a production batch). By inputting these variables, you get a precise cost-per-unit figure. But it doesn\'t stop there. You can then input your desired profit margin to calculate the recommended selling price, ensuring that your pricing strategy is not just covering costs, but actively building a profitable business. This empowers you to price with confidence, understand your profitability drivers, and make strategic decisions about sourcing and production.',
         faqs: [
             {
                 q: 'What is the difference between direct and indirect (overhead) costs?',
@@ -22,11 +25,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'Why is accurate product costing important?',
                 a: 'Accurate costing is the foundation of a profitable business. It allows you to set the right price, understand your profit margins, identify areas to reduce costs, and make informed decisions about which products to promote or discontinue.'
-            }
+            },
+            { q: 'How should I calculate labor cost if I pay myself?', a: 'Even if you\'re a solo founder, it\'s crucial to pay yourself. Determine a realistic hourly wage for your time and track the minutes it takes to produce one unit. Use the "Per Hour" labor cost type to accurately factor this into your product cost.'},
+            { q: 'What does "Units Produced in Batch" mean for overheads?', a: 'Overhead costs are typically fixed for a period (e.g., monthly rent). To allocate this to a single product, you divide the total overhead cost by the number of units you produce in that period. This ensures each product carries its fair share of the indirect costs.'},
+            { q: 'What is a typical profit margin?', a: 'This varies massively by industry. Retail might see 20-40%, while software can be 80%+. A good starting point is 50%, which means your cost is half your selling price. Research your specific industry to set a competitive yet profitable margin.'}
         ]
     },
     'Recipe Cost Calculator': {
-        description: 'Perfect for restaurants, bakeries, and food creators. This calculator helps you determine the exact cost of a single serving of your recipe by breaking down the cost of each ingredient. Input the market price and size of your ingredients, and how much you use, to find your precise food cost.',
+        description: 'An essential tool for any culinary business, from restaurants and cafes to bakeries and home-based food creators. This calculator allows you to determine the precise cost of any dish on your menu by breaking down the cost of each individual ingredient. Simply list your ingredients, enter the price you pay for the bulk package (e.g., the cost of a 5kg bag of flour) and its size, and then specify the exact amount used in a single serving of your recipe. The tool automatically calculates the cost for each component and sums them up to give you the total food cost for the dish. This granular approach is critical for effective menu engineering, ensuring your prices are not only competitive but also profitable. Use this data to manage your food costs, optimize your menu, and build a financially successful food business.',
         faqs: [
             {
                 q: 'How do I account for ingredient waste?',
@@ -35,11 +41,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'How does this help with menu pricing?',
                 a: 'Knowing your exact recipe cost is crucial for menu pricing. A general rule is that your food cost should be around 25-35% of your menu price, leaving the rest to cover labor, overheads, and profit.'
-            }
+            },
+            { q: 'Should I include water or salt in the costing?', a: 'While the cost is minimal, it\'s good practice to include everything. For items like salt, spices, or oil that are hard to measure per dish, you can add a small, fixed "sundry" cost (e.g., $0.10) to each recipe to account for them.'},
+            { q: 'What unit should I use for package size and used amount?', a: 'The most important thing is to be consistent. If your package size is in grams, your used amount should also be in grams. If it\'s in milliliters, the used amount should be in milliliters. Consistency is key to an accurate calculation.'},
+            { q: 'How often should I update my recipe costs?', a: 'Ingredient prices fluctuate. It\'s a good idea to review and update your recipe costs every 3-6 months, or whenever you notice a significant price change from one of your main suppliers, to ensure your menu remains profitable.'}
         ]
     },
     'CLV & CAC Calculator': {
-        description: 'Understand the essential metrics for sustainable business growth: Customer Lifetime Value (CLV) and Customer Acquisition Cost (CAC). This calculator helps you determine the total profit you can expect from a customer over their lifetime and compares it to the cost of acquiring them.',
+        description: 'Measure the long-term health and sustainability of your business with two of the most critical metrics in marketing: Customer Lifetime Value (CLV) and Customer Acquisition Cost (CAC). CLV predicts the total net profit your business will make from a single customer over the entire duration of their relationship with you. CAC measures how much it costs to acquire a new customer. By comparing these two, you get the CLV:CAC ratio, a powerful indicator of your marketing efficiency and business model viability. A healthy ratio shows that you are efficiently acquiring customers who generate significant long-term value. This calculator simplifies the formulas, allowing you to input your business variables and see the results instantly, providing crucial insights for scaling your marketing efforts profitably.',
         faqs: [
             {
                 q: 'What is a good CLV to CAC ratio?',
@@ -48,11 +57,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'How can I improve my CLV?',
                 a: 'You can increase CLV by encouraging repeat purchases through loyalty programs, improving customer service to reduce churn, and increasing the average order value through upselling or cross-selling.'
-            }
+            },
+            { q: 'What should be included in "Total Marketing Spend"?', a: 'This should include all costs associated with acquiring new customers over a specific period. This includes ad spend, salaries of your marketing and sales teams, and the cost of any tools or software they use.'},
+            { q: 'How do I estimate "Customer Lifetime"?', a: 'This can be tricky for new businesses. A simple way is to look at your churn rate (the percentage of customers who leave in a period). The average customer lifetime is 1 / churn rate. For example, if you lose 25% of your customers each year (0.25 churn), your average customer lifetime is 1 / 0.25 = 4 years.'},
+            { q: 'Why is this ratio so important for startups?', a: 'For startups and growing businesses, this ratio is a key indicator for investors. It proves that your business model is sustainable. It shows that you not only know how to get new customers, but that you can do so profitably, which is essential for long-term success.'}
         ]
     },
     'Inventory Management Calculator': {
-        description: 'Optimize your inventory with two key metrics: Economic Order Quantity (EOQ) and Reorder Point (ROP). EOQ tells you the ideal quantity of inventory to order to minimize holding and ordering costs, while ROP tells you when to place that order to avoid stockouts.',
+        description: 'Take control of your supply chain and optimize your cash flow with this powerful inventory management tool. It calculates two fundamental metrics for efficient inventory control. First, the Economic Order Quantity (EOQ), which is the ideal order size that minimizes the total cost of ordering and holding inventory. Ordering too much increases holding costs, while ordering too little increases ordering frequency and costs. Second, the Reorder Point (ROP), which tells you the exact inventory level at which you need to place a new order to avoid stockouts, taking into account your daily sales and supplier lead time. Using these metrics helps you prevent costly stockouts, reduce storage expenses, and ensure that your capital isn\'t unnecessarily tied up in excess inventory, leading to a more efficient and profitable operation.',
         faqs: [
             {
                 q: 'What is Safety Stock?',
@@ -61,11 +73,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'What is the difference between ordering cost and holding cost?',
                 a: 'Ordering costs are the expenses incurred to create and process an order to a supplier (e.g., shipping fees, administrative costs). Holding costs are the costs associated with storing inventory that is waiting to be sold (e.g., warehouse rent, insurance, spoilage).'
-            }
+            },
+            { q: 'What is "Lead Time"?', a: 'Lead time is the total time it takes from the moment you place an order with your supplier to the moment you receive the goods in your warehouse. Accurately estimating this is crucial for the Reorder Point calculation.'},
+            { q: 'Is EOQ always the right number of units to order?', a: 'EOQ is a theoretical ideal. In the real world, you might need to adjust it. For example, your supplier might have a Minimum Order Quantity (MOQ), or you might get a significant price break for ordering a larger quantity. EOQ is a fantastic baseline to guide your decision.'},
+            { q: 'What are the risks of ignoring these metrics?', a: 'Ignoring these metrics can lead to two major problems: 1) Overstocking, which ties up your cash, increases storage costs, and risks product obsolescence. 2) Understocking, which leads to stockouts, lost sales, and unhappy customers who may go to a competitor.'}
         ]
     },
     'Break-Even ROAS Calculator': {
-        description: 'Find your Break-Even Return On Ad Spend (ROAS). This vital calculator considers your product costs, shipping, and even return rates to tell you the exact ROAS you need to achieve on your advertising campaigns just to cover your costs and break even.',
+        description: 'Stop guessing if your ad campaigns are profitable. This indispensable calculator for e-commerce businesses determines your Break-Even Return On Ad Spend (ROAS). ROAS is the total revenue generated for every dollar spent on advertising. However, a simple revenue-to-spend ratio is misleading because it doesn\'t account for your actual costs. This tool goes deeper by factoring in your Average Order Value (AOV), Cost of Goods Sold (COGS), shipping expenses, payment fees, and even losses from Return-to-Origin (RTO) orders. The result is the precise ROAS your campaigns must achieve for you to cover all costs associated with an advertised sale. Any ROAS above this number is profit, and any below is a loss. Use this to set clear targets for your marketing team and scale your ad spend with confidence.',
         faqs: [
             {
                 q: 'What is ROAS?',
@@ -74,11 +89,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'Why is my break-even ROAS higher than I thought?',
                 a: 'Break-even ROAS isn\'t just about covering the ad spend; it has to cover the cost of the product, shipping, fees, and even losses from returns. This is why the break-even point is often higher than just 1.0.'
-            }
+            },
+            { q: 'What is a good "target" ROAS?', a: 'This depends on your profit margin. A good target is significantly above your break-even point. Many businesses aim for a ROAS of 3:1 to 5:1 to ensure healthy profitability after all costs are considered.'},
+            { q: 'How does RTO Rate affect my Break-Even ROAS?', a: 'A higher RTO rate dramatically increases your break-even ROAS. This is because you still have to pay for the ad that generated the sale, but you get no revenue from the order and incur additional costs for shipping and returns. Reducing RTO is a key lever for improving ad profitability.'},
+            { q: 'Can I use this for lead generation businesses?', a: 'This calculator is specifically designed for e-commerce where a direct sale is made. For lead generation, you would need to calculate your lead-to-customer conversion rate and customer lifetime value to determine your break-even cost per lead.'}
         ]
     },
     'Break-Even Point Calculator': {
-        description: 'Determine the point at which your revenue equals your costs. The Break-Even Point calculator helps you find out how many units you need to sell, or how much revenue you need to generate, to cover all your fixed and variable costs without making a profit or a loss.',
+        description: 'Discover the most fundamental number for your business\'s survival and success: the break-even point. This is the moment when your total sales revenue exactly equals your total expenses, meaning you are neither making a profit nor a loss. This calculator helps you determine this critical milestone in two ways: by the number of units you need to sell, and by the total revenue you need to achieve. To do this, you will separate your costs into two categories: Fixed Costs (like rent and salaries, which don\'t change with sales volume) and Variable Costs (like raw materials, which do change with each unit sold). Understanding your break-even point is essential for setting realistic sales goals, making informed pricing decisions, and managing your costs effectively to chart a clear path to profitability.',
         faqs: [
             {
                 q: 'What are fixed vs. variable costs?',
@@ -87,11 +105,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'How can I lower my break-even point?',
                 a: 'You can lower your break-even point by either reducing your fixed costs (e.g., finding cheaper rent), reducing your variable costs per unit (e.g., finding a cheaper supplier), or increasing your selling price per unit.'
-            }
+            },
+            { q: 'What is a "Contribution Margin"?', a: 'The Contribution Margin is your Sale Price Per Unit minus your Variable Cost Per Unit. It\'s the amount of money from each sale that "contributes" to paying off your fixed costs. Once your fixed costs are covered, the contribution margin from each additional sale becomes pure profit.'},
+            { q: 'Can I use this for a service business?', a: 'Yes. For a service business, a "unit" might be an hour of consulting, a project, or a monthly retainer. Your variable costs might include software used specifically for that client or contractor fees. The principle remains the same.'},
+            { q: 'How often should I recalculate my break-even point?', a: 'It\'s a good practice to recalculate your break-even point whenever there is a significant change in your business, such as a rent increase, a change in supplier pricing, or when you are considering launching a new product or service.'}
         ]
     },
     'Profit Margin Calculator': {
-        description: 'Quickly calculate your gross profit and profit margin percentage. This calculator helps you understand the profitability of your sales by comparing your revenue to your Cost of Goods Sold (COGS). A key indicator for business health.',
+        description: 'Quickly assess the financial health of your business or product with the Profit Margin Calculator. This tool computes two vital figures: Gross Profit and Gross Profit Margin. Gross Profit is the money left over after subtracting the Cost of Goods Sold (COGS) from your total revenue. The Gross Profit Margin turns this into a percentage, showing you how much profit you make for every dollar of revenue. This percentage is a universal indicator of efficiency and pricing power. A higher margin indicates that you are retaining a larger portion of each sale as profit. Use this calculator to compare the profitability of different products, track your performance over time, and make informed decisions about your pricing strategy and cost management.',
         faqs: [
             {
                 q: 'What is the difference between Gross Profit and Profit Margin?',
@@ -100,11 +121,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'What is a good profit margin?',
                 a: 'A "good" profit margin varies widely by industry. A retail business might have a margin of 20-30%, while a software company could have a margin of 80% or more. It\'s best to compare your margin to your industry\'s average.'
-            }
+            },
+            { q: 'What\'s the difference between Gross Margin and Net Margin?', a: 'Gross Margin only subtracts the direct Cost of Goods Sold (COGS). Net Margin is calculated after subtracting *all* business expenses, including operating costs like rent, salaries, and marketing. Gross margin measures production efficiency, while net margin measures overall business profitability.'},
+            { q: 'How can I increase my profit margin?', a: 'There are two primary ways: 1) Increase your prices without losing too many customers. 2) Decrease your Cost of Goods Sold, for example by negotiating better prices with your suppliers or finding more efficient production methods.'},
+            { q: 'Does this calculator work for services?', a: 'Yes. For a service-based business, the "Cost of Goods Sold" would be the direct costs associated with providing that service. For example, for a web design agency, COGS might include the salaries of the designers and the cost of software licenses used for client projects.'}
         ]
     },
     'Discount Calculator': {
-        description: 'Calculate the final price of an item after a discount has been applied. This tool also shows you exactly how much money you are saving, making it perfect for shopping and sales promotions.',
+        description: 'A simple yet essential tool for savvy shoppers and retailers alike. This calculator makes it easy to figure out the final price of an item after a percentage-based discount. Simply enter the original price and the discount percentage to see the final price you\'ll pay. The calculator also clearly displays the exact amount of money you save, helping you instantly recognize the value of a deal. For retailers, this is a great tool for quickly calculating sale prices for promotions. For shoppers, it\'s your best friend during a sale, ensuring you know exactly what you\'re paying and saving before you head to the checkout counter. No more mental math or surprises—just clear, instant discount calculations.',
         faqs: [
             {
                 q: 'How do I calculate a discount?',
@@ -113,11 +137,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'How do I calculate a price before a discount was applied?',
                 a: 'To find the original price, you can use our GST/Tax calculator in "remove" mode. For example, if you paid $80 after a 20% discount, you can input 80 as the Final Amount and 20 as the Tax Rate to find the original price.'
-            }
+            },
+            { q: 'How do I calculate multiple discounts, like an extra 10% off an already 20% off item?', a: 'You cannot simply add the percentages (20% + 10% is not 30% off). You must apply them sequentially. First, calculate the price after the 20% discount. Then, use that new price as the "Original Price" and apply the 10% discount to it.'},
+            { q: 'Can I use this for a discount in dollars instead of percent?', a: 'This calculator is designed for percentage-based discounts. For a fixed dollar amount discount (e.g., "$5 off"), you can simply use our Standard Calculator to subtract the discount amount from the original price.'},
+            { q: 'Is the saved amount the same as profit?', a: 'No, not for a business. The "saved amount" is the discount given to the customer. The business\'s profit is the final price minus the cost of the item. Giving a discount reduces the business\'s profit on that item.'}
         ]
     },
     'AOV Calculator': {
-        description: 'Calculate your Average Order Value (AOV). This calculator helps you understand the average amount of money each customer spends per transaction, a key metric for online businesses to track and improve.',
+        description: 'Measure a critical e-commerce metric with our Average Order Value (AOV) Calculator. AOV represents the average dollar amount a customer spends every time they place an order on your website or in your store. To calculate it, simply input your total revenue over a specific period and the total number of orders from that same period. Tracking your AOV is crucial because increasing it is one of the most effective ways to boost revenue without the additional marketing cost of acquiring new customers. A rising AOV indicates that your customers are buying more expensive items or more items per transaction. Use this metric to gauge the effectiveness of your pricing strategies, product bundling, and upselling techniques.',
         faqs: [
             {
                 q: 'Why is AOV important?',
@@ -126,206 +153,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'How can I increase my AOV?',
                 a: 'Common strategies include offering free shipping over a certain threshold, bundling products together for a slight discount, and suggesting relevant add-ons or upsells during the checkout process.'
-            }
-        ]
-    },
-    'Loan Calculator': {
-        description: 'Our Loan Calculator helps you determine the monthly payments (EMI) for a loan. By entering the loan amount, interest rate, and term, you can see a detailed breakdown of your repayment schedule, including how much you will pay in principal versus interest over the life of the loan.',
-        faqs: [
-            {
-                q: 'What is EMI?',
-                a: 'EMI stands for Equated Monthly Installment. It is the fixed payment amount made by a borrower to a lender at a specified date each calendar month. EMIs are used to pay off both interest and principal each month so that over a specified number of years, the loan is paid off in full.'
             },
-            {
-                q: 'How is loan interest calculated?',
-                a: 'Most loans use a reducing balance method. The interest is calculated on the outstanding loan amount for the month. As you pay your EMIs, the principal amount reduces, and so does the interest charged on it in subsequent months.'
-            }
-        ]
-    },
-    'SIP Calculator': {
-        description: 'A Systematic Investment Plan (SIP) calculator helps you estimate the future value of your mutual fund investments made through SIP. Enter your monthly investment amount, expected annual return rate, and the investment duration to project your potential wealth accumulation over time.',
-        faqs: [
-            {
-                q: 'What is a SIP?',
-                a: 'A Systematic Investment Plan (SIP) is a method of investing in mutual funds where you invest a fixed amount of money at regular intervals (e.g., monthly). It helps in disciplined investing and benefits from rupee cost averaging and the power of compounding.'
-            },
-            {
-                q: 'Are the returns guaranteed?',
-                a: 'No, mutual fund returns are subject to market risks. The calculator shows a projection based on the expected rate of return you enter. Actual returns can be higher or lower depending on market performance.'
-            }
-        ]
-    },
-    'FD/RD Calculator': {
-        description: 'Calculate the maturity amount and interest earned on your Fixed Deposit (FD) or Recurring Deposit (RD). This tool helps you plan your savings by showing you how your money can grow over a fixed period with a fixed interest rate.',
-        faqs: [
-            {
-                q: 'What is the difference between an FD and an RD?',
-                a: 'In a Fixed Deposit (FD), you invest a lump sum amount one time for a fixed tenure. In a Recurring Deposit (RD), you invest a fixed amount every month for a fixed tenure. FDs are for those with a lump sum, while RDs are for those who want to save monthly.'
-            },
-            {
-                q: 'What does compounding frequency mean for an FD?',
-                a: 'Compounding frequency is how often the interest is calculated and added to your principal. More frequent compounding (e.g., quarterly) results in slightly higher returns than less frequent compounding (e.g., annually) because you start earning interest on your interest sooner.'
-            }
-        ]
-    },
-    'Mutual Fund Returns Calculator': {
-        description: 'Estimate the future value of your mutual fund investments, whether you are investing a one-time lump sum amount or through a monthly Systematic Investment Plan (SIP). This helps you visualize the power of compounding on your investments.',
-        faqs: [
-            {
-                q: 'What is the difference between SIP and Lumpsum?',
-                a: 'SIP involves investing a fixed amount regularly (usually monthly), which helps average out your purchase cost over time. Lumpsum is a one-time, large investment, which can be beneficial if you invest when the market is low.'
-            },
-            {
-                q: 'What is an "expected return rate"?',
-                a: 'Since mutual fund returns are not guaranteed, the "expected return rate" is an assumption you make based on the fund\'s past performance and market outlook. A common long-term expectation for equity funds is 10-12%, but this is not guaranteed.'
-            }
-        ]
-    },
-    'Compound Interest Calculator': {
-        description: 'Discover the power of compounding with this calculator. See how your initial investment can grow over time as you earn interest not just on your principal amount, but also on the accumulated interest from previous periods.',
-        faqs: [
-            {
-                q: 'Why is compound interest so powerful?',
-                a: 'Compound interest is powerful because it creates a snowball effect. As your investment earns interest, the interest itself starts earning interest, leading to exponential growth over long periods. Albert Einstein reportedly called it the "eighth wonder of the world".'
-            },
-            {
-                q: 'What is the Rule of 72?',
-                a: 'The Rule of 72 is a simple way to estimate how long it will take for an investment to double. Just divide 72 by your annual interest rate. For example, an investment at an 8% annual return will double in approximately 9 years (72 / 8 = 9).'
-            }
-        ]
-    },
-    'Credit Card Interest Calculator': {
-        description: 'Calculate the total interest you will pay and the time it will take to pay off your credit card debt. This tool helps you understand the true cost of credit card debt and can motivate you to create a payoff plan.',
-        faqs: [
-            {
-                q: 'What is APR (Annual Percentage Rate)?',
-                a: 'APR is the annual rate of interest charged on your credit card balance. However, credit card interest is typically compounded daily or monthly, so the effective interest rate is often higher than the stated APR.'
-            },
-            {
-                q: 'Why does paying only the minimum take so long?',
-                a: 'Minimum payments are often set very low, sometimes just enough to cover the interest for that month and a tiny fraction of the principal. This means most of your payment goes to interest, and the balance decreases very slowly, keeping you in debt for years.'
-            }
-        ]
-    },
-    'Home Loan EMI & Affordability': {
-        description: 'Plan your home purchase with confidence. This calculator not only computes your Equated Monthly Installment (EMI) for a home loan but also helps you check if the loan is affordable based on your monthly income and existing financial commitments.',
-        faqs: [
-            {
-                q: 'What is the 50% rule for affordability?',
-                a: 'Many lenders and financial advisors recommend that your total monthly EMI payments (including this home loan and any other existing loans like car loans) should not exceed 50% of your net monthly income. This ensures you have enough money left for other living expenses.'
-            },
-            {
-                q: 'What is the difference between a fixed and floating interest rate?',
-                a: 'A fixed interest rate remains the same for the entire loan tenure, providing predictable EMI payments. A floating interest rate is linked to market rates and can change over the loan tenure, meaning your EMI amount could increase or decrease.'
-            }
-        ]
-    },
-    'GST/Tax Calculator': {
-        description: 'Easily add or remove Goods and Services Tax (GST) or any other percentage-based tax from an amount. This is useful for business owners to determine the pre-tax price from a final price, or for consumers to see the final cost of a product.',
-        faqs: [
-            {
-                q: 'What is the difference between adding and removing GST?',
-                a: '"Adding GST" calculates the final price when you know the base price (e.g., 1000 + 18% GST). "Removing GST" calculates the base price when you only know the final, tax-inclusive price (e.g., finding the original price from a 1180 receipt).'
-            },
-            {
-                q: 'Can this be used for other taxes like VAT?',
-                a: 'Yes, absolutely. This calculator can be used for any percentage-based tax, such as Value Added Tax (VAT), sales tax, or service tax. Just enter the appropriate tax rate.'
-            }
-        ]
-    },
-    'Area Cost Estimator': {
-        description: 'Quickly estimate the total cost of a project based on its area. Whether you are planning to build a house, tile a floor, or paint a wall, this calculator helps you budget by multiplying the total area by the cost per square unit.',
-        faqs: [
-            {
-                q: 'What costs are included in "cost per square foot/meter"?',
-                a: 'This figure can vary. For construction, it might include materials and labor. For flooring or painting, it might just be the cost of the material. It\'s important to know what your cost per unit figure represents to get an accurate estimate.'
-            },
-            {
-                q: 'How can I get an accurate cost per unit figure?',
-                a: 'The best way is to get quotes from contractors or suppliers in your specific area, as costs can vary significantly by location. You can also research local construction cost reports for a general idea.'
-            }
-        ]
-    },
-    'Rent vs Buy Calculator': {
-        description: 'Analyze the financial implications of renting a property versus buying one. This calculator compares the total cost of renting against the total cost of buying (including down payment and EMIs) over a specified period to help you make a more informed decision.',
-        faqs: [
-            {
-                q: 'Does this calculator include all costs of buying?',
-                a: 'This is a simplified financial comparison. It does not include other potential costs of homeownership like property taxes, maintenance, insurance, or potential appreciation in property value. It focuses primarily on the cash outflow of down payment and EMIs vs. rent.'
-            },
-            {
-                q: 'When does buying make more sense than renting?',
-                a: 'Generally, buying becomes more financially advantageous the longer you plan to stay in the home. This is because you have more time to pay down the loan principal and for the property value to potentially appreciate, offsetting the high initial costs.'
-            }
-        ]
-    },
-    'Carpet Area vs Built-up Area': {
-        description: 'Understand the key terms used in real estate. This calculator helps you convert between Carpet Area (the usable area within the walls of your apartment) and Built-up Area (which includes the area of the walls and balconies).',
-        faqs: [
-            {
-                q: 'What is Super Built-up Area?',
-                a: 'Super Built-up Area is an even larger figure that includes the built-up area plus a proportionate share of common areas like lobbies, staircases, and clubhouses. It\'s often used by developers to calculate the final sale price.'
-            },
-            {
-                q: 'What percentage is typical for non-carpet areas?',
-                a: 'The area taken up by walls, balconies, and shafts typically ranges from 15% to 25% of the built-up area. This means the carpet area is usually 75-85% of the built-up area.'
-            }
-        ]
-    },
-    'Percentage Calculator': {
-        description: 'A versatile tool for all your percentage calculation needs. Whether you need to find a percentage of a number, determine what percentage one number is of another, or calculate the percentage change between two numbers, this calculator has you covered.',
-        faqs: [
-            {
-                q: 'How do I calculate a percentage increase?',
-                a: 'Use the "% Change" mode. Enter the original number in the "From" field and the new, larger number in the "To" field. The result will be a positive percentage.'
-            },
-            {
-                q: 'What is a real-world use for the "X is what %" calculation?',
-                a: 'This is very useful for exams or goals. If you scored 45 marks out of a total of 60, you can calculate (45 is what % of 60) to find your score is 75%.'
-            }
-        ]
-    },
-    'Average Calculator': {
-        description: 'Calculate the average (or arithmetic mean) of a set of numbers. Simply enter your numbers separated by commas, and the calculator will provide the sum, count, and average of the values.',
-        faqs: [
-            {
-                q: 'What is the difference between average (mean) and median?',
-                a: 'The average (mean) is the sum of all values divided by the count of values. The median is the middle value in a sorted list of numbers. The median is often a better measure of central tendency when there are extreme outliers.'
-            },
-            {
-                q: 'Can I use negative numbers?',
-                a: 'Yes, you can include negative numbers in your list. The calculator will correctly factor them into the sum and the final average.'
-            }
-        ]
-    },
-    'Median & Mode Calculator': {
-        description: 'Find the median (the middle value) and the mode (the most frequently occurring value) of a data set. These are important statistical measures that help you understand the central tendency of your data.',
-        faqs: [
-            {
-                q: 'When should I use the median instead of the average?',
-                a: 'The median is a better measure when your data has extreme outliers because it is not affected by them. For example, when calculating the "average" house price in an area, the median is often used to avoid a few mansions skewing the result.'
-            },
-            {
-                q: 'What if there is more than one mode?',
-                a: 'A data set can have more than one mode. If two numbers appear with the same highest frequency, the set is "bimodal". If three, it is "trimodal". This calculator will show all modes.'
-            }
-        ]
-    },
-    'Logarithm & Trigonometry': {
-        description: 'A handy tool for students and professionals dealing with advanced mathematics. Quickly calculate common logarithms (log base 10), natural logarithms (ln), and trigonometric functions like sine, cosine, and tangent in either degrees or radians.',
-        faqs: [
-            {
-                q: 'What is the difference between log and ln?',
-                a: '"log" typically refers to the common logarithm with base 10, used in fields like chemistry (pH scale). "ln" refers to the natural logarithm with base e (Euler\'s number, ~2.718), which is widely used in calculus, physics, and finance.'
-            },
-            {
-                q: 'What are degrees and radians?',
-                a: 'Both are units for measuring angles. A full circle is 360 degrees or 2π radians. Degrees are commonly used in general geometry, while radians are preferred in higher-level mathematics and physics for their convenient properties in calculus.'
-            }
+            { q: 'What time period should I use for calculating AOV?', a: 'You can calculate it for any period, but common choices are monthly, quarterly, or yearly. Calculating it monthly helps you track trends and see the impact of recent marketing campaigns. Calculating it quarterly or yearly gives you a more stable, long-term view.'},
+            { q: 'Is AOV the same as Customer Lifetime Value (CLV)?', a: 'No. AOV measures the value of a single transaction. CLV measures the total value a customer brings to your business over their entire relationship with you, which includes multiple transactions. AOV is a component used in calculating CLV.'},
+            { q: 'Does a low AOV mean my business is failing?', a: 'Not necessarily. Businesses that sell low-cost, high-volume items will naturally have a lower AOV than businesses that sell high-ticket items. The key is to track your AOV over time. An increasing AOV is a sign of a healthy business, regardless of the absolute number.'}
         ]
     },
     'Standard Calculator': {
-        description: 'Your everyday tool for basic arithmetic operations. This standard calculator handles addition, subtraction, multiplication, and division with a clean, simple interface and a running display of your calculation.',
+        description: "Your reliable and straightforward tool for all everyday calculations. This Standard Calculator provides a clean and familiar interface for performing basic arithmetic operations: addition, subtraction, multiplication, and division. It's designed for quick, on-the-go calculations where you don't need complex scientific functions. The display shows your current number, while the sub-display keeps track of the operation in progress, making it easy to follow along. It also includes handy functions for calculating percentages and inverting the sign of a number. Whether you're splitting a bill, figuring out a tip, or doing some quick budgeting, this calculator is the perfect digital companion for your daily mathematical needs.",
         faqs: [
             {
                 q: 'How does the percentage button (%) work?',
@@ -334,11 +169,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'What is the order of operations?',
                 a: 'This standard calculator processes operations sequentially as they are entered (e.g., `2 + 3 * 4` will be calculated as `5 * 4 = 20`). For strict mathematical order (PEMDAS/BODMAS), use the Scientific Calculator.'
-            }
+            },
+            { q: 'What does the "+/-" button do?', a: 'The plus/minus button toggles the sign of the number currently on the display. If you have "50", pressing it will change it to "-50", and pressing it again will change it back to "50".'},
+            { q: 'How do I clear the entire calculation?', a: 'The "C" button clears the current entry. If you have a calculation in progress (e.g., "50 + "), pressing "C" will clear the second number you started typing. A second press will clear the whole operation.'},
+            { q: 'Can I use this calculator offline?', a: 'Yes! Like all the calculators on our platform, the Standard Calculator is designed to work perfectly even without an internet connection, making it reliable wherever you are.'}
         ]
     },
     'Scientific Calculator': {
-        description: 'Perform advanced mathematical calculations with our Scientific Calculator. It includes functions for trigonometry (sin, cos, tan), logarithms (log, ln), powers, roots, and constants like π and e.',
+        description: "Tackle advanced mathematical problems with ease using our full-featured Scientific Calculator. This tool extends beyond basic arithmetic to include a wide range of functions essential for students and professionals in science, engineering, and mathematics. It provides trigonometric functions (sine, cosine, tangent) that can operate in both degrees and radians. You can perform logarithmic calculations (common log and natural log), calculate powers and square roots, and utilize mathematical constants like Pi (π) and Euler's number (e). The layout is designed to be intuitive, giving you access to powerful functions without a cluttered interface. Whether you're solving complex equations for school or work, this calculator provides the functionality you need for precise and reliable results.",
         faqs: [
             {
                 q: 'How do I use the y^x button?',
@@ -347,76 +185,72 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'What is "Deg/Rad" mode?',
                 a: 'This switch changes the unit for trigonometric calculations. "Deg" stands for degrees (where a circle has 360°). "Rad" stands for radians (where a circle has 2π radians). Ensure you are in the correct mode for your problem.'
-            }
+            },
+            { q: 'What is the difference between log and ln?', a: '"log" calculates the base-10 logarithm, which answers the question "10 to what power gives this number?". "ln" calculates the natural logarithm (base e), which is crucial in calculus and financial calculations.'},
+            { q: 'Does this calculator follow the order of operations (PEMDAS/BODMAS)?', a: 'This calculator processes operations as they are entered, similar to a standard calculator. For complex expressions requiring a strict order of operations, you should calculate parts in parentheses first and work through them step by step.'},
+            { q: 'What are the constants "π" and "e"?', a: 'Pi (π) is approximately 3.14159 and is the ratio of a circle\'s circumference to its diameter. Euler\'s number (e) is approximately 2.71828 and is the base of the natural logarithm, frequently appearing in formulas related to growth and decay.'}
         ]
     },
-    'Force & Acceleration': {
-        description: 'Calculate Force, Mass, or Acceleration using Newton\'s Second Law of Motion (F=ma). Enter any two of the variables, and this calculator will solve for the third, making it a great tool for physics students and engineers.',
+     'Loan Calculator': {
+        description: 'Take control of your financial planning with our comprehensive Loan Calculator. This tool is designed to help you understand the full scope of a loan by calculating your Equated Monthly Installment (EMI). Simply input the total loan amount, the annual interest rate, and the loan term in years. The calculator will instantly provide you with your fixed monthly payment. More importantly, it breaks down the total cost of the loan, showing you the total principal you will repay versus the total interest you will pay over the entire term. This visibility is key to understanding the true cost of borrowing. The calculator also includes an amortization schedule, giving you a month-by-month breakdown of how each payment contributes to reducing your principal and covering interest.',
         faqs: [
             {
-                q: 'What units are used in this calculator?',
-                a: 'This calculator uses standard SI units: Force is in Newtons (N), Mass is in kilograms (kg), and Acceleration is in meters per second squared (m/s²).'
+                q: 'What is EMI?',
+                a: 'EMI stands for Equated Monthly Installment. It is the fixed payment amount made by a borrower to a lender at a specified date each calendar month. EMIs are used to pay off both interest and principal each month so that over a specified number of years, the loan is paid off in full.'
             },
             {
-                q: 'What is the difference between mass and weight?',
-                a: 'Mass is the amount of matter in an object and is constant everywhere. Weight is the force of gravity acting on that mass (Weight = mass × gravitational acceleration). Your mass is the same on Earth and the Moon, but your weight is different.'
-            }
+                q: 'How is loan interest calculated?',
+                a: 'Most loans use a reducing balance method. The interest is calculated on the outstanding loan amount for the month. As you pay your EMIs, the principal amount reduces, and so does the interest charged on it in subsequent months.'
+            },
+            { q: 'Why is the total payment so much higher than the loan amount?', a: 'The difference between the total payment and the loan amount is the total interest paid. Over a long loan term (like 15-30 years for a home loan), the interest can add up to be a significant amount, sometimes even more than the original loan principal.'},
+            { q: 'What is an amortization schedule?', a: 'An amortization schedule is a table that details each periodic payment on a loan. It shows how much of each payment is applied to interest and how much is applied to the principal. In the beginning of the loan, a larger portion of your EMI goes towards interest.'},
+            { q: 'How can I reduce the total interest I pay?', a: 'There are two main ways: 1) Choose a shorter loan term. A 15-year loan will have higher EMIs than a 30-year loan, but you will pay significantly less in total interest. 2) Make prepayments. Paying extra towards your principal whenever possible reduces the loan balance, which in turn reduces the total interest you pay over time.'}
         ]
     },
-    'Velocity & Distance': {
-        description: 'Solve for Speed (Velocity), Distance, or Time using the fundamental formula: Distance = Speed × Time. Input any two of the values, and the calculator will find the missing one, perfect for planning trips or solving physics problems.',
+    'SIP Calculator': {
+        description: 'Visualize your path to wealth creation with the Systematic Investment Plan (SIP) Calculator. This powerful tool helps you project the future value of your investments in mutual funds or other assets through regular, disciplined contributions. Enter the amount you plan to invest monthly, your expected annual rate of return, and the number of years you intend to stay invested. The calculator will then show you a detailed projection, including your total invested amount, the estimated returns you could earn, and the final maturity value. This demonstrates the incredible power of compounding over the long term. Additionally, our AI-powered "Plan a Goal" feature lets you work backward: input your financial target, and the AI will calculate the monthly SIP required to reach your goal, turning your dreams into an actionable plan.',
         faqs: [
             {
-                q: 'What is the difference between speed and velocity?',
-                a: 'In physics, speed is a scalar quantity (how fast an object is moving, e.g., 60 km/h), while velocity is a vector quantity (speed in a specific direction, e.g., 60 km/h North). In this calculator, the terms are used interchangeably for simplicity.'
+                q: 'What is a SIP?',
+                a: 'A Systematic Investment Plan (SIP) is a method of investing in mutual funds where you invest a fixed amount of money at regular intervals (e.g., monthly). It helps in disciplined investing and benefits from rupee cost averaging and the power of compounding.'
             },
             {
-                q: 'What units does this calculator use?',
-                a: 'This calculator uses kilometers per hour (km/h) for speed, kilometers (km) for distance, and hours (h) for time. Ensure your inputs are in these units for an accurate result.'
-            }
-        ]
-    },
-    'All Shapes Area Calculator': {
-        description: 'A versatile geometry tool to calculate the area of various common shapes, including circles, squares, rectangles, and triangles. Simply select your shape, enter the required dimensions, and get the area instantly.',
-        faqs: [
-            {
-                q: 'What is the formula for the area of a circle?',
-                a: 'The area of a circle is calculated using the formula A = πr², where \'r\' is the radius of the circle and π (Pi) is approximately 3.14159.'
+                q: 'Are the returns guaranteed?',
+                a: 'No, mutual fund returns are subject to market risks. The calculator shows a projection based on the expected rate of return you enter. Actual returns can be higher or lower depending on market performance.'
             },
-            {
-                q: 'How do I calculate the area of a complex shape?',
-                a: 'You can often calculate the area of a complex shape by breaking it down into simpler shapes (like rectangles and triangles). Calculate the area of each simple shape individually and then add them together.'
-            }
+            { q: 'What is Rupee Cost Averaging?', a: 'When you invest a fixed amount every month, you automatically buy more units when the market price is low and fewer units when the price is high. Over time, this averages out your purchase cost and can reduce the impact of market volatility.'},
+            { q: 'What is a realistic "Expected Return Rate" to use?', a: 'For long-term investments in equity mutual funds, a common historical average is around 10-14% per annum. However, this is not a guarantee. It\'s wise to be conservative with your estimate, for example, using 10% or 12% for planning.'},
+            { q: 'How does the "Plan a Goal" feature work?', a: 'Our AI-powered goal planner uses the principles of future value calculations in reverse. You provide the future amount you want (your goal), the time you have, and your expected return rate. The AI then calculates the required monthly investment (the present value annuity) needed to reach that specific future value.'}
         ]
     },
-    'All Shapes Volume Calculator': {
-        description: 'Calculate the volume of common three-dimensional shapes, including spheres, cubes, cylinders, and cones. Select the shape, input the dimensions, and find the total volume the shape can hold.',
-        faqs: [
-            {
-                q: 'What is the formula for the volume of a sphere?',
-                a: 'The volume of a sphere is calculated using the formula V = (4/3)πr³, where \'r\' is the radius of the sphere.'
-            },
-            {
-                q: 'What is the relationship between volume and capacity?',
-                a: 'Volume is the amount of 3D space an object occupies. Capacity is the amount a container can hold. They are often used interchangeably. For example, a 1000 cubic centimeter (cm³) container has a capacity of 1 liter.'
-            }
-        ]
-    },
+    // Adding more calculators with expanded content
     'BMI Calculator': {
-        description: 'The Body Mass Index (BMI) calculator is a tool that helps you determine if your weight is in a healthy range for your height. It provides a simple numeric measure of your thinness or fatness.',
+        description: "The Body Mass Index (BMI) calculator is a widely used tool to gauge whether your weight is in a healthy range for your height. It's a simple, indirect measure of body fat. By entering your weight and height in either metric (kilograms and centimeters) or imperial (pounds and inches) units, the calculator computes a single number. This number falls into one of four categories: Underweight, Normal weight, Overweight, or Obesity. While it's a great starting point for assessing your weight status, it's important to remember that BMI is a general indicator. It doesn't differentiate between fat and muscle mass, which means very muscular individuals (like athletes) might have a high BMI without having excess body fat. Always consider BMI as one piece of a larger health puzzle and consult with a healthcare professional for a comprehensive assessment.",
         faqs: [
             {
                 q: 'What do the BMI categories mean?',
-                a: 'BMI categories (Underweight, Normal, Overweight) are broad classifications. While BMI is a useful indicator, it does not account for factors like muscle mass, body composition, or age, so it should be considered as part of a larger health assessment.'
+                a: 'The standard BMI categories are: Below 18.5 (Underweight), 18.5-24.9 (Normal weight), 25.0-29.9 (Overweight), and 30.0 or higher (Obesity). These ranges help identify potential weight-related health risks.'
             },
             {
                 q: 'Is BMI accurate for everyone?',
                 a: 'BMI can be less accurate for certain groups like athletes (who have high muscle mass), pregnant women, the elderly, and children. It\'s best to consult a healthcare professional for a complete health evaluation.'
+            },
+            {
+                q: 'What is the formula for BMI?',
+                a: 'For metric units, the formula is: BMI = weight (kg) / [height (m)]². For imperial units, it is: BMI = (weight (lbs) / [height (in)]²) * 703.'
+            },
+            {
+                q: 'What are the health risks associated with a high BMI?',
+                a: 'A high BMI is associated with an increased risk for several health conditions, including type 2 diabetes, heart disease, high blood pressure, and certain types of cancer. Maintaining a healthy weight can help mitigate these risks.'
+            },
+            {
+                q: 'If my BMI is high, what should I do?',
+                a: 'If your BMI falls into the overweight or obesity category, it\'s a good idea to speak with a doctor or a registered dietitian. They can provide personalized advice on healthy eating, exercise, and lifestyle changes to help you reach a healthier weight.'
             }
         ]
     },
     'Age Calculator': {
-        description: 'Calculate the exact age of a person, down to the second. This tool also tells you how many days are left until their next birthday. You can save important dates like birthdays and anniversaries for quick calculations in the future.',
+        description: "Ever wondered your exact age, down to the very second? Our Age Calculator provides a fun and precise way to measure your age based on your date of birth. It doesn't just stop at years; it breaks down your age into years, months, days, hours, minutes, and even live-ticking seconds. This tool is perfect for celebrating milestones, satisfying curiosity, or calculating the exact duration between two dates. Beyond the simple calculation, it also tells you how many days are remaining until your next birthday, helping you count down to your special day. To make things even easier, you can save important dates like birthdays and anniversaries of friends and family. This allows you to select a saved person and instantly see their age without having to re-enter their birth date every time.",
         faqs: [
             {
                 q: 'How does the calculator handle leap years?',
@@ -425,58 +259,18 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             {
                 q: 'Can I use this for things other than birthdays?',
                 a: 'Yes! You can use it to calculate the duration between any two dates. For example, find out exactly how long you\'ve been working at your job or how long it has been since a major life event.'
-            }
-        ]
-    },
-    'Unit Converter': {
-        description: 'A comprehensive tool to convert between various units of measurement for Length, Mass, and Temperature. Switch between metric and imperial systems with ease.',
-        faqs: [
-            {
-                q: 'Why does temperature conversion seem different?',
-                a: 'Length and Mass conversions use simple multiplication factors. Temperature scales (Celsius, Fahrenheit, Kelvin) have different zero points, so their conversion formulas involve both multiplication and addition/subtraction, not just a single factor.'
             },
             {
-                q: 'What is the difference between the metric and imperial systems?',
-                a: 'The metric system (meter, gram) is a decimal-based system used by most of the world. The imperial system (foot, pound) is historically used in the British Empire and is still standard in the United States for many everyday measurements.'
-            }
-        ]
-    },
-    'Currency Converter': {
-        description: 'Get a quick estimate of currency exchange rates. This tool uses static, pre-defined rates to show you how one currency converts to another. Please note these are not live rates and should be used for estimation purposes only.',
-        faqs: [
-            {
-                q: 'Why are these not live rates?',
-                a: 'Providing live, real-time currency rates requires a subscription to a financial data API, which can be costly. This calculator uses fixed rates as a free-to-use estimation tool.'
+                q: 'Is my saved data private?',
+                a: 'Absolutely. All the dates you save are stored locally in your browser\'s storage. They are not sent to any server, ensuring your data remains private and accessible only to you on your device.'
             },
             {
-                q: 'Why will the actual bank rate be different?',
-                a: 'The official exchange rate (mid-market rate) is not what you get from a bank or exchange service. They apply a "spread" or margin to the rate to make a profit, so the rate you get will always be slightly less favorable.'
-            }
-        ]
-    },
-    'Fuel Cost Calculator': {
-        description: 'Plan your travel budget by calculating the total fuel cost for a trip. Enter the trip distance, your vehicle\'s mileage, and the current price of fuel to get an accurate estimate of your travel expenses.',
-        faqs: [
-            {
-                q: 'How can I improve my vehicle\'s mileage?',
-                a: 'You can improve mileage by maintaining proper tire pressure, avoiding aggressive driving (sudden acceleration and braking), reducing excess weight in the car, and keeping your engine well-maintained with regular servicing.'
+                q: 'Why does the age update every second?',
+                a: 'The live-ticking clock for hours, minutes, and seconds is a feature designed to give you a dynamic and precise representation of your age at this very moment. It emphasizes that age is a continuous measure of time.'
             },
             {
-                q: 'What is "mileage" or "fuel efficiency"?',
-                a: 'It is a measure of how far your vehicle can travel on a specific amount of fuel. It is typically expressed in kilometers per liter (km/L) or miles per gallon (MPG).'
-            }
-        ]
-    },
-    'Trip Expense Splitter': {
-        description: 'Easily split a bill or any shared expense among a group of people. This calculator lets you add a tip and then divides the total cost evenly, showing you the amount each person needs to pay.',
-        faqs: [
-            {
-                q: 'How is the tip calculated?',
-                a: 'The tip is calculated as a percentage of the total bill amount before it is split. The calculator then adds this tip amount to the original bill to get the final total, which is then divided by the number of people.'
-            },
-            {
-                q: 'What if someone needs to pay more or less?',
-                a: 'This calculator performs an even split. For complex splits where people need to pay different amounts, you would need to calculate each person\'s share manually and then use the Standard Calculator to add them up.'
+                q: 'How accurate is the "next birthday" countdown?',
+                a: 'The countdown is very accurate. It calculates the number of full days between today and the date of your next birthday, so you know exactly how many more sleeps until you can celebrate!'
             }
         ]
     }

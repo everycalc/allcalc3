@@ -27,73 +27,86 @@ const RecipeIcon = () => React.createElement("svg", { className: "w-8 h-8 text-p
 const ProductCostIcon = () => React.createElement("svg", { className: "w-8 h-8 text-primary", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 8.2c2.5-2 6.3-2.4 8.8-1.2 2.5 1.2 3.2 4.2 1.2 6.5-2 2.3-5.5 2.8-8 1.5" }), React.createElement("path", { d: "M4.2 14c-1.2 2.5.8 5.5 3.3 6.5s5.5.8 6.5-1.8" }), React.createElement("path", { d: "M12 17.8c-2.5 2-6.3 2.4-8.8 1.2-2.5-1.2-3.2-4.2-1.2-6.5 2-2.3 5.5-2.8 8-1.5" }), React.createElement("path", { d: "M19.8 10c1.2-2.5-.8-5.5-3.3-6.5s-5.5-.8-6.5 1.8" }), React.createElement("circle", { cx: "12", cy: "12", r: "1.5" }));
 const AOVIcon = () => React.createElement("svg", { className: "w-8 h-8 text-primary", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("circle", { cx: "9", cy: "21", r: "1" }), React.createElement("circle", { cx: "20", cy: "21", r: "1" }), React.createElement("path", { d: "M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" }), React.createElement("path", { d: "M12 12V6" }), React.createElement("path", { d: "M15 9h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4h-2" }));
 
-export const calculatorsData = [
+export interface CalculatorItem {
+  name: string;
+  icon: React.ReactElement;
+  isPremium?: boolean;
+  related?: string[];
+  relatedBlogs?: string[];
+}
+
+export interface CalculatorCategory {
+  category: string;
+  items: CalculatorItem[];
+}
+
+export const calculatorsData: CalculatorCategory[] = [
   {
     category: 'Business & E-commerce',
     items: [
-      { name: 'E-commerce Profit Calculator', icon: React.createElement(ECommerceIcon), isPremium: true, related: ['Product Cost Calculator', 'Break-Even ROAS Calculator', 'AOV Calculator'] },
-      { name: 'Product Cost Calculator', icon: React.createElement(ProductCostIcon), isPremium: true, related: ['E-commerce Profit Calculator', 'Recipe Cost Calculator', 'Profit Margin Calculator'] },
-      { name: 'Recipe Cost Calculator', icon: React.createElement(RecipeIcon), related: ['Product Cost Calculator'] },
-      { name: 'CLV & CAC Calculator', icon: React.createElement(CLVCACIcon), isPremium: true, related: ['Break-Even ROAS Calculator', 'AOV Calculator'] },
-      { name: 'Inventory Management Calculator', icon: React.createElement(InventoryIcon), isPremium: true, related: ['E-commerce Profit Calculator'] },
-      { name: 'Break-Even ROAS Calculator', icon: React.createElement(ROASIcon), isPremium: true, related: ['Break-Even Point Calculator', 'CLV & CAC Calculator'] },
-      { name: 'Break-Even Point Calculator', icon: React.createElement(BreakEvenIcon), related: ['Break-Even ROAS Calculator', 'Profit Margin Calculator'] },
-      { name: 'Profit Margin Calculator', icon: React.createElement(ProfitMarginIcon), related: ['Break-Even Point Calculator', 'Discount Calculator', 'AOV Calculator'] },
-      { name: 'Discount Calculator', icon: React.createElement(DiscountIcon), related: ['Profit Margin Calculator', 'Percentage Calculator'] },
-      { name: 'AOV Calculator', icon: React.createElement(AOVIcon), related: ['E-commerce Profit Calculator', 'CLV & CAC Calculator'] }, 
+      { name: 'E-commerce Profit Calculator', icon: React.createElement(ECommerceIcon), isPremium: true, related: ['Product Cost Calculator', 'Break-Even ROAS Calculator', 'AOV Calculator'], relatedBlogs: ['how-to-price-your-product', 'break-even-point-like-a-pro'] },
+      { name: 'Product Cost Calculator', icon: React.createElement(ProductCostIcon), isPremium: true, related: ['E-commerce Profit Calculator', 'Recipe Cost Calculator', 'Profit Margin Calculator'], relatedBlogs: ['how-to-price-your-product', 'top-10-calculators-for-entrepreneurs'] },
+      { name: 'Recipe Cost Calculator', icon: React.createElement(RecipeIcon), related: ['Product Cost Calculator'], relatedBlogs: ['how-to-price-your-product'] },
+      { name: 'CLV & CAC Calculator', icon: React.createElement(CLVCACIcon), isPremium: true, related: ['Break-Even ROAS Calculator', 'AOV Calculator'], relatedBlogs: ['top-10-calculators-for-entrepreneurs', 'break-even-point-like-a-pro'] },
+      { name: 'Inventory Management Calculator', icon: React.createElement(InventoryIcon), isPremium: true, related: ['E-commerce Profit Calculator'], relatedBlogs: ['top-10-calculators-for-entrepreneurs'] },
+      { name: 'Break-Even ROAS Calculator', icon: React.createElement(ROASIcon), isPremium: true, related: ['Break-Even Point Calculator', 'CLV & CAC Calculator'], relatedBlogs: ['break-even-point-like-a-pro', 'top-10-calculators-for-entrepreneurs'] },
+      { name: 'Break-Even Point Calculator', icon: React.createElement(BreakEvenIcon), related: ['Break-Even ROAS Calculator', 'Profit Margin Calculator'], relatedBlogs: ['break-even-point-like-a-pro', 'how-to-price-your-product'] },
+      { name: 'Profit Margin Calculator', icon: React.createElement(ProfitMarginIcon), related: ['Break-Even Point Calculator', 'Discount Calculator', 'AOV Calculator'], relatedBlogs: ['how-to-price-your-product', 'break-even-point-like-a-pro'] },
+      { name: 'Discount Calculator', icon: React.createElement(DiscountIcon), related: ['Profit Margin Calculator', 'Percentage Calculator'], relatedBlogs: ['top-10-calculators-for-entrepreneurs'] },
+      { name: 'AOV Calculator', icon: React.createElement(AOVIcon), related: ['E-commerce Profit Calculator', 'CLV & CAC Calculator'], relatedBlogs: ['top-10-calculators-for-entrepreneurs'] }, 
     ]
   },
   {
     category: 'Finance & Investment',
     items: [
-      { name: 'SIP Calculator', icon: React.createElement(SIPFDRIcon), related: ['Mutual Fund Returns Calculator', 'Compound Interest Calculator', 'FD/RD Calculator'] },
-      { name: 'FD/RD Calculator', icon: React.createElement(SIPFDRIcon), related: ['SIP Calculator', 'Compound Interest Calculator'] },
-      { name: 'Mutual Fund Returns Calculator', icon: React.createElement(ProfitMarginIcon), related: ['SIP Calculator', 'Compound Interest Calculator'] },
-      { name: 'Compound Interest Calculator', icon: React.createElement(ROASIcon), related: ['SIP Calculator', 'FD/RD Calculator', 'Loan Calculator'] },
-      { name: 'Credit Card Interest Calculator', icon: React.createElement(DiscountIcon), related: ['Loan Calculator', 'Home Loan EMI & Affordability'] },
-      { name: 'Home Loan EMI & Affordability', icon: React.createElement(HomeLoanIcon), related: ['Loan Calculator', 'Rent vs Buy Calculator'] },
-      { name: 'GST/Tax Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator'] },
-      { name: 'Loan Calculator', icon: React.createElement(LoanIcon), related: ['Home Loan EMI & Affordability', 'Credit Card Interest Calculator', 'Compound Interest Calculator'] },
+      { name: 'SIP Calculator', icon: React.createElement(SIPFDRIcon), related: ['Mutual Fund Returns Calculator', 'Compound Interest Calculator', 'FD/RD Calculator'], relatedBlogs: ['what-is-compound-interest', 'sip-vs-fd-vs-mutual-funds'] },
+      { name: 'FD/RD Calculator', icon: React.createElement(SIPFDRIcon), related: ['SIP Calculator', 'Compound Interest Calculator'], relatedBlogs: ['sip-vs-fd-vs-mutual-funds', 'what-is-compound-interest'] },
+      { name: 'Mutual Fund Returns Calculator', icon: React.createElement(ProfitMarginIcon), related: ['SIP Calculator', 'Compound Interest Calculator'], relatedBlogs: ['sip-vs-fd-vs-mutual-funds', 'what-is-compound-interest'] },
+      { name: 'Compound Interest Calculator', icon: React.createElement(ROASIcon), related: ['SIP Calculator', 'FD/RD Calculator', 'Loan Calculator'], relatedBlogs: ['what-is-compound-interest', 'sip-vs-fd-vs-mutual-funds'] },
+      { name: 'Credit Card Interest Calculator', icon: React.createElement(DiscountIcon), related: ['Loan Calculator', 'Home Loan EMI & Affordability'], relatedBlogs: ['what-is-compound-interest'] },
+      { name: 'Home Loan EMI & Affordability', icon: React.createElement(HomeLoanIcon), related: ['Loan Calculator', 'Rent vs Buy Calculator'], relatedBlogs: ['should-you-buy-or-rent'] },
+      { name: 'GST/Tax Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator'], relatedBlogs: ['top-10-calculators-for-entrepreneurs'] },
+      { name: 'Loan Calculator', icon: React.createElement(LoanIcon), related: ['Home Loan EMI & Affordability', 'Credit Card Interest Calculator', 'Compound Interest Calculator'], relatedBlogs: ['should-you-buy-or-rent', 'what-is-compound-interest'] },
     ]
   },
   {
     category: 'Real Estate & Construction',
     items: [
-      { name: 'Area Cost Estimator', icon: React.createElement(HomeLoanIcon), related: ['All Shapes Area Calculator', 'Carpet Area vs Built-up Area'] },
-      { name: 'Rent vs Buy Calculator', icon: React.createElement(RentBuyIcon), related: ['Home Loan EMI & Affordability', 'Loan Calculator'] },
-      { name: 'Carpet Area vs Built-up Area', icon: React.createElement(AreaIcon), related: ['All Shapes Area Calculator', 'Area Cost Estimator'] },
+      { name: 'Area Cost Estimator', icon: React.createElement(HomeLoanIcon), related: ['All Shapes Area Calculator', 'Carpet Area vs Built-up Area'], relatedBlogs: ['should-you-buy-or-rent'] },
+      { name: 'Rent vs Buy Calculator', icon: React.createElement(RentBuyIcon), related: ['Home Loan EMI & Affordability', 'Loan Calculator'], relatedBlogs: ['should-you-buy-or-rent'] },
+      { name: 'Carpet Area vs Built-up Area', icon: React.createElement(AreaIcon), related: ['All Shapes Area Calculator', 'Area Cost Estimator'], relatedBlogs: ['should-you-buy-or-rent'] },
     ]
   },
   {
     category: 'Math & Education',
     items: [
-      { name: 'Percentage Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator', 'Average Calculator'] },
-      { name: 'Average Calculator', icon: React.createElement(StandardIcon), related: ['Median & Mode Calculator'] },
-      { name: 'Median & Mode Calculator', icon: React.createElement(ScientificIcon), related: ['Average Calculator'] },
-      { name: 'Logarithm & Trigonometry', icon: React.createElement(BmiIcon), related: ['Scientific Calculator'] },
-      { name: 'Standard Calculator', icon: React.createElement(StandardIcon), related: ['Scientific Calculator'] },
-      { name: 'Scientific Calculator', icon: React.createElement(ScientificIcon), related: ['Standard Calculator', 'Logarithm & Trigonometry'] },
+      { name: 'Percentage Calculator', icon: React.createElement(PercentageIcon), related: ['Discount Calculator', 'Average Calculator'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Average Calculator', icon: React.createElement(StandardIcon), related: ['Median & Mode Calculator'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Median & Mode Calculator', icon: React.createElement(ScientificIcon), related: ['Average Calculator'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Logarithm & Trigonometry', icon: React.createElement(BmiIcon), related: ['Scientific Calculator'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Standard Calculator', icon: React.createElement(StandardIcon), related: ['Scientific Calculator'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Scientific Calculator', icon: React.createElement(ScientificIcon), related: ['Standard Calculator', 'Logarithm & Trigonometry'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
     ]
   },
   {
     category: 'Science',
     items: [
-      { name: 'Force & Acceleration', icon: React.createElement(ScienceIcon), related: ['Velocity & Distance'] },
-      { name: 'Velocity & Distance', icon: React.createElement(ScienceIcon), related: ['Force & Acceleration'] },
+      { name: 'Force & Acceleration', icon: React.createElement(ScienceIcon), related: ['Velocity & Distance'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
+      { name: 'Velocity & Distance', icon: React.createElement(ScienceIcon), related: ['Force & Acceleration'], relatedBlogs: ['are-you-smarter-than-a-calculator'] },
     ]
   },
   {
     category: 'Geometry',
     items: [
-      { name: 'All Shapes Area Calculator', icon: React.createElement(AreaIcon), related: ['All Shapes Volume Calculator', 'Area Cost Estimator', 'Carpet Area vs Built-up Area'] },
+      { name: 'All Shapes Area Calculator', icon: React.createElement(AreaIcon), related: ['All Shapes Volume Calculator', 'Area Cost Estimator', 'Carpet Area vs Built-up Area'], relatedBlogs: ['should-you-buy-or-rent'] },
       { name: 'All Shapes Volume Calculator', icon: React.createElement(VolumeIcon), related: ['All Shapes Area Calculator'] },
     ]
   },
   {
     category: 'Health',
     items: [
-      { name: 'BMI Calculator', icon: React.createElement(BmiIcon), related: ['Age Calculator'] },
-      { name: 'Age Calculator', icon: React.createElement(AgeIcon), related: ['BMI Calculator'] },
+      { name: 'BMI Calculator', icon: React.createElement(BmiIcon), related: ['Age Calculator'], relatedBlogs: ['how-old-are-you-in-dog-years'] },
+      { name: 'Age Calculator', icon: React.createElement(AgeIcon), related: ['BMI Calculator'], relatedBlogs: ['how-old-are-you-in-dog-years'] },
     ]
   },
   {

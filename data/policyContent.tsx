@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const PrivacyPolicyContent = () => (
@@ -80,7 +79,7 @@ export const AboutUsContent = () => (
 
         <h4>Why We Built This</h4>
         <p>
-            We believe that access to powerful tools shouldn't be complicated or expensive. We noticed that many people need to perform various calculations daily but often have to jump between different websites or apps, each with its own interface and often cluttered with intrusive ads. We wanted to create a single, unified platform that is clean, fast, customizable, and works seamlessly offline.
+            We believe that access to powerful tools shouldn't be complicated or expensive. We noticed that many people need to perform various calculations daily but often have to jump between different websites or apps, each with its own interface and often cluttered with intrusive ads. We wanted to create a single, unified platform that is clean, fast, customizable, and works seamlessly offline. We focus on providing not just tools, but also clear explanations and context to help you understand the calculations you perform, creating a high-quality resource for everyone.
         </p>
 
         <h4>Our Features</h4>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'all-in-one-calculator-v2.4.3'; 
+const CACHE_NAME = 'all-in-one-calculator-v2.5.0'; 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,6 +10,7 @@ const urlsToCache = [
   '/data/calculators.ts',
   '/data/policyContent.tsx',
   '/data/calculatorDescriptions.ts',
+  '/data/blogPosts.ts',
 
   // Components
   '/components/AOVCalculator.tsx',
@@ -20,6 +21,9 @@ const urlsToCache = [
   '/components/AreaCostEstimator.tsx',
   '/components/AverageCalculator.tsx',
   '/components/BMICalculator.tsx',
+  '/components/BlogCard.tsx',
+  '/components/BlogPage.tsx',
+  '/components/BlogPostPage.tsx',
   '/components/BreakEvenCalculator.tsx',
   '/components/BreakEvenROASCalculator.tsx',
   '/components/CLVCACCalculator.tsx',
@@ -27,7 +31,10 @@ const urlsToCache = [
   '/components/CalculatorCard.tsx',
   '/components/CalculatorCarousel.tsx',
   '/components/CalculatorDescription.tsx',
+  '/components/CalculatorDescriptionContent.tsx',
+  '/components/CalculatorFaqs.tsx',
   '/components/CalculatorHistoryView.tsx',
+  '/components/CalculatorLinkCard.tsx',
   '/components/CalculatorPageWrapper.tsx',
   '/components/CarpetAreaCalculator.tsx',
   '/components/CheatCodeModal.tsx',
@@ -75,6 +82,8 @@ const urlsToCache = [
   '/components/RecentHistory.tsx',
   '/components/RecipeCostCalculator.tsx',
   '/components/ReferralModal.tsx',
+  '/components/RelatedBlogs.tsx',
+  '/components/RelatedCalculatorLink.tsx',
   '/components/RentVsBuyCalculator.tsx',
   '/components/RewardCard.tsx',
   '/components/RewardedAdModal.tsx',

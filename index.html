@@ -26,6 +26,10 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='currentColor'%20d='M20,5%20C11.7,5%205,11.7%205,20%20V80%20C5,88.3%2011.7,95%2020,95%20H80%20C88.3,95%2095,88.3%2095,80%20V20%20C95,11.7%2088.3,5%2080,5%20H20%20Z%20M25,25%20H75%20V45%20H25%20V25%20Z%20M30,55%20H45%20V65%20H30%20V55%20Z%20M55,55%20H70%20V65%20H55%20V55%20Z%20M30,75%20H45%20V85%20H30%20V75%20Z%20M55,75%20H70%20V85%20H55%20V75%20Z'/%3E%3C/svg%3E">
     <meta name="google-adsense-account" content="ca-pub-2892214526865008">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="importmap">
       {
@@ -51,272 +55,441 @@
      crossorigin="anonymous"></script>
 
     <style>
+      /* --- Base & Typography --- */
+      :root {
+        font-family: 'Poppins', sans-serif;
+        /* Dynamic colors will be injected here by ThemeContext */
+      }
+      
       body {
-        background-color: var(--color-bg-primary, #2b303a);
-        color: var(--color-text-primary, #ffffff);
         transition: background-color 0.3s ease, color 0.3s ease;
       }
-      /* For better scrollbar styling in dark themes on webkit browsers */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: var(--color-bg-primary, #2b303a);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: var(--color-bg-tertiary, #4a5568);
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #718096;
-      }
 
-      /* --- Theme System --- */
+      h1 { font-size: 1.75rem; font-weight: 700; line-height: 2.25rem; }
+      h2 { font-size: 1.5rem; font-weight: 600; line-height: 2rem; }
+      h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.75rem; }
 
-      /* Classic Light */
-      html[data-theme-style="classic"][data-theme-mode="light"] {
-        --color-bg-primary: #f8f9fa;
-        --color-bg-secondary: #ffffff;
-        --color-bg-tertiary: #e9ecef;
-        --color-text-primary: #2d3748;
-        --color-text-secondary: #718096;
-      }
-
-      /* Classic Dark */
-      html[data-theme-style="classic"][data-theme-mode="dark"] {
-        --color-bg-primary: #2b303a;
-        --color-bg-secondary: #3a404c;
-        --color-bg-tertiary: #4a5568;
-        --color-text-primary: #f7fafc;
-        --color-text-secondary: #a0aec0;
-      }
-
-      /* Glass Theme Background (applied to body) */
-      body.glass-theme-bg {
-        background: linear-gradient(-45deg, var(--gradient-color-1, #ee7752), var(--gradient-color-2, #e73c7e), var(--gradient-color-3, #23a6d5), var(--gradient-color-4, #23d5ab));
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
-        background-attachment: fixed;
-      }
-
-      @keyframes gradientBG {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-      }
-
-      /* Glass Light */
-      html[data-theme-style="glass"][data-theme-mode="light"] {
-        --color-bg-primary: transparent;
-        --color-bg-secondary: rgba(255, 255, 255, 0.45);
-        --color-bg-tertiary: rgba(255, 255, 255, 0.3);
-        --color-border-glass: rgba(255, 255, 255, 0.2);
-        --color-text-primary: #1a202c;
-        --color-text-secondary: #4a5568;
-      }
-
-      /* Glass Dark */
-      html[data-theme-style="glass"][data-theme-mode="dark"] {
-        --color-bg-primary: transparent;
-        --color-bg-secondary: rgba(20, 25, 35, 0.5);
-        --color-bg-tertiary: rgba(43, 48, 58, 0.4);
-        --color-border-glass: rgba(255, 255, 255, 0.1);
-        --color-text-primary: #f7fafc;
-        --color-text-secondary: #a0aec0;
-      }
-
-      /* Glass Component Styles */
-      [data-theme-style="glass"] .bg-theme-secondary,
-      [data-theme-style="glass"] .bg-theme-tertiary,
-      [data-theme-style="glass"] .bg-theme-primary\/50,
-      [data-theme-style="glass"] .bg-theme-secondary\/50,
-      [data-theme-style="glass"] .bg-theme-secondary\/80 {
-        -webkit-backdrop-filter: blur(14px) saturate(180%);
-        backdrop-filter: blur(14px) saturate(180%);
-        border: 1px solid var(--color-border-glass, rgba(255, 255, 255, 0.1));
-      }
-
-      /* Custom Accent Color Classes (Applied via JS) */
-      .bg-primary { background-color: var(--color-primary); }
-      .hover\:bg-primary-light:hover { background-color: var(--color-primary-light); }
-      .text-primary { color: var(--color-primary); }
-      .text-on-primary { color: var(--color-text-on-primary); }
-      .border-primary { border-color: var(--color-primary); }
-      .ring-primary { --tw-ring-color: var(--color-primary) !important; }
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
       
-      .bg-accent { background-color: var(--color-accent); }
-      .hover\:bg-accent-dark:hover { background-color: var(--color-accent-dark); }
+      /* ======================================================================== */
+      /*                              PIXEL THEME                                 */
+      /* ======================================================================== */
+      
+      html[data-theme-style="pixel"] body {
+        background-color: var(--color-surface);
+        color: var(--color-on-surface);
+      }
+      
+      html[data-theme-style="pixel"] ::-webkit-scrollbar-thumb { background: var(--color-surface-container-high); border-radius: 4px; }
+      html[data-theme-style="pixel"] ::-webkit-scrollbar-thumb:hover { background: var(--color-surface-container-highest); }
+      
+      /* --- Material You System Colors --- */
+      html[data-theme-style="pixel"][data-theme-mode="light"] {
+        --sys-color-surface: #FDF8FD;
+        --sys-color-on-surface: #1C1B1E;
+        --sys-color-on-surface-variant: #49454E;
+        --sys-color-surface-container-lowest: #FFFFFF;
+        --sys-color-surface-container-low: #F7F2FA;
+        --sys-color-surface-container: #F3EDF7;
+        --sys-color-surface-container-high: #EADDFF;
+        --sys-color-surface-container-highest: #E6E0E9;
+        --sys-color-outline: #79747E;
+        --sys-color-outline-variant: #C9C4D0;
+      }
+      html[data-theme-style="pixel"][data-theme-mode="dark"] {
+        --sys-color-surface: #141218;
+        --sys-color-on-surface: #E6E0E9;
+        --sys-color-on-surface-variant: #C9C4D0;
+        --sys-color-surface-container-lowest: #0F0D13;
+        --sys-color-surface-container-low: #1C1B1F;
+        --sys-color-surface-container: #211F24;
+        --sys-color-surface-container-high: #2B2930;
+        --sys-color-surface-container-highest: #36343B;
+        --sys-color-outline: #938F99;
+        --sys-color-outline-variant: #49454F;
+      }
 
-      /* General Component Styles */
-      .bg-theme-primary { background-color: var(--color-bg-primary); }
-      .bg-theme-secondary { background-color: var(--color-bg-secondary); }
-      .bg-theme-tertiary { background-color: var(--color-bg-tertiary); }
-      .hover\:bg-theme-tertiary:hover { background-color: var(--color-bg-tertiary); }
-      .text-theme-primary { color: var(--color-text-primary); }
-      .text-theme-secondary { color: var(--color-text-secondary); }
-      .border-theme { border-color: var(--color-bg-tertiary); }
-
-      .expert-badge {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        background-color: var(--color-primary);
-        color: var(--color-text-on-primary);
-        font-size: 0.625rem; /* 10px */
-        font-weight: 700;
-        padding: 2px 6px;
+      /* --- Component Styles: PIXEL --- */
+      html[data-theme-style="pixel"] .calculator-card,
+      html[data-theme-style="pixel"] .blog-card,
+      html[data-theme-style="pixel"] .recent-history-item,
+      html[data-theme-style="pixel"] .history-view-item {
+        background-color: var(--color-surface-container);
+        border-radius: 1.875rem; /* 30px */
+        box-shadow: 0 2px 4px -1px var(--shadow-color);
+      }
+      html[data-theme-style="pixel"] .calculator-card:hover,
+      html[data-theme-style="pixel"] .blog-card:hover,
+      html[data-theme-style="pixel"] .recent-history-item:hover {
+        background-color: var(--color-surface-container-high);
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px -2px var(--shadow-color);
+      }
+      
+      html[data-theme-style="pixel"] .home-header,
+      html[data-theme-style="pixel"] .page-header {
+         position: sticky; top: 0; z-index: 20;
+         background-color: oklch(from var(--sys-color-surface-container-lowest) l c h / 95%);
+         backdrop-filter: blur(8px);
+         border-bottom: 1px solid var(--sys-color-outline-variant);
+      }
+      
+      html[data-theme-style="pixel"] .search-input {
+        background-color: var(--sys-color-surface);
+        border: 1px solid var(--sys-color-outline);
         border-radius: 9999px;
-        line-height: 1;
-        text-transform: uppercase;
       }
-       .pin-button {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 9999px;
-        background-color: var(--color-bg-tertiary);
-        color: var(--color-text-secondary);
-        opacity: 1; /* Changed from 0 to 1 */
-        transition: all 0.2s ease-in-out;
-      }
-      .pin-button:hover {
-        transform: scale(1.1);
-      }
-      .pin-button.pinned {
-        background-color: var(--color-primary);
-        color: var(--color-text-on-primary);
-      }
-
-      /* For History Panel Checkboxes */
-      .history-checkbox {
-        appearance: none;
-        background-color: var(--color-bg-primary);
-        border: 2px solid var(--color-bg-tertiary);
-        width: 1.25rem;
-        height: 1.25rem;
-        border-radius: 0.25rem;
-        cursor: pointer;
-        position: relative;
-        transition: all 0.2s ease;
-      }
-      .history-checkbox:checked {
-        background-color: var(--color-primary);
+      html[data-theme-style="pixel"] .search-input:focus {
         border-color: var(--color-primary);
       }
-      .history-checkbox:checked::after {
-        content: '✓';
-        position: absolute;
-        color: var(--color-text-on-primary);
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 0.8rem;
-        font-weight: bold;
-      }
-
-      /* Unskippable Ad Modal Timer */
-      .unskippable-ad-timer {
-        background-color: rgba(0,0,0,0.5);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        display: inline-block;
-      }
-      .unskippable-ad-timer span {
-        font-weight: bold;
+      
+      html[data-theme-style="pixel"] .calculator-wrapper-card {
+        background-color: var(--color-surface-container);
+        border-radius: 1.75rem; /* 28px */
+        box-shadow: 0 4px 8px -2px var(--shadow-color);
       }
       
-      .notification-dot {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: var(--color-primary);
-        box-shadow: 0 0 0 2px var(--color-bg-secondary);
+      html[data-theme-style="pixel"] .onboarding-content-box {
+          background-color: var(--sys-color-surface-container-high);
+          color: var(--sys-color-on-surface);
+      }
+      
+      html[data-theme-style="pixel"] .input-base,
+      html[data-theme-style="pixel"] .select-base,
+      html[data-theme-style="pixel"] .textarea-base {
+        background-color: var(--sys-color-surface-container-low);
+        color: var(--sys-color-on-surface);
+        border: 2px solid var(--sys-color-outline);
+        border-radius: 0.75rem; /* 12px */
+      }
+       html[data-theme-style="pixel"] .input-base:focus,
+       html[data-theme-style="pixel"] .select-base:focus,
+       html[data-theme-style="pixel"] .textarea-base:focus {
+          border-color: var(--color-primary);
+          outline: none;
+       }
+       
+      html[data-theme-style="pixel"] .calculator-display {
+        background-color: transparent; /* No background, just text on the card */
+      }
+      
+      html[data-theme-style="pixel"] .tab-button {
+        background-color: transparent;
+        color: var(--color-on-surface-variant);
+        border-bottom: 2px solid transparent;
+      }
+      html[data-theme-style="pixel"] .tab-button.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
       }
 
-      /* Timer Animations */
-      .skip-button-filling-animation {
+      html[data-theme-style="pixel"] .toggle-button {
+          color: var(--color-on-surface-variant);
+      }
+      html[data-theme-style="pixel"] .toggle-button-active {
+          background-color: var(--color-primary-container);
+          color: var(--color-on-primary-container);
+          box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+      }
+      
+      html[data-theme-style="pixel"] .modal-content,
+      html[data-theme-style="pixel"] .sidebar-base,
+      html[data-theme-style="pixel"] .panel-base,
+      html[data-theme-style="pixel"] .toast-content {
+        background-color: var(--color-surface-container-low);
+        color: var(--color-on-surface);
+        border: 1px solid var(--color-outline-variant);
+      }
+
+      html[data-theme-style="pixel"] .related-calculator-link {
+        background-color: var(--color-surface-container);
+        color: var(--color-on-surface);
+      }
+      html[data-theme-style="pixel"] .related-calculator-link:hover {
+        background-color: var(--color-surface-container-high);
+        transform: scale(1.02);
+      }
+      html[data-theme-style="pixel"] .related-calculator-link svg {
+        color: var(--color-on-surface-variant);
+      }
+      html[data-theme-style="pixel"] .calculator-link-card {
+        background-color: var(--color-surface-container-high);
+        border: 1px solid var(--color-outline-variant);
+      }
+      html[data-theme-style="pixel"] .calculator-link-card:hover {
+        background-color: var(--color-surface-container-highest);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px var(--shadow-color);
+      }
+      
+      /* ======================================================================== */
+      /*                              CLASSIC THEME                               */
+      /* ======================================================================== */
+
+      html[data-theme-style="classic"] body {
+        background-color: #FAF8F2;
+        color: #1C1B1E;
+      }
+      html[data-theme-style="classic"] ::-webkit-scrollbar-thumb { background: #D3C9B5; border-radius: 4px; }
+      html[data-theme-style="classic"] ::-webkit-scrollbar-thumb:hover { background: #BEB4A2; }
+
+      html[data-theme-style="classic"] .calculator-card,
+      html[data-theme-style="classic"] .blog-card,
+      html[data-theme-style="classic"] .recent-history-item,
+      html[data-theme-style="classic"] .history-view-item {
+        background-color: #FFFFFF;
+        border-radius: 0.75rem; /* 12px */
+        border: 1px solid #E0D9CB;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      }
+      html[data-theme-style="classic"] .calculator-card:hover,
+      html[data-theme-style="classic"] .blog-card:hover,
+      html[data-theme-style="classic"] .recent-history-item:hover {
+        border-color: #D3C9B5;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+        transform: translateY(-2px);
+      }
+      
+      html[data-theme-style="classic"] .home-header,
+      html[data-theme-style="classic"] .page-header {
+         position: sticky; top: 0; z-index: 20;
+         background-color: rgba(250, 248, 242, 0.85);
+         backdrop-filter: blur(5px);
+         border-bottom: 1px solid #E0D9CB;
+      }
+      
+      html[data-theme-style="classic"] .search-input {
+        background-color: #FFFFFF;
+        border: 1px solid #C9C4D0;
+        border-radius: 0.5rem;
+      }
+      html[data-theme-style="classic"] .search-input:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(244, 162, 126, 0.3);
+      }
+      
+       html[data-theme-style="classic"] .calculator-wrapper-card {
+        background-color: #FFFFFF;
+        border-radius: 1rem; /* 16px */
+        border: 1px solid #E0D9CB;
+        box-shadow: 0 4px 8px -2px rgba(0,0,0,0.05);
+      }
+      
+      html[data-theme-style="classic"] .onboarding-content-box {
+          background-color: #F4A27E;
+          color: #FFFFFF;
+          border: 1px solid rgba(0,0,0,0.1);
+      }
+      
+      html[data-theme-style="classic"] .input-base,
+      html[data-theme-style="classic"] .select-base,
+      html[data-theme-style="classic"] .textarea-base {
+        background-color: #F7F2FA;
+        color: #1C1B1E;
+        border: 1px solid #D3C9B5;
+        border-radius: 0.5rem;
+      }
+       html[data-theme-style="classic"] .input-base:focus,
+       html[data-theme-style="classic"] .select-base:focus,
+       html[data-theme-style="classic"] .textarea-base:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 2px rgba(244, 162, 126, 0.3);
+          outline: none;
+       }
+       
+      html[data-theme-style="classic"] .calculator-display {
+        background-color: #F3EDF7;
+        border-radius: 0.75rem;
+      }
+      
+      html[data-theme-style="classic"] .tab-button {
+        background-color: #EFEBE5;
+        color: #49454E;
+        border-radius: 0.5rem 0.5rem 0 0;
+        border: 1px solid transparent;
+        border-bottom: 1px solid #D3C9B5;
+      }
+      html[data-theme-style="classic"] .tab-button.active {
+        background-color: #FFFFFF;
+        color: var(--color-primary);
+        border-color: #D3C9B5;
+        border-bottom: 1px solid #FFFFFF;
+      }
+      
+      html[data-theme-style="classic"] .toggle-button {
+          background-color: #EFEBE5;
+          color: #49454E;
+      }
+      html[data-theme-style="classic"] .toggle-button-active {
+          background-color: var(--color-primary);
+          color: var(--color-text-on-primary);
+      }
+
+      html[data-theme-style="classic"] .modal-content,
+      html[data-theme-style="classic"] .sidebar-base,
+      html[data-theme-style="classic"] .panel-base,
+      html[data-theme-style="classic"] .toast-content {
+        background-color: #FAF8F2;
+        color: #1C1B1E;
+        border: 1px solid #E0D9CB;
+      }
+      
+      html[data-theme-style="classic"] .related-calculator-link {
+        background-color: #2D2D2D;
+        color: #E0E0E0;
+      }
+      html[data-theme-style="classic"] .related-calculator-link:hover {
+        background-color: #3f3f3f;
+        transform: scale(1.02);
+      }
+      html[data-theme-style="classic"] .related-calculator-link svg {
+        color: #9e9e9e;
+      }
+
+      html[data-theme-style="classic"] .calculator-link-card {
+        background-color: #2D2D2D;
+        border: 1px solid #444;
+      }
+      html[data-theme-style="classic"] .calculator-link-card:hover {
+        background-color: #3f3f3f;
+        transform: translateY(-2px);
+      }
+      html[data-theme-style="classic"] .calculator-link-card .text-on-surface {
+        color: #E0E0E0;
+      }
+      html[data-theme-style="classic"] .calculator-link-card .text-on-surface-variant {
+        color: #9e9e9e;
+      }
+
+      /* ======================================================================== */
+      /*                         GENERAL COMPONENT STYLES                         */
+      /* ======================================================================== */
+      .calculator-card {
+        padding: 1rem;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
         position: relative;
-        overflow: hidden;
-      }
-      .skip-button-filling-animation::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
         height: 100%;
-        width: 0;
-        background-color: rgba(255, 255, 255, 0.2);
-        animation: fill-width var(--animation-duration, 5s) linear forwards;
+      }
+      .carousel-container .calculator-card {
+        aspect-ratio: 1 / 1;
+      }
+
+      .pin-button {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        color: var(--color-on-surface-variant);
+        background-color: transparent;
+        transition: all 0.2s ease;
+        opacity: 0;
+      }
+      .calculator-card:hover .pin-button, .pin-button.pinned {
+        opacity: 1;
+      }
+      .pin-button:hover {
+        background-color: var(--color-surface-container-high);
+      }
+      .pin-button.pinned {
+        color: var(--color-primary);
+      }
+      .expert-badge {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.75rem;
+        background-color: var(--color-primary);
+        color: var(--color-on-primary);
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 9999px;
       }
       
-      @keyframes fill-width {
-        from { width: 0%; }
-        to { width: 100%; }
+      .btn-primary { background-color: var(--color-primary); color: var(--color-on-primary); }
+      .btn-secondary { background-color: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+      .btn-clear { background-color: var(--color-error-container); color: var(--color-on-error-container); }
+      
+      .tabs-container {
+        display: flex;
+        border-bottom: 2px solid var(--color-outline-variant);
+        margin-bottom: 1rem;
+      }
+      .tab-button {
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
 
-      .unskippable-progress-container {
+      .toggle-group {
+        background-color: var(--color-surface-container);
+        border-radius: 0.75rem;
+      }
+
+      .calculator-link-card {
+        display: flex;
+        align-items: center;
         width: 100%;
-        max-width: 448px;
-        background-color: rgba(255,255,255,0.2);
-        height: 4px;
-        border-radius: 2px;
-        margin-top: 8px;
-      }
-      .unskippable-progress-bar {
-        height: 100%;
-        background-color: white;
-        border-radius: 2px;
-        animation-name: progress-anim;
-        animation-timing-function: linear;
-        animation-fill-mode: forwards;
-      }
-      @keyframes progress-anim {
-        from { width: 100%; }
-        to { width: 0%; }
-      }
-       @keyframes pulse-zoom {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.25); }
+        padding: 1rem;
+        border-radius: 1rem;
+        margin: 1.5rem 0;
+        text-align: left;
+        transition: all 0.2s ease-in-out;
       }
 
-      /* Spin the Wheel Animations */
-      @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(3600deg); } /* 10 full spins */
+      @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+      .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
+      
+      @keyframes fade-in-down { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in-down { animation: fade-in-down 0.3s ease-in-out; }
+      
+      @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in-up { animation: fade-in-up 0.3s ease-in-out; }
+
+      .prose { line-height: 1.6; }
+      .prose strong { color: var(--color-on-surface); font-weight: 600; }
+      .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+      .prose a { color: var(--color-primary); text-decoration: none; }
+      .prose a:hover { text-decoration: underline; }
+
+      .carousel-container::-webkit-scrollbar { display: none; } /* Hide scrollbar for carousel */
+      .carousel-container { scrollbar-width: none; } /* Firefox */
+      .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.5rem; height: 2.5rem;
+        border-radius: 9999px;
+        background-color: oklch(from var(--sys-color-surface-container) l c h / 80%);
+        backdrop-filter: blur(4px);
+        color: var(--color-on-surface);
+        font-size: 1.5rem;
+        border: 1px solid var(--color-outline-variant);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+        display: none; /* Hidden by default */
       }
-      .wheel-spinning {
-        animation-name: spin;
-        animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-        animation-fill-mode: forwards;
-      }
+      .relative:hover .carousel-arrow { display: flex; align-items: center; justify-content: center; } /* Show on hover */
+      .carousel-arrow.left-0 { left: -1.25rem; }
+      .carousel-arrow.right-0 { right: -1.25rem; }
+      .carousel-arrow:hover { background-color: var(--color-surface-container-high); }
+      @media (max-width: 640px) { .carousel-arrow { display: none !important; } }
+      
     </style>
   <link rel="stylesheet" href="/index.css">
 </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('SW registered: ', registration);
-          }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
-          });
-        });
-      }
-    </script>
   </body>
 </html>
