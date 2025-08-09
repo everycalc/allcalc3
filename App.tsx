@@ -11,9 +11,6 @@ import CalculatorPageWrapper from './components/CalculatorPageWrapper';
 import { HistoryProvider, HistoryEntry } from './contexts/HistoryContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { DateTrackerProvider } from './contexts/DateTrackerContext';
-import { FuelProvider } from './contexts/FuelContext';
-import { AdProvider, useAd } from './contexts/AdContext';
-import OutOfFuelToast from './components/OutOfFuelToast';
 import HistoryPanel from './components/HistoryPanel';
 import Sidebar from './components/Sidebar';
 import AgeCalculator from './components/AgeCalculator';
@@ -62,7 +59,6 @@ import RecipeCostCalculator from './components/RecipeCostCalculator';
 import FeedbackModal from './components/FeedbackModal';
 import SavedDatesPage from './components/SavedDatesPage';
 import ThemeModal from './components/ThemeModal';
-import CheatCodeModal from './components/CheatCodeModal';
 
 import PolicyPage from './components/PolicyPage';
 import { PrivacyPolicyContent, TermsOfServiceContent, AboutUsContent, DisclaimerContent } from './data/policyContent';
@@ -70,13 +66,12 @@ import CookieConsentBanner from './components/CookieConsentBanner';
 import OnboardingGuide from './components/OnboardingGuide';
 
 import EmbedModal from './components/EmbedModal';
-import { calculatorsData } from './data/calculators';
 import BlogPage from './components/BlogPage';
 import BlogPostPage from './components/BlogPostPage';
+import SharePromptModal from './components/SharePromptModal';
 
 interface CalculatorProps {
   initialState?: any;
-  isPremium?: boolean;
 }
 
 // Mapping calculator names to their respective components
@@ -157,10 +152,9 @@ const AppContent: React.FC = () => {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isCheatCodeModalOpen, setIsCheatCodeModalOpen] = useState(false);
   const [isEmbedMode, setIsEmbedMode] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
-  const { showOutOfFuelToast, closeOutOfFuelToast } = useAd();
+  const [showSharePrompt, setShowSharePrompt] = useState(false);
   
   useEffect(() => {
     // Onboarding guide
@@ -224,12 +218,35 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
+  const isHomePage = !currentCalculator && !showSavedDatesPage && !policyPage && !blogState;
+
+  useEffect(() => {
+    if (!isHomePage) return;
+
+    const handleMouseLeave = (e: MouseEvent) => {
+      // e.relatedTarget will be null when the mouse leaves the window
+      if (e.relatedTarget === null) {
+        const hasSeen = sessionStorage.getItem('hasSeenExitIntentModal');
+        if (!hasSeen) {
+          setShowSharePrompt(true);
+          sessionStorage.setItem('hasSeenExitIntentModal', 'true');
+        }
+      }
+    };
+    
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isHomePage]);
+
   useEffect(() => {
     // Scroll restoration logic
-    if (currentCalculator === null && !showSavedDatesPage && !policyPage && !blogState) {
+    if (isHomePage) {
       setTimeout(() => window.scrollTo(0, scrollPosition), 0);
     }
-  }, [currentCalculator, showSavedDatesPage, policyPage, blogState, scrollPosition]);
+  }, [isHomePage, scrollPosition]);
   
   const clearAllPages = () => {
       setCurrentCalculator(null);
@@ -303,7 +320,6 @@ const AppContent: React.FC = () => {
   const renderContent = () => {
     if (currentCalculator) {
       const CalculatorComponent = calculators[currentCalculator];
-      const calculatorData = calculatorsData.flatMap(cat => cat.items).find(c => c.name === currentCalculator);
       return (
         <CalculatorPageWrapper 
           title={currentCalculator} 
@@ -313,7 +329,7 @@ const AppContent: React.FC = () => {
           onSelectCalculator={handleSelectCalculator}
           onSelectBlogPost={(slug) => handleShowBlogPage('post', slug)}
         >
-          <CalculatorComponent initialState={calculatorState} isPremium={calculatorData?.isPremium} />
+          <CalculatorComponent initialState={calculatorState} />
         </CalculatorPageWrapper>
       );
     }
@@ -377,14 +393,12 @@ const AppContent: React.FC = () => {
         onShowBlogPage={() => handleShowBlogPage('list')}
         onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
-        onOpenCheatCodeModal={() => setIsCheatCodeModalOpen(true)}
       />
       <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
       <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
       <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
-      <CheatCodeModal isOpen={isCheatCodeModalOpen} onClose={() => setIsCheatCodeModalOpen(false)} />
+      <SharePromptModal isOpen={showSharePrompt} onClose={() => setShowSharePrompt(false)} />
       <EmbedModal isOpen={isEmbedModalOpen} onClose={() => setIsEmbedModalOpen(false)} calculatorName={currentCalculator} />
-      <OutOfFuelToast isOpen={showOutOfFuelToast} onClose={closeOutOfFuelToast} />
     </div>
   );
 };
@@ -395,11 +409,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <DateTrackerProvider>
         <HistoryProvider>
-          <FuelProvider>
-            <AdProvider>
-              <AppContent />
-            </AdProvider>
-          </FuelProvider>
+          <AppContent />
         </HistoryProvider>
       </DateTrackerProvider>
     </ThemeProvider>
