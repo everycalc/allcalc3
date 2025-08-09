@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePro } from '../contexts/ProContext';
 
 interface CookieConsentBannerProps {
   onShowPrivacyPolicy: () => void;
@@ -6,8 +7,14 @@ interface CookieConsentBannerProps {
 
 const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onShowPrivacyPolicy }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const { isPro } = usePro();
 
   useEffect(() => {
+    if (isPro) {
+      setIsVisible(false);
+      return;
+    }
+    
     const consent = localStorage.getItem('cookie_consent');
     if (consent !== 'true') {
       // Use a small delay to prevent layout shift on load
@@ -16,7 +23,7 @@ const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onShowPrivacy
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isPro]);
 
   const handleAccept = () => {
     localStorage.setItem('cookie_consent', 'true');

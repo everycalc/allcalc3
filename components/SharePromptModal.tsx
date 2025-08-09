@@ -24,7 +24,7 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'All Calculation',
+          title: 'All Type Calculator',
           text: textToShare,
         });
       } catch (error) {

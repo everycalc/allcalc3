@@ -10,6 +10,7 @@ interface SidebarProps {
   onOpenFeedbackModal: () => void;
   onOpenThemeModal: () => void;
   onShowBlogPage: () => void;
+  onOpenCheatCodeModal: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -17,9 +18,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     onShowPolicyPage, onOpenFeedbackModal, 
     onOpenThemeModal,
     onShowBlogPage,
+    onOpenCheatCodeModal,
 }) => {
   const { sidebarPosition } = useTheme();
   const [version, setVersion] = useState('');
+  const [versionClicks, setVersionClicks] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,6 +62,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handlePolicyClick = (page: string) => {
     onShowPolicyPage(page);
     onClose();
+  };
+
+  const handleVersionClick = () => {
+    const newClicks = versionClicks + 1;
+    setVersionClicks(newClicks);
+
+    if (newClicks >= 7) {
+      onOpenCheatCodeModal();
+      onClose(); // Close sidebar after opening modal
+      setVersionClicks(0); // Reset after opening
+    }
   };
   
   const positionClasses = sidebarPosition === 'left' ? 'left-0' : 'right-0';
@@ -139,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 </div>
                 
-                <div className="text-center text-xs text-on-surface-variant py-2 hover:bg-surface-container-high w-full">
+                <div onClick={handleVersionClick} className="text-center text-xs text-on-surface-variant py-2 hover:bg-surface-container-high w-full cursor-pointer" title="Tap 7 times for a surprise">
                     Version {version}
                 </div>
             </div>

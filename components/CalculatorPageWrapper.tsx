@@ -91,7 +91,7 @@ const CalculatorPageWrapper: React.FC<CalculatorPageWrapperProps> = ({ title, on
                 rel="noopener noreferrer" 
                 className="absolute bottom-2 right-2 text-xs text-gray-400 hover:text-primary z-10"
             >
-                Powered by All Calculation
+                Powered by All Type Calculator
             </a>
         </div>
     );

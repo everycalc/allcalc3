@@ -44,7 +44,7 @@ const Footer: React.FC<{ onShowPolicyPage: (page: string) => void; onShowBlogPag
          <span className="opacity-50 hidden sm:inline">|</span>
         <button onClick={() => onShowPolicyPage('disclaimer')} className="hover:text-primary hover:underline">Disclaimer</button>
       </div>
-      <p className="mt-4 opacity-75">&copy; {new Date().getFullYear()} All Calculation. All rights reserved.</p>
+      <p className="mt-4 opacity-75">&copy; {new Date().getFullYear()} All Type Calculator. All rights reserved.</p>
     </footer>
   );
 };
@@ -92,7 +92,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                 </button>
                 <div className="flex items-center gap-2 text-primary">
                     <Logo />
-                    <h1 className="text-xl font-bold">All Calculation</h1>
+                    <h1 className="text-xl font-bold">All Type Calculator</h1>
                 </div>
                 <div className="flex items-center">
                     <button onClick={() => setIsSearchModalOpen(true)} id="onboarding-search-toggle" className="p-2 rounded-full hover:bg-surface-container-high transition-colors" aria-label="Search calculators">

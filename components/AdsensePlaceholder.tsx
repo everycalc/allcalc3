@@ -1,11 +1,17 @@
 import React, { useEffect, useRef } from 'react';
+import { usePro } from '../contexts/ProContext';
 
 const AdsensePlaceholder: React.FC = () => {
+  const { isPro } = usePro();
   const adRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Abort ad-loading logic if in pro mode or the ref isn't ready.
+    if (isPro || !adRef.current) {
+      return;
+    }
+    
     const adContainer = adRef.current;
-    if (!adContainer) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -47,7 +53,12 @@ const AdsensePlaceholder: React.FC = () => {
         observer.unobserve(adContainer);
       }
     };
-  }, []);
+  }, [isPro]); // Re-run effect if pro status changes.
+
+  // Conditionally render the ad placeholder only if not in pro mode.
+  if (isPro) {
+    return null;
+  }
 
   return (
     <div className="adsense-placeholder w-full min-h-[100px] my-4 flex items-center justify-center rounded-2xl">

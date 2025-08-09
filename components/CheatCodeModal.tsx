@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { usePro } from '../contexts/ProContext';
+import { ProContext } from '../contexts/ProContext';
 
 interface CheatCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const CHEAT_CODES = {
-  'DISABLEADS2024': { message: 'Success! Ads have been disabled for this device.' },
-};
+const CHEAT_CODE = 'NH629290';
 
 const CheatCodeModal: React.FC<CheatCodeModalProps> = ({ isOpen, onClose }) => {
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
-  const { activateProMode } = usePro();
+  const { activateProMode } = useContext(ProContext);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,7 +26,6 @@ const CheatCodeModal: React.FC<CheatCodeModalProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const handleClose = () => {
-    // Delay reset for closing animation
     setTimeout(() => {
       setCode('');
       setMessage('');
@@ -40,12 +37,11 @@ const CheatCodeModal: React.FC<CheatCodeModalProps> = ({ isOpen, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const enteredCode = code.trim().toUpperCase();
-    const cheat = CHEAT_CODES[enteredCode as keyof typeof CHEAT_CODES];
 
-    if (cheat) {
+    if (enteredCode === CHEAT_CODE) {
       activateProMode();
       setIsError(false);
-      setMessage(cheat.message);
+      setMessage('Success! Ad-free mode has been activated for this device.');
       setCode('');
     } else {
       setIsError(true);
@@ -81,6 +77,7 @@ const CheatCodeModal: React.FC<CheatCodeModalProps> = ({ isOpen, onClose }) => {
             onChange={e => setCode(e.target.value)} 
             className="input-base w-full p-3"
             placeholder="Enter special code"
+            autoFocus
           />
           {message && <p className={`text-sm text-center ${isError ? 'text-red-500' : 'text-green-500'}`}>{message}</p>}
           <button 
