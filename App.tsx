@@ -70,6 +70,9 @@ import BlogPage from './components/BlogPage';
 import BlogPostPage from './components/BlogPostPage';
 import SharePromptModal from './components/SharePromptModal';
 
+import { ProProvider } from './contexts/ProContext';
+import CheatCodeModal from './components/CheatCodeModal';
+
 interface CalculatorProps {
   initialState?: any;
 }
@@ -155,6 +158,7 @@ const AppContent: React.FC = () => {
   const [isEmbedMode, setIsEmbedMode] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
   const [isSharePromptOpen, setIsSharePromptOpen] = useState(false);
+  const [isCheatCodeModalOpen, setIsCheatCodeModalOpen] = useState(false);
 
   const { history } = useContext(HistoryContext);
   const prevHistoryLengthRef = useRef(history.length);
@@ -358,7 +362,19 @@ const AppContent: React.FC = () => {
   };
   
   if (isEmbedMode) {
-      return renderContent();
+      return (
+        <div className="p-4 relative min-h-[600px]">
+            {renderContent()}
+            <a 
+                href={window.location.origin} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="absolute bottom-2 right-2 text-xs text-gray-400 hover:text-primary z-10"
+            >
+                Powered by All Type Calculator
+            </a>
+        </div>
+    );
   }
 
   return (
@@ -391,12 +407,14 @@ const AppContent: React.FC = () => {
         onShowBlogPage={() => handleShowBlogPage('list')}
         onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
+        onOpenCheatCodeModal={() => setIsCheatCodeModalOpen(true)}
       />
       <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
       <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
       <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
       <SharePromptModal isOpen={isSharePromptOpen} onClose={() => setIsSharePromptOpen(false)} />
       <EmbedModal isOpen={isEmbedModalOpen} onClose={() => setIsEmbedModalOpen(false)} calculatorName={currentCalculator} />
+      <CheatCodeModal isOpen={isCheatCodeModalOpen} onClose={() => setIsCheatCodeModalOpen(false)} />
     </div>
   );
 };
@@ -407,7 +425,9 @@ const App: React.FC = () => {
     <ThemeProvider>
       <DateTrackerProvider>
         <HistoryProvider>
-          <AppContent />
+          <ProProvider>
+            <AppContent />
+          </ProProvider>
         </HistoryProvider>
       </DateTrackerProvider>
     </ThemeProvider>

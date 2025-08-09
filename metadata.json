@@ -2,7 +2,8 @@
   "requestFramePermissions": [
     "microphone"
   ],
-  "name": "All Calculation",
+  "name": "All Type Calculator",
   "description": "",
-  "prompt": ""
+  "prompt": "",
+  "version": "2.7.0"
 }

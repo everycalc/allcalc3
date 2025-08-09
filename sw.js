@@ -1,4 +1,4 @@
-const CACHE_NAME = 'all-in-one-calculator-v2.6.0'; 
+const CACHE_NAME = 'all-type-calculator-v2.7.0'; 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -93,11 +93,13 @@ const urlsToCache = [
   '/components/VolumeCalculator.tsx',
   '/components/ExplanationModal.tsx',
   '/components/SearchModal.tsx',
+  '/components/CheatCodeModal.tsx',
 
   // Contexts
   '/contexts/DateTrackerContext.tsx',
   '/contexts/HistoryContext.tsx',
   '/contexts/ThemeContext.tsx',
+  '/contexts/ProContext.tsx',
 
   // 3rd party
   "https://cdn.tailwindcss.com",
@@ -119,7 +121,8 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache and caching assets');
-        return cache.addAll(urlsToCache);
+        const urlsToCacheWithBust = urlsToCache.map(url => `${url}?v=${CACHE_NAME}`);
+        return cache.addAll(urlsToCacheWithBust);
       })
       .catch(error => {
         console.error('Failed to cache assets during install:', error);
