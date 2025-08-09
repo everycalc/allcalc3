@@ -7,7 +7,6 @@ interface SharePromptModalProps {
 
 const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
-  const [showCloseButton, setShowCloseButton] = useState(false);
   const textToShare = `Check out this awesome calculator app! It has everything you need: ${window.location.origin}`;
 
   useEffect(() => {
@@ -30,8 +29,6 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
         });
       } catch (error) {
         console.error('Error sharing:', error);
-      } finally {
-        setShowCloseButton(true);
       }
     } else {
       // Fallback to copy
@@ -41,10 +38,9 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
         setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
       } catch (err) {
         console.error('Failed to copy text: ', err);
-      } finally {
-        setShowCloseButton(true);
       }
     }
+    onClose(); // Close the modal after any share action
   };
 
 
@@ -64,9 +60,9 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
         aria-modal="true"
         aria-labelledby="share-modal-title"
       >
-        <h2 id="share-modal-title" className="text-2xl font-bold text-primary mb-2">Before you go...</h2>
-        <p className="text-on-surface-variant mb-6">Enjoying this app? Help spread the word by sharing it with your friends!</p>
-        <div className="flex justify-center">
+        <h2 id="share-modal-title" className="text-2xl font-bold text-primary mb-2">Enjoying the app?</h2>
+        <p className="text-on-surface-variant mb-6">Help spread the word by sharing it with your friends and family!</p>
+        <div className="space-y-2">
             <button
                 onClick={handleShare}
                 className="btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 w-full"
@@ -76,16 +72,12 @@ const SharePromptModal: React.FC<SharePromptModalProps> = ({ isOpen, onClose }) 
                 </svg>
                 <span>{copied ? 'Copied Link!' : 'Share the App'}</span>
             </button>
-        </div>
-        <div className="h-10 mt-4"> {/* Placeholder to prevent layout shift */}
-          {showCloseButton && (
-            <button 
+             <button 
               onClick={onClose} 
-              className="w-full text-sm text-on-surface-variant font-semibold py-2 px-4 rounded-md hover:bg-surface-container-high transition-colors animate-fade-in"
+              className="w-full text-sm text-on-surface-variant font-semibold py-2 px-4 rounded-md hover:bg-surface-container-high transition-colors"
             >
-              Thanks!
+              Maybe Later
             </button>
-          )}
         </div>
       </div>
     </div>
