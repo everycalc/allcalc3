@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import HomePage from './components/HomePage';
 import StandardCalculator from './components/StandardCalculator';
 import ScientificCalculator from './components/ScientificCalculator';
@@ -8,7 +8,7 @@ import AreaCalculator from './components/AreaCalculator';
 import VolumeCalculator from './components/VolumeCalculator';
 import BMICalculator from './components/BMICalculator';
 import CalculatorPageWrapper from './components/CalculatorPageWrapper';
-import { HistoryProvider, HistoryEntry } from './contexts/HistoryContext';
+import { HistoryProvider, HistoryEntry, HistoryContext } from './contexts/HistoryContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { DateTrackerProvider } from './contexts/DateTrackerContext';
 import HistoryPanel from './components/HistoryPanel';
@@ -154,8 +154,29 @@ const AppContent: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEmbedMode, setIsEmbedMode] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
-  const [showSharePrompt, setShowSharePrompt] = useState(false);
-  
+  const [isSharePromptOpen, setIsSharePromptOpen] = useState(false);
+
+  const { history } = useContext(HistoryContext);
+  const prevHistoryLengthRef = useRef(history.length);
+
+  useEffect(() => {
+    // This effect runs whenever a calculation is added to history, triggering the share prompt
+    if (history.length > prevHistoryLengthRef.current) {
+        const hasShownPrompt = sessionStorage.getItem('hasShownSharePrompt');
+        if (!hasShownPrompt) {
+            const currentCount = parseInt(sessionStorage.getItem('calculationCount') || '0', 10);
+            const newCount = currentCount + 1;
+            sessionStorage.setItem('calculationCount', newCount.toString());
+
+            if (newCount >= 2) {
+                setIsSharePromptOpen(true);
+                sessionStorage.setItem('hasShownSharePrompt', 'true');
+            }
+        }
+    }
+    prevHistoryLengthRef.current = history.length;
+  }, [history]);
+
   useEffect(() => {
     // Onboarding guide
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
@@ -178,6 +199,12 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
+  const clearAllPages = () => {
+      setCurrentCalculator(null);
+      setShowSavedDatesPage(false);
+      setPolicyPage(null);
+      setBlogState(null);
+  }
 
   useEffect(() => {
     // Online/offline listeners
@@ -188,22 +215,21 @@ const AppContent: React.FC = () => {
     
     // History management for back button
     const handlePopState = (event: PopStateEvent) => {
-        if (event.state?.page === 'home' || !event.state) {
-            handleBackToHome();
-        } else if (event.state?.page === 'calculator' && calculators[event.state.name]) {
+        const state = event.state;
+        clearAllPages();
+        if (state?.page === 'home' || !state) {
+            // Already handled by clearAllPages
+        } else if (state?.page === 'calculator' && calculators[state.name]) {
+            setCurrentCalculator(state.name);
             setCalculatorState(null);
-            setCurrentCalculator(event.state.name);
-            setShowSavedDatesPage(false);
-            setPolicyPage(null);
-            setBlogState(null);
-        } else if (event.state?.page === 'savedDates') {
-            handleShowSavedDatesPage();
-        } else if (event.state?.page === 'policy' && policyPages[event.state.name]) {
-            handleShowPolicyPage(event.state.name);
-        } else if (event.state?.page === 'blogList') {
-            handleShowBlogPage('list');
-        } else if (event.state?.page === 'blogPost' && event.state.slug) {
-            handleShowBlogPage('post', event.state.slug);
+        } else if (state?.page === 'savedDates') {
+            setShowSavedDatesPage(true);
+        } else if (state?.page === 'policy' && policyPages[state.name]) {
+            setPolicyPage(state.name);
+        } else if (state?.page === 'blogList') {
+            setBlogState({ page: 'list' });
+        } else if (state?.page === 'blogPost' && state.slug) {
+            setBlogState({ page: 'post', slug: state.slug });
         }
     };
     window.addEventListener('popstate', handlePopState);
@@ -221,39 +247,11 @@ const AppContent: React.FC = () => {
   const isHomePage = !currentCalculator && !showSavedDatesPage && !policyPage && !blogState;
 
   useEffect(() => {
-    if (!isHomePage) return;
-
-    const handleMouseLeave = (e: MouseEvent) => {
-      // e.relatedTarget will be null when the mouse leaves the window
-      if (e.relatedTarget === null) {
-        const hasSeen = sessionStorage.getItem('hasSeenExitIntentModal');
-        if (!hasSeen) {
-          setShowSharePrompt(true);
-          sessionStorage.setItem('hasSeenExitIntentModal', 'true');
-        }
-      }
-    };
-    
-    document.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      document.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [isHomePage]);
-
-  useEffect(() => {
     // Scroll restoration logic
     if (isHomePage) {
       setTimeout(() => window.scrollTo(0, scrollPosition), 0);
     }
   }, [isHomePage, scrollPosition]);
-  
-  const clearAllPages = () => {
-      setCurrentCalculator(null);
-      setShowSavedDatesPage(false);
-      setPolicyPage(null);
-      setBlogState(null);
-  }
 
   const handleSelectCalculator = (name: string) => {
     if (calculators[name]) {
@@ -323,7 +321,7 @@ const AppContent: React.FC = () => {
       return (
         <CalculatorPageWrapper 
           title={currentCalculator} 
-          onBack={handleBackToHome}
+          onBack={() => window.history.back()}
           isEmbed={isEmbedMode}
           onOpenEmbedModal={() => setIsEmbedModalOpen(true)}
           onSelectCalculator={handleSelectCalculator}
@@ -334,15 +332,15 @@ const AppContent: React.FC = () => {
       );
     }
     
-    if (showSavedDatesPage) return <SavedDatesPage onBack={handleBackToHome} />;
+    if (showSavedDatesPage) return <SavedDatesPage onBack={() => window.history.back()} />;
 
     if (policyPage && policyPages[policyPage]) {
       const { title, content } = policyPages[policyPage];
-      return <PolicyPage title={title} onBack={handleBackToHome}>{content}</PolicyPage>;
+      return <PolicyPage title={title} onBack={() => window.history.back()}>{content}</PolicyPage>;
     }
 
-    if (blogState?.page === 'list') return <BlogPage onBack={handleBackToHome} onSelectPost={(slug) => handleShowBlogPage('post', slug)} />;
-    if (blogState?.page === 'post' && blogState.slug) return <BlogPostPage slug={blogState.slug} onBack={() => handleShowBlogPage('list')} onSelectCalculator={handleSelectCalculator} />;
+    if (blogState?.page === 'list') return <BlogPage onBack={() => window.history.back()} onSelectPost={(slug) => handleShowBlogPage('post', slug)} />;
+    if (blogState?.page === 'post' && blogState.slug) return <BlogPostPage slug={blogState.slug} onBack={() => window.history.back()} onSelectCalculator={handleSelectCalculator} />;
 
     return <HomePage 
         onSelectCalculator={handleSelectCalculator} 
@@ -397,7 +395,7 @@ const AppContent: React.FC = () => {
       <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
       <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
       <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
-      <SharePromptModal isOpen={showSharePrompt} onClose={() => setShowSharePrompt(false)} />
+      <SharePromptModal isOpen={isSharePromptOpen} onClose={() => setIsSharePromptOpen(false)} />
       <EmbedModal isOpen={isEmbedModalOpen} onClose={() => setIsEmbedModalOpen(false)} calculatorName={currentCalculator} />
     </div>
   );
