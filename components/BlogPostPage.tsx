@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { blogPosts, BlogPost } from '../data/blogPosts';
 import AdsensePlaceholder from './AdsensePlaceholder';
 import CalculatorLinkCard from './CalculatorLinkCard';
@@ -11,6 +11,10 @@ interface BlogPostPageProps {
 
 const BlogPostPage: React.FC<BlogPostPageProps> = ({ slug, onBack, onSelectCalculator }) => {
     const post = useMemo(() => blogPosts.find(p => p.slug === slug), [slug]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [slug]);
 
     if (!post) {
         return (
