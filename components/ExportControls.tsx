@@ -41,8 +41,6 @@ const ExportControls: React.FC<ExportControlsProps> = ({ contentRef, calculatorN
       return `${variable}: ${value};`;
     }).join(' ');
 
-    // Add specific styles for components to ensure they render correctly
-    // This is a workaround for html2canvas limitations with some CSS properties
     style.innerHTML = `
       :root { ${cssOverrides} }
       .result-card { background-color: var(--color-surface-container-low) !important; color: var(--color-on-surface) !important; }
@@ -59,6 +57,37 @@ const ExportControls: React.FC<ExportControlsProps> = ({ contentRef, calculatorN
             backgroundColor: rootStyle.getPropertyValue('--color-surface-container').trim(),
             scale: 2 // Increase resolution for better quality
         });
+
+        // Add tiled watermark to canvas
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            const watermarkText = 'All Type Calculator';
+            const fontSize = canvas.width * 0.05; // Responsive font size
+            ctx.font = `bold ${fontSize}px Poppins`;
+            ctx.fillStyle = 'rgba(128, 128, 128, 0.15)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const angle = -Math.PI / 4; // -45 degrees
+            const textMetrics = ctx.measureText(watermarkText);
+            const patternWidth = Math.abs(textMetrics.width * Math.cos(angle)) + Math.abs(fontSize * Math.sin(angle));
+            const patternHeight = Math.abs(textMetrics.width * Math.sin(angle)) + Math.abs(fontSize * Math.cos(angle));
+            const horizontalSpacing = patternWidth * 1.5;
+            const verticalSpacing = patternHeight * 2.5;
+
+            ctx.save();
+            for (let x = -canvas.width; x < canvas.width * 2; x += horizontalSpacing) {
+                for (let y = -canvas.height; y < canvas.height * 2; y += verticalSpacing) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    ctx.fillText(watermarkText, 0, 0);
+                    ctx.restore();
+                }
+            }
+            ctx.restore();
+        }
+
         return canvas;
     } catch (error) {
         console.error("html2canvas error:", error);
@@ -97,7 +126,7 @@ const ExportControls: React.FC<ExportControlsProps> = ({ contentRef, calculatorN
             const image = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.href = image;
-            link.download = `${calculatorName.replace(/\s+/g, '_')}-result.png`;
+            link.download = `all-type-calculator-${calculatorName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
             link.click();
         }
     } catch (error) {
@@ -114,6 +143,15 @@ const ExportControls: React.FC<ExportControlsProps> = ({ contentRef, calculatorN
         if (canvas) {
             const imgData = canvas.toDataURL('image/png', 0.95);
             const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            pdf.setProperties({
+                title: `All Type Calculator - ${calculatorName} Result`,
+                subject: `Calculation result from the ${calculatorName}.`,
+                author: 'All Type Calculator',
+                keywords: `all type calculator, free online calculator, ${calculatorName.toLowerCase()}, calculation result`,
+                creator: 'All Type Calculator'
+            });
+
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const imgProps = pdf.getImageProperties(imgData);
@@ -130,7 +168,7 @@ const ExportControls: React.FC<ExportControlsProps> = ({ contentRef, calculatorN
               pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
               heightLeft -= pdfHeight;
             }
-            pdf.save(`${calculatorName.replace(/\s+/g, '_')}-result.pdf`);
+            pdf.save(`all-type-calculator-${calculatorName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-result.pdf`);
         }
     } catch (error) {
         console.error('PDF download failed:', error);

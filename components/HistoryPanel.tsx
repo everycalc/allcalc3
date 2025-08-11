@@ -112,8 +112,34 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onRestore 
         }
     });
 
-    doc.save(`calculator-history-${new Date().toISOString().split('T')[0]}.pdf`);
-    setSelectedIds(new Set()); // Clear selection after export
+    // Add tiled watermark to all pages
+    const addWatermark = (pdfDoc: jsPDF) => {
+        const totalPages = pdfDoc.internal.pages.length;
+        for (let i = 1; i <= totalPages; i++) {
+            pdfDoc.setPage(i);
+            pdfDoc.setFontSize(50);
+            pdfDoc.setTextColor(220, 220, 220);
+            pdfDoc.saveGraphicsState();
+            // @ts-ignore
+            pdfDoc.setGState(new doc.GState({opacity: 0.5}));
+            
+            const text = 'All Type Calculator';
+            const pageWidth = pdfDoc.internal.pageSize.getWidth();
+            const pageHeight = pdfDoc.internal.pageSize.getHeight();
+            
+            const angle = -45;
+            for (let yPos = 0; yPos < pageHeight * 1.5; yPos += 80) {
+                for (let xPos = -pageWidth * 0.5; xPos < pageWidth * 1.5; xPos += 120) {
+                    pdfDoc.text(text, xPos, yPos, { angle: angle, align: 'center' });
+                }
+            }
+            pdfDoc.restoreGraphicsState();
+        }
+    };
+
+    addWatermark(doc);
+    doc.save(`all-type-calculator-history-${new Date().toISOString().split('T')[0]}.pdf`);
+    setSelectedIds(new Set());
   };
 
   const handleClear = () => {
