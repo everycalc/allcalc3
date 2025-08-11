@@ -9,6 +9,33 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
     {
+        slug: 'behind-the-pixels-our-new-pixel-theme',
+        title: 'Behind the Pixels: Our New "Pixel" Theme',
+        category: 'Tech',
+        excerpt: 'Introducing our new "Pixel" theme, inspired by modern design principles. Discover the philosophy behind the clean aesthetic, dynamic colors, and how it enhances your calculation experience.',
+        metaDescription: 'Discover the design philosophy behind the new "Pixel" theme in All Type Calculator. Learn about its Material You inspiration, dynamic colors, and focus on a clean, modern user experience.',
+        content: `You may have noticed a fresh new look available in our app. We're excited to introduce the "Pixel" theme, a complete redesign of our interface focused on clarity, personalization, and modern aesthetics. This isn't just a new coat of paint; it's a new way to experience calculation.
+
+**Inspired by Material You**
+The core inspiration for the Pixel theme comes from Google's Material You design language. The goal is to create an interface that feels more personal and dynamic. The most significant feature we've adopted is the use of **dynamic colors**. When you select an accent color in the theme customizer, our entire app's color palette subtly shifts to complement your choice. This creates a cohesive and beautiful user experience that feels uniquely yours.
+
+**Clarity and Focus**
+With the Pixel theme, we've decluttered the interface.
+- **Bigger, Bolder Cards:** Calculator cards on the homepage are larger, with more generous spacing and softer, fully rounded corners. This makes finding your favorite tool easier and more pleasant on the eyes.
+- **Minimalist Calculator Pages:** Inside a calculator, the main card has a clean, almost borderless look. It floats on a subtle background, drawing your focus to the numbers and controls without unnecessary visual noise.
+- **System Fonts:** We use the 'Poppins' font, known for its excellent readability on screens of all sizes.
+
+**Light and Dark, Reimagined**
+The Pixel theme was built from the ground up to support both light and dark modes beautifully. We use a system of color tokens (e.g., \`--sys-color-surface-container\`) that automatically adjust based on your chosen mode. This ensures that contrast levels are always optimal for reading, reducing eye strain whether you're working late at night or in a brightly lit room.
+
+**Pixel vs. Classic**
+We know some users love our original design, so the "Classic" theme isn't going anywhere! You can switch between them at any time in the Theme & Customization menu.
+- **Classic:** Offers a more traditional, skeuomorphic design with sharper corners, distinct borders, and a more compact layout.
+- **Pixel:** Offers a modern, minimalist, and personalized experience with a focus on space and dynamic color.
+
+We believe the Pixel theme makes our All Type Calculator not just more powerful, but also more delightful to use. Give it a try from the sidebar menu and let us know what you think!`
+    },
+    {
         slug: 'what-is-compound-interest',
         title: 'What is Compound Interest and Why It’s Your Best Friend?',
         category: 'Finance',
