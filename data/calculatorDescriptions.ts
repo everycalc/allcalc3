@@ -1,12 +1,13 @@
-export const calculatorDescriptions: { [key: string]: { description: string; faqs: { q: string; a: string }[], examples?: { title: string; description: string, inputs: any, result: string }[] } } = {
+export const calculatorDescriptions: { [key: string]: { description: string; metaDescription?: string; faqs: { q: string; a: string }[], examples?: { title: string; description: string, inputs: any, result: string }[] } } = {
     'E-commerce Profit Calculator': {
-        description: 'Gain a crystal-clear understanding of your e-commerce profitability on a per-order basis. This expert-level tool goes beyond simple revenue-minus-cost calculations. It meticulously accounts for the complex variables that determine true profit in an online business, including the cost of goods (COGS), packaging, forward shipping to the customer, and variable fees from payment gateways and marketplaces. Crucially, it also factors in the financial impact of Return-to-Origin (RTO) orders—a major profit leak for many businesses. By calculating losses from RTO shipping and determining if the product cost is also lost, this tool provides a "blended profit" per order. This blended figure is an average that represents your profitability across both successful deliveries and costly returns, giving you an accurate and realistic picture of your business\'s financial health. Use these insights to optimize pricing, reduce RTOs, and make data-driven decisions to boost your bottom line.',
+        description: 'Gain a crystal-clear understanding of your e-commerce profitability on a per-order basis with this All Type Calculator expert tool. It goes beyond simple revenue-minus-cost calculations to meticulously account for the complex variables that determine true profit, including COGS, packaging, shipping, payment gateway fees, and marketplace commissions. Crucially, it also factors in the financial impact of Return-to-Origin (RTO) orders—a major profit leak for many businesses. By calculating losses from RTO shipping and product costs, this tool provides a "blended profit" per order. This blended figure represents your profitability across both successful deliveries and costly returns, giving you an accurate, realistic picture of your business\'s financial health. Use these insights from the best all-type-calculator for e-commerce to optimize pricing, reduce RTOs, and make data-driven decisions to boost your bottom line in 2025 and beyond.',
+        metaDescription: 'Is your online store truly profitable? The All Type Calculator for e-commerce breaks down your profit per order, factoring in COGS, shipping, fees, and RTOs. Make data-driven decisions and boost your net margin.',
         faqs: [
-            { q: 'What is blended profit?', a: 'Blended profit is your average profit across all orders, factoring in both successfully delivered orders and costly returned (RTO) orders. It gives you a more realistic view of your business\'s health than looking at delivered orders alone.' },
+            { q: 'What is blended profit in e-commerce?', a: 'Blended profit is your average profit across all orders, factoring in both successfully delivered orders and costly returned (RTO) orders. It gives you a more realistic view of your business\'s health than looking at delivered orders alone. This is a key metric in any all-type-calculator for business.' },
             { q: 'Why is my Return-to-Origin (RTO) rate so important?', a: 'A high RTO rate can severely damage profitability. For every RTO, you lose money on forward shipping, reverse shipping, packaging, and potentially the cost of the product itself if it\'s damaged. Reducing your RTO rate is one of the fastest ways to increase profits.' },
-            { q: 'What should be included in COGS?', a: 'Cost of Goods Sold (COGS) should include all direct costs related to the product itself. This means the purchase price from your supplier, any raw material costs, and manufacturing labor. It should not include indirect costs like marketing or rent.' },
+            { q: 'What should be included in COGS for an online store?', a: 'Cost of Goods Sold (COGS) should include all direct costs related to the product itself. This means the purchase price from your supplier, any raw material costs, and manufacturing labor. It should not include indirect costs like marketing or rent.' },
             { q: 'What is the difference between a Payment Gateway Fee and a Marketplace Fee?', a: 'A Payment Gateway Fee (e.g., Stripe, Razorpay) is what you pay to process the customer\'s credit/debit card transaction. A Marketplace Fee (e.g., Amazon, Etsy) is the commission the platform takes for listing and selling your product on their site.'},
-            { q: 'How can I reduce my RTO shipping costs?', a: 'Negotiate with your courier partners for better reverse shipping rates. Some couriers offer lower RTO rates than forward shipping. Also, implementing better address verification at checkout can reduce delivery failures, which are a primary cause of RTOs.'}
+            { q: 'How can I reduce my RTO shipping costs with this calculator?', a: 'While the All Type Calculator helps you measure the impact, you can reduce costs by negotiating with your courier partners for better reverse shipping rates. Some couriers offer lower RTO rates than forward shipping. Also, implementing better address verification at checkout can reduce delivery failures, which are a primary cause of RTOs.'}
         ],
         examples: [
             {
@@ -25,6 +26,7 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
     },
     'Product Cost Calculator': {
         description: 'Unlock the true cost of creating your product with this comprehensive calculator. Accurately determining your cost per unit is the cornerstone of a sustainable business strategy. This tool enables you to break down your expenses into four critical categories: Materials (the raw components of your product), Labor (the work involved in assembly), Packaging (the final presentation and protection), and Overheads (indirect costs like rent or utilities spread across a production batch). By inputting these variables, you get a precise cost-per-unit figure. But it doesn\'t stop there. You can then input your desired profit margin to calculate the recommended selling price, ensuring that your pricing strategy is not just covering costs, but actively building a profitable business. This empowers you to price with confidence, understand your profitability drivers, and make strategic decisions about sourcing and production.',
+        metaDescription: 'Calculate the true cost of your product with our free tool. The All Type Calculator helps you factor in materials, labor, and overheads to find your cost per unit and set a profitable selling price for your business.',
         faqs: [
             { q: 'What is the difference between direct and indirect (overhead) costs?', a: 'Direct costs, like materials and labor, are directly tied to producing a single unit. Indirect or overhead costs, like rent or software subscriptions, are general business expenses that must be distributed across all units produced to get a true cost.' },
             { q: 'Why is accurate product costing important?', a: 'Accurate costing is the foundation of a profitable business. It allows you to set the right price, understand your profit margins, identify areas to reduce costs, and make informed decisions about which products to promote or discontinue.' },
@@ -144,12 +146,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         ]
     },
     'Break-Even Point Calculator': {
-        description: 'Discover the most fundamental number for your business\'s survival and success: the break-even point. This is the moment when your total sales revenue exactly equals your total expenses, meaning you are neither making a profit nor a loss. This calculator helps you determine this critical milestone in two ways: by the number of units you need to sell, and by the total revenue you need to achieve. To do this, you will separate your costs into two categories: Fixed Costs (like rent and salaries, which don\'t change with sales volume) and Variable Costs (like raw materials, which do change with each unit sold). Understanding your break-even point is essential for setting realistic sales goals, making informed pricing decisions, and managing your costs effectively to chart a clear path to profitability.',
+        description: 'Discover the most fundamental number for your business\'s survival and success: the break-even point. This is the moment when your total sales revenue exactly equals your total expenses, meaning you are neither making a profit nor a loss. This all-type-calculator helps you determine this critical milestone in two ways: by the number of units you need to sell, and by the total revenue you need to achieve. To do this, you will separate your costs into two categories: Fixed Costs (like rent and salaries, which don\'t change with sales volume) and Variable Costs (like raw materials, which do change with each unit sold). Understanding your break-even point is essential for setting realistic sales goals, making informed pricing decisions, and managing your costs effectively to chart a clear path to profitability.',
+        metaDescription: 'Find your business\'s break-even point in units and revenue with the All Type Calculator. Enter fixed and variable costs to determine how much you need to sell to be profitable. An essential free tool for startups.',
         faqs: [
             { q: 'What are fixed vs. variable costs?', a: 'Fixed costs are expenses that do not change regardless of the number of units sold (e.g., rent, salaries). Variable costs are expenses that change in direct proportion to the number of units sold (e.g., raw materials, direct labor).' },
             { q: 'How can I lower my break-even point?', a: 'You can lower your break-even point by either reducing your fixed costs (e.g., finding cheaper rent), reducing your variable costs per unit (e.g., finding a cheaper supplier), or increasing your selling price per unit.' },
             { q: 'What is a "Contribution Margin"?', a: 'The Contribution Margin is your Sale Price Per Unit minus your Variable Cost Per Unit. It\'s the amount of money from each sale that "contributes" to paying off your fixed costs. Once your fixed costs are covered, the contribution margin from each additional sale becomes pure profit.'},
-            { q: 'Can I use this for a service business?', a: 'Yes. For a service business, a "unit" might be an hour of consulting, a project, or a monthly retainer. Your variable costs might include software used specifically for that client or contractor fees. The principle remains the same.'},
+            { q: 'Can I use this break even calculator for a service business?', a: 'Yes. For a service business, a "unit" might be an hour of consulting, a project, or a monthly retainer. Your variable costs might include software used specifically for that client or contractor fees. The principle remains the same for any all-type-calculator need.'},
             { q: 'How often should I recalculate my break-even point?', a: 'It\'s a good practice to recalculate your break-even point whenever there is a significant change in your business, such as a rent increase, a change in supplier pricing, or when you are considering launching a new product or service.'}
         ],
         examples: [
@@ -288,23 +291,24 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         ]
     },
      'Loan Calculator': {
-        description: 'Take control of your financial planning with our comprehensive Loan Calculator. This tool is designed to help you understand the full scope of a loan by calculating your Equated Monthly Installment (EMI). Simply input the total loan amount, the annual interest rate, and the loan term in years. The calculator will instantly provide you with your fixed monthly payment. More importantly, it breaks down the total cost of the loan, showing you the total principal you will repay versus the total interest you will pay over the entire term. This visibility is key to understanding the true cost of borrowing. The calculator also includes an amortization schedule, giving you a month-by-month breakdown of how each payment contributes to reducing your principal and covering interest.',
+        description: 'Navigate the complexities of borrowing with the All Type Calculator\'s premier Loan Calculator. Whether you\'re planning for a personal loan, auto loan, or any other type of financing, understanding your Equated Monthly Installment (EMI) is the first step towards sound financial management. This free online loan EMI calculator without excel helps you instantly determine your monthly payment obligations. Just input the loan principal, annual interest rate (%), and loan tenure (in years) to get a detailed breakdown. Our tool goes beyond a simple EMI calculation; it provides a comprehensive amortization schedule, showing you the total interest paid over the loan\'s lifetime. This is crucial for comparing different loan offers and understanding the true cost of borrowing. Use this tool to plan your repayment strategy, see how different tenures affect your EMI, and make informed financial decisions to secure your future.',
+        metaDescription: 'Calculate your loan EMI with the free All Type Calculator. Enter loan amount, interest, and tenure to see your monthly payment, total interest, and a full amortization schedule. Plan your finances with the best online loan calculator.',
         faqs: [
-            { q: 'What is EMI?', a: 'EMI stands for Equated Monthly Installment. It is the fixed payment amount made by a borrower to a lender at a specified date each calendar month. EMIs are used to pay off both interest and principal each month so that over a specified number of years, the loan is paid off in full.' },
-            { q: 'How is loan interest calculated?', a: 'Most loans use a reducing balance method. The interest is calculated on the outstanding loan amount for the month. As you pay your EMIs, the principal amount reduces, and so does the interest charged on it in subsequent months.' },
-            { q: 'Why is the total payment so much higher than the loan amount?', a: 'The difference between the total payment and the loan amount is the total interest paid. Over a long loan term (like 15-30 years for a home loan), the interest can add up to be a significant amount, sometimes even more than the original loan principal.'},
-            { q: 'What is an amortization schedule?', a: 'An amortization schedule is a table that details each periodic payment on a loan. It shows how much of each payment is applied to interest and how much is applied to the principal. In the beginning of the loan, a larger portion of your EMI goes towards interest.'},
-            { q: 'How can I reduce the total interest I pay?', a: 'There are two main ways: 1) Choose a shorter loan term. A 15-year loan will have higher EMIs than a 30-year loan, but you will pay significantly less in total interest. 2) Make prepayments. Paying extra towards your principal whenever possible reduces the loan balance, which in turn reduces the total interest you pay over time.'}
+            { q: 'What is EMI (Equated Monthly Installment)?', a: 'EMI is the fixed payment amount made by a borrower to a lender at a specified date each calendar month. EMIs are used to pay off both interest and principal each month so that over a specified number of years, the loan is paid off in full.' },
+            { q: 'How is loan EMI calculated?', a: 'The mathematical formula for EMI is P x R x (1+R)^N / [(1+R)^N-1], where P is the principal loan amount, R is the monthly interest rate, and N is the number of monthly installments. Our All Type Calculator does this math for you instantly.' },
+            { q: 'Why is my total payment so much higher than the loan amount?', a: 'The difference between the total payment and the loan amount is the total interest paid. Over a long loan term (like 15-30 years for a home loan), the interest can add up to be a significant amount, sometimes even more than the original loan principal.'},
+            { q: 'What is an amortization schedule and how do I read it?', a: 'An amortization schedule is a table that details each periodic payment on a loan. It shows how much of each payment is applied to interest and how much is applied to the principal. In the beginning of the loan, a larger portion of your EMI goes towards interest. As the loan matures, more of the payment goes towards the principal.'},
+            { q: 'How can I reduce the total interest I pay on my loan?', a: 'There are two main ways: 1) Choose a shorter loan term. A 15-year loan will have higher EMIs than a 30-year loan, but you will pay significantly less in total interest. 2) Make prepayments. Paying extra towards your principal whenever possible reduces the loan balance, which in turn reduces the total interest you pay over time.'}
         ],
         examples: [
             {
-                title: 'Example 1: Personal Loan',
-                description: 'Calculating the monthly EMI for a standard personal loan.',
+                title: 'Example 1: Personal Loan for a Student',
+                description: 'Calculating the monthly EMI for a standard personal loan for educational purposes.',
                 inputs: { principal: 500000, interestRate: 11, loanTerm: 5 },
                 result: 'The monthly payment (EMI) is ₹10,871.19.'
             },
             {
-                title: 'Example 2: Car Loan',
+                title: 'Example 2: Car Loan Calculation',
                 description: 'Finding out the EMI and total interest for a car loan over a 7-year period.',
                 inputs: { principal: 800000, interestRate: 9, loanTerm: 7 },
                 result: 'The monthly payment (EMI) is ₹12,852.71.'
@@ -312,13 +316,14 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         ]
     },
     'SIP Calculator': {
-        description: 'Visualize your path to wealth creation with the Systematic Investment Plan (SIP) Calculator. This powerful tool helps you project the future value of your investments in mutual funds or other assets through regular, disciplined contributions. Enter the amount you plan to invest monthly, your expected annual rate of return, and the number of years you intend to stay invested. The calculator will then show you a detailed projection, including your total invested amount, the estimated returns you could earn, and the final maturity value. This demonstrates the incredible power of compounding over the long term. Additionally, our AI-powered "Plan a Goal" feature lets you work backward: input your financial target, and the AI will calculate the monthly SIP required to reach your goal, turning your dreams into an actionable plan.',
+        description: 'Visualize your path to wealth creation with the Systematic Investment Plan (SIP) Calculator, an advanced tool within the All Type Calculator suite. This powerful tool helps you project the future value of your investments in mutual funds or other assets through regular, disciplined contributions. Enter the amount you plan to invest monthly, your expected annual rate of return, and the number of years you intend to stay invested. The calculator will then show you a detailed projection, including your total invested amount, the estimated returns you could earn, and the final maturity value. This demonstrates the incredible power of compounding over the long term. Additionally, our AI-powered "Plan a Goal" feature lets you work backward: input your financial target, and the AI will calculate the monthly SIP required to reach your goal, turning your dreams into an actionable plan.',
+        metaDescription: 'Project your future wealth with our free SIP Calculator. See how your monthly investments can grow with the power of compounding. Use the All Type Calculator to plan your financial goals and estimate mutual fund returns accurately.',
         faqs: [
-            { q: 'What is a SIP?', a: 'A Systematic Investment Plan (SIP) is a method of investing in mutual funds where you invest a fixed amount of money at regular intervals (e.g., monthly). It helps in disciplined investing and benefits from rupee cost averaging and the power of compounding.' },
-            { q: 'Are the returns guaranteed?', a: 'No, mutual fund returns are subject to market risks. The calculator shows a projection based on the expected rate of return you enter. Actual returns can be higher or lower depending on market performance.' },
-            { q: 'What is Rupee Cost Averaging?', a: 'When you invest a fixed amount every month, you automatically buy more units when the market price is low and fewer units when the price is high. Over time, this averages out your purchase cost and can reduce the impact of market volatility.'},
-            { q: 'What is a realistic "Expected Return Rate" to use?', a: 'For long-term investments in equity mutual funds, a common historical average is around 10-14% per annum. However, this is not a guarantee. It\'s wise to be conservative with your estimate, for example, using 10% or 12% for planning.'},
-            { q: 'How does the "Plan a Goal" feature work?', a: 'Our AI-powered goal planner uses the principles of future value calculations in reverse. You provide the future amount you want (your goal), the time you have, and your expected return rate. The AI then calculates the required monthly investment (the present value annuity) needed to reach that specific future value.'}
+            { q: 'What is a SIP (Systematic Investment Plan)?', a: 'A Systematic Investment Plan (SIP) is a method of investing in mutual funds where you invest a fixed amount of money at regular intervals (e.g., monthly). It helps in disciplined investing and benefits from rupee cost averaging and the power of compounding.' },
+            { q: 'Are the returns from a SIP guaranteed?', a: 'No, mutual fund returns are subject to market risks. The calculator shows a projection based on the expected rate of return you enter. Actual returns can be higher or lower depending on market performance.' },
+            { q: 'What is Rupee Cost Averaging in a SIP?', a: 'When you invest a fixed amount every month, you automatically buy more units when the market price is low and fewer units when the price is high. Over time, this averages out your purchase cost and can reduce the impact of market volatility. It is a core benefit of using a SIP.'},
+            { q: 'What is a good or realistic "Expected Return Rate" to use in the calculator?', a: 'For long-term investments in equity mutual funds, a common historical average is around 10-14% per annum. However, this is not a guarantee. It\'s wise to be conservative with your estimate, for example, using 10% or 12% for planning with this All Type Calculator.'},
+            { q: 'How does the "Plan a Goal" AI feature work?', a: 'Our AI-powered goal planner uses the principles of future value calculations in reverse. You provide the future amount you want (your goal), the time you have, and your expected return rate. The AI then calculates the required monthly investment (the present value annuity) needed to reach that specific future value.'}
         ],
         examples: [
             {
@@ -329,30 +334,31 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
             },
             {
                 title: 'Example 2: Goal Planning with AI',
-                description: 'Using the AI feature to find out the monthly SIP needed to reach a goal of ₹50 Lakhs.',
+                description: 'Using the AI feature to find out the monthly SIP needed to reach a goal of ₹50 Lakhs for a child\'s education.',
                 inputs: { targetAmount: 5000000, returnRate: 12, timePeriod: 15 },
                 result: 'The AI will calculate the required monthly SIP (approx. ₹9,992).'
             }
         ]
     },
     'BMI Calculator': {
-        description: "The Body Mass Index (BMI) calculator is a widely used tool to gauge whether your weight is in a healthy range for your height. It's a simple, indirect measure of body fat. By entering your weight and height in either metric (kilograms and centimeters) or imperial (pounds and inches) units, the calculator computes a single number. This number falls into one of four categories: Underweight, Normal weight, Overweight, or Obesity. While it's a great starting point for assessing your weight status, it's important to remember that BMI is a general indicator. It doesn't differentiate between fat and muscle mass, which means very muscular individuals (like athletes) might have a high BMI without having excess body fat. Always consider BMI as one piece of a larger health puzzle and consult with a healthcare professional for a comprehensive assessment.",
+        description: "The Body Mass Index (BMI) calculator, part of our health suite at All Type Calculator, is a widely used tool to gauge whether your weight is in a healthy range for your height. It's a simple, indirect measure of body fat. By entering your weight and height in either metric (kilograms and centimeters) or imperial (pounds and inches) units, the calculator computes a single number. This number falls into one of four categories: Underweight, Normal weight, Overweight, or Obesity. While it's a great starting point for assessing your weight status, it's important to remember that BMI is a general indicator. It doesn't differentiate between fat and muscle mass, which means very muscular individuals (like athletes) might have a high BMI without having excess body fat. Always consider BMI as one piece of a larger health puzzle and consult with a healthcare professional for a comprehensive assessment.",
+        metaDescription: 'Check your Body Mass Index (BMI) instantly with the All Type Calculator. Use our free health tool to find out if your weight is in a healthy range using metric or imperial units. A simple way to monitor your health.',
         faqs: [
-            { q: 'What do the BMI categories mean?', a: 'The standard BMI categories are: Below 18.5 (Underweight), 18.5-24.9 (Normal weight), 25.0-29.9 (Overweight), and 30.0 or higher (Obesity). These ranges help identify potential weight-related health risks.' },
-            { q: 'Is BMI accurate for everyone?', a: 'BMI can be less accurate for certain groups like athletes (who have high muscle mass), pregnant women, the elderly, and children. It\'s best to consult a healthcare professional for a complete health evaluation.' },
-            { q: 'What is the formula for BMI?', a: 'For metric units, the formula is: BMI = weight (kg) / [height (m)]². For imperial units, it is: BMI = (weight (lbs) / [height (in)]²) * 703.' },
+            { q: 'What is a good BMI for adults?', a: 'The standard BMI categories are: Below 18.5 (Underweight), 18.5-24.9 (Normal weight), 25.0-29.9 (Overweight), and 30.0 or higher (Obesity). These ranges help identify potential weight-related health risks.' },
+            { q: 'Is BMI accurate for everyone including athletes and children?', a: 'BMI can be less accurate for certain groups like athletes (who have high muscle mass), pregnant women, the elderly, and children, as it doesn\'t differentiate fat from muscle. For these groups, other measures like body fat percentage might be more useful. It\'s best to consult a healthcare professional for a complete health evaluation.' },
+            { q: 'What is the formula for BMI calculation?', a: 'For metric units, the formula is: BMI = weight (kg) / [height (m)]². For imperial units, it is: BMI = (weight (lbs) / [height (in)]²) * 703. The All Type Calculator handles these formulas for you.' },
             { q: 'What are the health risks associated with a high BMI?', a: 'A high BMI is associated with an increased risk for several health conditions, including type 2 diabetes, heart disease, high blood pressure, and certain types of cancer. Maintaining a healthy weight can help mitigate these risks.' },
-            { q: 'If my BMI is high, what should I do?', a: 'If your BMI falls into the overweight or obesity category, it\'s a good idea to speak with a doctor or a registered dietitian. They can provide personalized advice on healthy eating, exercise, and lifestyle changes to help you reach a healthier weight.' }
+            { q: 'If my BMI is high, what should I do?', a: 'If your BMI falls into the overweight or obesity category, it\'s a good idea to speak with a doctor or a registered dietitian. They can provide personalized advice on healthy eating, exercise, and lifestyle changes to help you reach a healthier weight. This calculator is a screening tool, not a diagnostic one.' }
         ],
         examples: [
             {
-                title: 'Example 1: Metric Units',
+                title: 'Example 1: Metric Units BMI Calculation',
                 description: 'Calculating BMI for a person with a weight of 75 kg and height of 180 cm.',
                 inputs: { unit: 'metric', weight: 75, height: 180 },
                 result: 'BMI is 23.1 (Normal weight).'
             },
             {
-                title: 'Example 2: Imperial Units',
+                title: 'Example 2: Imperial Units BMI Calculation',
                 description: 'Calculating BMI for a person with a weight of 150 lbs and height of 65 inches.',
                 inputs: { unit: 'imperial', weight: 150, height: 65 },
                 result: 'BMI is 24.96 (Normal weight).'
@@ -361,6 +367,7 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
     },
     'Age Calculator': {
         description: "Ever wondered your exact age, down to the very second? Our Age Calculator provides a fun and precise way to measure your age based on your date of birth. It doesn't just stop at years; it breaks down your age into years, months, days, hours, minutes, and even live-ticking seconds. This tool is perfect for celebrating milestones, satisfying curiosity, or calculating the exact duration between two dates. Beyond the simple calculation, it also tells you how many days are remaining until your next birthday, helping you count down to your special day. To make things even easier, you can save important dates like birthdays and anniversaries of friends and family. This allows you to select a saved person and instantly see their age without having to re-enter their birth date every time.",
+        metaDescription: 'Calculate your exact age in years, months, days, and seconds with the All Type Calculator. Find out the time until your next birthday and save important dates. A fun and free online age calculation tool.',
         faqs: [
             { q: 'How does the calculator handle leap years?', a: 'The calculator accurately accounts for leap years by calculating the difference between the two full dates, which inherently includes the extra day in leap years when it falls within the period.' },
             { q: 'Can I use this for things other than birthdays?', a: 'Yes! You can use it to calculate the duration between any two dates. For example, find out exactly how long you\'ve been working at your job or how long it has been since a major life event.' },
@@ -505,23 +512,24 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         ]
     },
      'GST/Tax Calculator': {
-        description: "Quickly calculate Goods and Services Tax (GST) or any other value-added tax with this easy-to-use tool. It works both ways: you can add tax to a pre-tax amount to find the final price, or you can remove tax from a final price to find the original amount and the tax component. This is perfect for small business owners creating invoices, freelancers calculating service fees, and shoppers who want to understand the price breakdown of a product. Just enter the amount, the tax rate, and choose whether to add or remove the tax.",
+        description: "Quickly calculate Goods and Services Tax (GST) or any other value-added tax with this easy-to-use tool. As a comprehensive all-type-calculator, it works both ways: you can add tax to a pre-tax amount to find the final price, or you can remove tax from a final price to find the original amount and the tax component. This is perfect for small business owners creating invoices, freelancers calculating service fees, and shoppers who want to understand the price breakdown of a product. Just enter the amount, the tax rate (like the GST rate in India for 2025), and choose whether to add or remove the tax.",
+        metaDescription: 'An easy-to-use online GST calculator from All Type Calculator. Add or remove GST from any amount to find the pre-tax value, tax amount, and final price. Perfect for business invoices and retail prices.',
         faqs: [
             { q: "How do I add GST to a price?", a: "To add GST, the calculator multiplies the initial amount by the tax rate (as a decimal) to find the tax amount. It then adds this tax amount to the initial amount to get the final price." },
             { q: "How do I remove or back-calculate GST from a final price?", a: "To find the pre-tax amount from a price that already includes tax, the calculator uses the formula: Initial Amount = Final Amount / (1 + Tax Rate). For example, to remove 18% GST from ₹118, it calculates 118 / 1.18 = ₹100." },
             { q: "Can I use this for other taxes like VAT?", a: "Yes, absolutely. The mathematical principle is the same for any value-added tax (VAT), sales tax, or GST. Just enter the applicable tax rate." },
-            { q: "What are common GST rates?", a: "GST rates vary by country and product/service type. Common slabs are often 5%, 12%, 18%, and 28%. Essential goods might be 0%, while luxury items have the highest rates." },
+            { q: "What are common GST rates in India for 2025?", a: "GST rates vary by product/service type. Common slabs are 5%, 12%, 18%, and 28%. Essential goods might be 0%, while luxury items have the highest rates. Always check the latest official rates." },
             { q: "How is the tax amount calculated in 'remove' mode?", a: "After calculating the initial (pre-tax) amount, the calculator simply subtracts this from the final (inclusive) amount to determine how much of the total price was tax." }
         ],
         examples: [
             {
-                title: "Example 1: Adding GST",
+                title: "Example 1: Adding GST to Invoice",
                 description: "Calculating the final price of a service costing ₹5,000 with 18% GST.",
                 inputs: { amount: '5000', rate: '18', action: 'add' },
                 result: "The final amount is ₹5,900 (Tax: ₹900)."
             },
             {
-                title: "Example 2: Removing GST",
+                title: "Example 2: Finding Pre-Tax Price",
                 description: "Finding the original price and tax component from a product that costs ₹1,680 inclusive of 12% GST.",
                 inputs: { amount: '1680', rate: '12', action: 'remove' },
                 result: "The initial amount is ₹1,500 (Tax: ₹180)."
@@ -540,13 +548,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Flooring Installation",
-                description: "Estimating the cost to install new tiles in a 500 sq. ft. room where the tile and labor cost is ₹150 per sq. ft.",
+                description: 'Estimating the cost to install new tiles in a 500 sq. ft. room where the tile and labor cost is ₹150 per sq. ft.',
                 inputs: { area: '500', unit: 'sqft', costPerUnit: '150' },
                 result: "The total estimated cost is ₹75,000."
             },
             {
                 title: "Example 2: House Construction",
-                description: "Getting a budget estimate for building a 150 sq. m. house where the average construction cost is ₹18,000 per sq. m.",
+                description: 'Getting a budget estimate for building a 150 sq. m. house where the average construction cost is ₹18,000 per sq. m.',
                 inputs: { area: '150', unit: 'sqm', costPerUnit: '18000' },
                 result: "The total estimated cost is ₹27,00,000."
             }
@@ -564,13 +572,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Short-Term Comparison",
-                description: "Comparing the costs over a 5-year period.",
+                description: 'Comparing the costs over a 5-year period.',
                 inputs: { propertyPrice: '5000000', downPayment: '1000000', loanTerm: '20', interestRate: '8.5', monthlyRent: '15000', comparisonYears: '5' },
                 result: "Renting is cheaper by approx. ₹2,67,118 over 5 years."
             },
             {
                 title: "Example 2: Long-Term Comparison",
-                description: "Comparing the costs for the same property over a 15-year period.",
+                description: 'Comparing the costs for the same property over a 15-year period.',
                 inputs: { propertyPrice: '5000000', downPayment: '1000000', loanTerm: '20', interestRate: '8.5', monthlyRent: '15000', comparisonYears: '15' },
                 result: "Buying is cheaper by approx. ₹1,20,355 over 15 years."
             }
@@ -612,13 +620,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Finding a Percentage",
-                description: "Calculating what 25% of 150 is.",
+                description: 'Calculating what 25% of 150 is.',
                 inputs: { mode: 'percentOf', val1: '25', val2: '150' },
                 result: "The result is 37.5."
             },
             {
                 title: "Example 2: Percentage Change",
-                description: "Calculating the percentage increase from 80 to 100.",
+                description: 'Calculating the percentage increase from 80 to 100.',
                 inputs: { mode: 'percentChange', val1: '80', val2: '100' },
                 result: "The result is a 25% increase."
             }
@@ -660,13 +668,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Odd Number of Entries",
-                description: "Finding the median and mode for a simple dataset.",
+                description: 'Finding the median and mode for a simple dataset.',
                 inputs: { numbers: '2, 3, 4, 4, 5' },
                 result: "Median: 4, Mode: 4."
             },
             {
                 title: "Example 2: Even Number of Entries and Multiple Modes",
-                description: "A more complex dataset with an even count and two modes.",
+                description: 'A more complex dataset with an even count and two modes.',
                 inputs: { numbers: '10, 20, 20, 30, 40, 50, 50, 60' },
                 result: "Median: 35, Mode: 20, 50."
             }
@@ -684,13 +692,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Finding a Logarithm",
-                description: "Calculating the common log (base 10) of 1000.",
+                description: 'Calculating the common log (base 10) of 1000.',
                 inputs: { value: '1000', operation: 'log' },
                 result: "The result is 3."
             },
             {
                 title: "Example 2: Trigonometry in Degrees",
-                description: "Calculating the cosine of a 60-degree angle.",
+                description: 'Calculating the cosine of a 60-degree angle.',
                 inputs: { value: '60', mode: 'Degrees', operation: 'cos' },
                 result: "The result is 0.5."
             }
@@ -708,13 +716,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Calculating Force",
-                description: "Finding the force required to accelerate a 5 kg object at 10 m/s².",
+                description: 'Finding the force required to accelerate a 5 kg object at 10 m/s².',
                 inputs: { calculate: 'force', mass: '5', acceleration: '10' },
                 result: "The required force is 50 N."
             },
             {
                 title: "Example 2: Calculating Acceleration",
-                description: "Finding the acceleration of a 20 kg object when a 100 N force is applied.",
+                description: 'Finding the acceleration of a 20 kg object when a 100 N force is applied.',
                 inputs: { calculate: 'acceleration', force: '100', mass: '20' },
                 result: "The acceleration is 5 m/s²."
             }
@@ -732,13 +740,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Calculating Trip Time",
-                description: "Finding out how long it will take to travel 300 km at an average speed of 60 km/h.",
+                description: 'Finding out how long it will take to travel 300 km at an average speed of 60 km/h.',
                 inputs: { calculate: 'time', distance: '300', speed: '60' },
                 result: "The trip will take 5 hours."
             },
             {
                 title: "Example 2: Calculating Required Speed",
-                description: "Finding the average speed needed to cover 150 km in 2.5 hours.",
+                description: 'Finding the average speed needed to cover 150 km in 2.5 hours.',
                 inputs: { calculate: 'speed', distance: '150', time: '2.5' },
                 result: "You need an average speed of 60 km/h."
             }
@@ -756,13 +764,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Area of a Circle",
-                description: "Finding the area of a circular garden with a radius of 5 meters.",
+                description: 'Finding the area of a circular garden with a radius of 5 meters.',
                 inputs: { shape: 'Circle', radius: '5' },
                 result: "The area is approx. 78.54 square meters."
             },
             {
                 title: "Example 2: Area of a Triangle",
-                description: "Calculating the area of a triangular sail with a base of 4 meters and a height of 6 meters.",
+                description: 'Calculating the area of a triangular sail with a base of 4 meters and a height of 6 meters.',
                 inputs: { shape: 'Triangle', base: '4', height: '6' },
                 result: "The area is 12 square meters."
             }
@@ -780,13 +788,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Volume of a Cylinder",
-                description: "Finding the volume of a water tank that is a cylinder with a radius of 2 meters and a height of 5 meters.",
+                description: 'Finding the volume of a water tank that is a cylinder with a radius of 2 meters and a height of 5 meters.',
                 inputs: { shape: 'Cylinder', radius: '2', height: '5' },
                 result: "The volume is approx. 62.83 cubic meters."
             },
             {
                 title: "Example 2: Volume of a Cube",
-                description: "Calculating the volume of a box that is a perfect cube with a side length of 10 centimeters.",
+                description: 'Calculating the volume of a box that is a perfect cube with a side length of 10 centimeters.',
                 inputs: { shape: 'Cube', side: '10' },
                 result: "The volume is 1000 cubic centimeters."
             }
@@ -804,13 +812,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Converting Miles to Kilometers",
-                description: "Finding out how many kilometers are in 26.2 miles (the length of a marathon).",
+                description: 'Finding out how many kilometers are in 26.2 miles (the length of a marathon).',
                 inputs: { category: 'Length', fromUnit: 'Mile', toUnit: 'Kilometer', inputValue: '26.2' },
                 result: "The result is approx. 42.16 kilometers."
             },
             {
                 title: "Example 2: Converting Fahrenheit to Celsius",
-                description: "Converting a body temperature of 100.4°F to Celsius.",
+                description: 'Converting a body temperature of 100.4°F to Celsius.',
                 inputs: { category: 'Temperature', fromUnit: 'Fahrenheit', toUnit: 'Celsius', inputValue: '100.4' },
                 result: "The result is 38°C."
             }
@@ -828,13 +836,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: USD to INR",
-                description: "Converting $150 USD to Indian Rupees (INR) for travel planning.",
+                description: 'Converting $150 USD to Indian Rupees (INR) for travel planning.',
                 inputs: { fromCurrency: 'USD', toCurrency: 'INR', amount: '150' },
                 result: "The result is approx. ₹12,495."
             },
             {
                 title: "Example 2: EUR to GBP",
-                description: "Converting €50 EUR to British Pounds (GBP) for an online purchase.",
+                description: 'Converting €50 EUR to British Pounds (GBP) for an online purchase.',
                 inputs: { fromCurrency: 'EUR', toCurrency: 'GBP', amount: '50' },
                 result: "The result is approx. £42.93."
             }
@@ -852,7 +860,7 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Road Trip",
-                description: "Estimating the fuel cost for a 600 km road trip in a car with 18 km/L mileage and fuel at ₹105/L.",
+                description: 'Estimating the fuel cost for a 600 km road trip in a car with 18 km/L mileage and fuel at ₹105/L.',
                 inputs: { distance: '600', mileage: '18', fuelPrice: '105' },
                 result: "The total estimated fuel cost is ₹3,500."
             },
@@ -876,13 +884,13 @@ export const calculatorDescriptions: { [key: string]: { description: string; faq
         examples: [
             {
                 title: "Example 1: Dinner with Friends",
-                description: "Splitting a ₹3,500 dinner bill among 5 people with a 10% tip.",
+                description: 'Splitting a ₹3,500 dinner bill among 5 people with a 10% tip.',
                 inputs: { billAmount: '3500', people: '5', tipPercent: '10' },
                 result: "Each person pays ₹770."
             },
             {
                 title: "Example 2: Splitting Rent for a Weekend",
-                description: "Splitting a ₹12,000 accommodation cost among 6 friends with no tip.",
+                description: 'Splitting a ₹12,000 accommodation cost among 6 friends with no tip.',
                 inputs: { billAmount: '12000', people: '6', tipPercent: '0' },
                 result: "Each person pays ₹2,000."
             }

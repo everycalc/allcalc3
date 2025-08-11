@@ -74,12 +74,12 @@ export const AboutUsContent = () => (
     <div className="prose prose-sm prose-invert text-theme-secondary max-w-none">
         <h4>Our Mission</h4>
         <p>
-            At "All Type Calculator", our mission is to provide a comprehensive, free, and easy-to-use suite of calculators for a wide range of needs. Whether you're a business owner optimizing your e-commerce store, a student working on a math problem, an investor planning your financial future, or just someone trying to split a dinner bill, we aim to have the right tool for you.
+            At All Type Calculator, our mission is to provide a comprehensive, free, and easy-to-use suite of calculators for a wide range of needs. Whether you're a business owner optimizing your e-commerce store, a student working on a math problem, an investor planning your financial future, or just someone trying to split a dinner bill, we aim to have the right tool for you.
         </p>
 
         <h4>Why We Built This</h4>
         <p>
-            We believe that access to powerful tools shouldn't be complicated or expensive. We noticed that many people need to perform various calculations daily but often have to jump between different websites or apps, each with its own interface and often cluttered with intrusive ads. We wanted to create a single, unified platform that is clean, fast, customizable, and works seamlessly offline. We focus on providing not just tools, but also clear explanations and context to help you understand the calculations you perform, creating a high-quality resource for everyone.
+            We believe that access to powerful tools shouldn't be complicated or expensive. We noticed that many people need to perform various calculations daily but often have to jump between different websites or apps, each with its own interface and often cluttered with intrusive ads. We wanted to create a single, unified platform that is clean, fast, customizable, and works seamlessly offline. We focus on providing not just tools, but also clear explanations and context to help you understand the calculations you perform, creating a high-quality resource for everyone with the All Type Calculator.
         </p>
 
         <h4>Our Features</h4>
@@ -102,10 +102,10 @@ export const DisclaimerContent = () => (
     <div className="prose prose-sm prose-invert text-theme-secondary max-w-none">
         <h4>Disclaimer</h4>
         <p>
-            The information and calculations provided by the "All Type Calculator" web application are for general informational purposes only. All information on the site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information or calculations on the site.
+            The information and calculations provided by the All Type Calculator web application are for general informational purposes only. All information on the site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information or calculations on the site.
         </p>
         <p>
-            The calculators are not a substitute for professional advice. Under no circumstance shall we have any liability to you for any loss or damage of any kind incurred as a result of the use of the site or reliance on any information provided on the site. Your use of the site and your reliance on any information on the site is solely at your own risk.
+            The calculators are not a substitute for professional advice. Under no circumstance shall we have any liability to you for any loss or damage of any kind incurred as a result of the use of the site or reliance on any information provided on the site. Your use of the All Type Calculator and your reliance on any information on the site is solely at your own risk.
         </p>
         <p>
             We strongly recommend that you consult with a qualified professional (such as a financial advisor, medical professional, or engineer) before making any decisions based on the calculations from this application.

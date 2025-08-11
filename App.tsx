@@ -72,6 +72,9 @@ import SharePromptModal from './components/SharePromptModal';
 
 import { ProProvider } from './contexts/ProContext';
 import CheatCodeModal from './components/CheatCodeModal';
+import { blogPosts } from './data/blogPosts';
+import { calculatorDescriptions } from './data/calculatorDescriptions';
+
 
 interface CalculatorProps {
   initialState?: any;
@@ -142,6 +145,18 @@ const policyPages: { [key: string]: { title: string; content: React.ReactNode } 
   'disclaimer': { title: 'Disclaimer', content: <DisclaimerContent /> },
 };
 
+// SEO Helper
+const updateSeoTags = (title: string, description: string, keywords: string, jsonLd?: object) => {
+    document.title = title;
+    document.querySelector('#meta-description')?.setAttribute('content', description);
+    document.querySelector('#meta-keywords')?.setAttribute('content', keywords);
+
+    const jsonLdScript = document.querySelector('#json-ld-structured-data');
+    if (jsonLdScript) {
+        jsonLdScript.innerHTML = jsonLd ? JSON.stringify(jsonLd) : '';
+    }
+};
+
 const AppContent: React.FC = () => {
   const [currentCalculator, setCurrentCalculator] = useState<string | null>(null);
   const [calculatorState, setCalculatorState] = useState<any | null>(null);
@@ -180,6 +195,89 @@ const AppContent: React.FC = () => {
     }
     prevHistoryLengthRef.current = history.length;
   }, [history]);
+  
+  useEffect(() => {
+    // Dynamic SEO Management
+    let title = 'All Type Calculator: Free Online Tools for All Your Calculation Needs';
+    let description = 'The ultimate free online calculator suite. All Type Calculator provides a versatile collection of tools for business, finance, health, and math. Get instant, accurate results with the best all-in-one calculator app.';
+    let keywords = 'all type calculator, free online calculator, math calculator, finance calculator, business calculator, health calculator';
+    let jsonLd: object | undefined = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        'url': window.location.origin,
+        'name': 'All Type Calculator',
+        'potentialAction': {
+            '@type': 'SearchAction',
+            'target': `${window.location.origin}#search={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+        },
+    };
+
+    if (currentCalculator) {
+      const calcData = calculatorDescriptions[currentCalculator];
+      title = `${currentCalculator} | All Type Calculator`;
+      description = calcData?.metaDescription || `Use the All Type Calculator for your ${currentCalculator} needs. A free, fast, and accurate online tool.`;
+      keywords = `all type calculator, ${currentCalculator.toLowerCase()}, free ${currentCalculator.toLowerCase()}, online calculator`;
+      
+      const faqData = calcData?.faqs;
+      let faqSchema: object | undefined = undefined;
+      if (faqData && faqData.length > 0) {
+          faqSchema = {
+              '@type': 'FAQPage',
+              'mainEntity': faqData.map(faq => ({
+                  '@type': 'Question',
+                  'name': faq.q,
+                  'acceptedAnswer': {
+                      '@type': 'Answer',
+                      'text': faq.a
+                  }
+              }))
+          };
+      }
+      
+      jsonLd = {
+          '@context': 'https://schema.org',
+          '@type': 'HowTo',
+          'name': `${currentCalculator} - How to Calculate`,
+          'description': calcData?.description || description,
+          'step': [
+            { '@type': 'HowToStep', 'name': 'Enter Inputs', 'text': `Enter your values into the designated fields for the ${currentCalculator}.` },
+            { '@type': 'HowToStep', 'name': 'Calculate', 'text': 'Click the "Calculate" button to see the instant result.' },
+            { '@type': 'HowToStep', 'name': 'Review and Export', 'text': 'Review the detailed breakdown, explore the explanation, and export or share your results.' }
+          ],
+          ...(faqSchema && { 'mainEntity': faqSchema })
+      };
+
+    } else if (showSavedDatesPage) {
+      title = 'Saved Dates | All Type Calculator';
+      description = 'Manage your saved birthdays and anniversaries for use with the Age Calculator. Never forget an important date with All Type Calculator.';
+      keywords = 'all type calculator, saved dates, birthday tracker, anniversary calculator';
+    } else if (policyPage && policyPages[policyPage]) {
+      title = `${policyPages[policyPage].title} | All Type Calculator`;
+      description = `Read the ${policyPages[policyPage].title} for the All Type Calculator application. Understand our policies on data, terms of use, and more.`;
+      keywords = `all type calculator, ${policyPages[policyPage].title.toLowerCase()}`;
+    } else if (blogState?.page === 'list') {
+      title = 'Blog & Guides | All Type Calculator';
+      description = 'Explore insightful articles and guides on finance, business, and lifestyle topics from the All Type Calculator blog. Learn how to make the most of our tools.';
+      keywords = 'all type calculator, blog, finance guides, business tips, calculator tutorials';
+    } else if (blogState?.page === 'post' && blogState.slug) {
+      const post = blogPosts.find(p => p.slug === blogState.slug);
+      if (post) {
+        title = `${post.title} | All Type Calculator Blog`;
+        description = post.metaDescription || post.excerpt;
+        keywords = `all type calculator, ${post.title.toLowerCase()}, ${post.category.toLowerCase()} blog`;
+        jsonLd = {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          'headline': post.title,
+          'author': { '@type': 'Organization', 'name': 'All Type Calculator' },
+          'datePublished': new Date().toISOString(), // Placeholder, ideally from post data
+          'description': description,
+        }
+      }
+    }
+    updateSeoTags(title, description, keywords, jsonLd);
+  }, [currentCalculator, showSavedDatesPage, policyPage, blogState]);
 
   useEffect(() => {
     // Onboarding guide
@@ -264,7 +362,8 @@ const AppContent: React.FC = () => {
       clearAllPages();
       setCurrentCalculator(name);
       if(!isEmbedMode) {
-          window.history.pushState({ page: 'calculator', name }, ``, `#${name.replace(/\s+/g, '-')}`);
+          const urlName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          window.history.pushState({ page: 'calculator', name }, ``, `#calc/${urlName}`);
       }
     }
   };
@@ -281,7 +380,8 @@ const AppContent: React.FC = () => {
         clearAllPages();
         setCurrentCalculator(entry.calculator);
         setIsHistoryOpen(false); // Close panel on selection
-        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#${entry.calculator.replace(/\s+/g, '-')}`);
+        const urlName = entry.calculator.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#calc/${urlName}`);
     }
   };
 

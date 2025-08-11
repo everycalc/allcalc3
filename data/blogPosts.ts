@@ -3,6 +3,7 @@ export interface BlogPost {
   title: string;
   category: 'Business' | 'Finance' | 'Fun' | 'Lifestyle' | 'Tech';
   excerpt: string;
+  metaDescription?: string;
   content: string;
 }
 
@@ -12,6 +13,7 @@ export const blogPosts: BlogPost[] = [
         title: 'What is Compound Interest and Why It’s Your Best Friend?',
         category: 'Finance',
         excerpt: 'Discover the magic of compound interest and how this simple principle can turn small savings into a massive fortune over time. It’s the secret sauce of all long-term investors.',
+        metaDescription: 'Learn the definition of compound interest with simple examples. Understand how the eighth wonder of the world works for your investments and why starting early is key to wealth creation with All Type Calculator.',
         content: `They say Albert Einstein once called compound interest the eighth wonder of the world, adding, "He who understands it, earns it; he who doesn't, pays it." Whether the quote is real or not, the sentiment is undeniable. Compound interest is the single most powerful force in the world of finance, a quiet, patient engine that can turn modest savings into a life-changing fortune.
 
 **What is it?** In simple terms, compound interest is interest earned on top of interest. When you first invest or save money, you earn interest on your initial amount, known as the principal. With compounding, the interest you earned gets added back to your principal. The next time interest is calculated, it's based on this new, larger amount. This creates a snowball effect: your money starts working for you, and then the money it earns starts working for you, and so on.
@@ -31,6 +33,7 @@ This principle is not just for lump-sum investments; it's the engine behind syst
         title: 'SIP vs FD vs Mutual Funds – What Should You Choose in Your 20s?',
         category: 'Finance',
         excerpt: 'Confused about where to put your hard-earned money? We break down three of the most popular investment options for young investors to help you make a smarter choice.',
+        metaDescription: 'A comprehensive comparison of SIP, Fixed Deposits (FD), and Mutual Funds for beginners. All Type Calculator helps you decide the best investment option for your financial goals and risk appetite in your 20s.',
         content: `Starting your investment journey in your 20s is one of the smartest financial decisions you can make. Thanks to the power of compounding, even small amounts saved early can grow into a substantial sum over time. But the big question is: where should you invest? Let's demystify three popular options: Systematic Investment Plans (SIPs), Fixed Deposits (FDs), and Mutual Funds.
 
 **Fixed Deposits (FDs): The Safe Haven**
@@ -59,6 +62,7 @@ An FD can be useful for very short-term, critical goals, like saving for a down 
         title: 'How to Calculate Your Break-Even Point Like a Pro',
         category: 'Business',
         excerpt: 'Stop guessing and start knowing. The break-even point is the most critical number for any business. Learn how to calculate it and what it tells you about your business\'s health.',
+        metaDescription: 'Learn the simple formula to calculate your business\'s break-even point. Understand fixed costs, variable costs, and contribution margin to make smarter pricing and spending decisions with the All Type Calculator.',
         content: `Every entrepreneur, from a home baker to a tech startup founder, needs to know their "magic number": the break-even point. This is the point where your business is no longer losing money, but hasn't started making a profit yet. It's the moment your total revenue exactly equals your total costs. Knowing this number is fundamental to making smart business decisions, from setting prices to managing expenses.
 
 So, how do you find it? The formula is surprisingly simple. First, you need to understand two types of costs:
@@ -81,6 +85,7 @@ Why is this so powerful? It helps you set realistic sales goals, understand the 
         title: 'Should You Buy or Rent? A Deep Dive with Our Calculator',
         category: 'Lifestyle',
         excerpt: 'The age-old dilemma: Is it better to buy a home or continue renting? We explore the financial pros and cons and show you how our calculator can help you decide.',
+        metaDescription: 'A detailed financial comparison of buying a home versus renting. Use the All Type Calculator to see the total cash outflow for both options over time and make an informed decision for your future.',
         content: `The decision to buy a home or continue renting is one of the biggest financial choices you'll make in your life. It's not just a financial decision, but a lifestyle one, filled with emotional weight. While there's no single right answer for everyone, you can use financial tools to clear away some of the fog and make a decision based on numbers, not just feelings.
 
 **The Case for Renting: Flexibility and Fewer Responsibilities**
@@ -103,6 +108,7 @@ Keep in mind, this is a simplified financial model. A real-world decision should
         title: 'How Old Are You... in Dog Years?',
         category: 'Fun',
         excerpt: 'You’ve heard the saying, but how is it really calculated? Forget the simple "multiply by 7" rule. We dive into the science and fun behind calculating your age in dog years.',
+        metaDescription: 'Discover the real science behind calculating a dog\'s age in human years. All Type Calculator explains the modern formula and helps you find your own exact age down to the second.',
         content: `It's a classic question asked with a chuckle: "If I'm 30, how old am I in dog years?" The standard answer for decades has been to simply multiply your age by seven. So, a 30-year-old human would be a whopping 210 in dog years! But is it really that simple? According to veterinarians and researchers, the "1 human year = 7 dog years" rule is a myth.
 
 The reality is much more interesting. Dogs mature much, much faster than humans do in their early life, and then their aging slows down. A one-year-old dog is not equivalent to a seven-year-old child. A one-year-old dog is more like a 15-year-old human teenager—they've reached their full height and have hit puberty. The second year of a dog's life is equivalent to about nine human years. After that, the rate slows down, with each subsequent dog year being roughly equivalent to five human years.
@@ -122,6 +128,7 @@ While you ponder that, why not calculate your exact age down to the second? Our 
         title: 'Are You Smarter Than a Calculator? Try These 10 Puzzles',
         category: 'Fun',
         excerpt: 'You use them every day, but can you beat them? We’ve got 10 tricky math puzzles that will test your brainpower. Grab a pen and paper—no calculators allowed for this one!',
+        metaDescription: 'Test your brain with 10 fun and tricky math puzzles that require logic, not just calculation. See if you can solve these riddles from All Type Calculator without using a calculator!',
         content: `Calculators are incredible tools for speed and accuracy, but the human brain is the undisputed champion of logic, creativity, and problem-solving. We've designed a series of puzzles to test the skills that a standard calculator just can't handle. Ready to prove your mental might? Let's begin!
 
 **Puzzle 1: The Lily Pad Problem**
@@ -155,6 +162,7 @@ How did you do? These puzzles rely on lateral thinking, careful reading, and und
         title: 'The Top 10 Calculators Every Entrepreneur Should Use',
         category: 'Business',
         excerpt: 'Running a business involves a lot of numbers. From pricing to marketing, these 10 calculators are essential tools to help you make data-driven decisions and grow your venture.',
+        metaDescription: 'A curated list of the 10 most essential free online calculators for business owners and entrepreneurs. From break-even to CLV:CAC, All Type Calculator has the tools you need for success.',
         content: `As an entrepreneur, you wear many hats: marketer, accountant, strategist, and more. Making informed decisions is key to success, and that means understanding your numbers. Here are 10 essential calculators that can provide the clarity you need to steer your business in the right direction.
 
 **1. Break-Even Point Calculator**
@@ -204,6 +212,7 @@ By regularly using these tools, you move from guessing to knowing, empowering yo
         title: 'How to Price Your Products for Maximum Profit',
         category: 'Business',
         excerpt: 'Pricing is one of the toughest decisions for any business. Price too high, and customers won\'t buy. Price too low, and you won\'t make a profit. Here\'s a guide to finding the sweet spot.',
+        metaDescription: 'A step-by-step guide to product pricing. Learn how to calculate your costs, determine a profit margin, and analyze the market to find the perfect price for your products with All Type Calculator.',
         content: `Setting the right price for your product is a delicate balance of art and science. It directly impacts your sales volume, brand perception, and, most importantly, your profitability. Let's explore a simple yet effective strategy to price your products with confidence.
 
 **Step 1: Know Your Costs Inside and Out**
@@ -235,6 +244,7 @@ By combining a solid understanding of your costs with a smart awareness of the m
         title: 'Planning a Road Trip? Don\'t Forget to Calculate These Costs',
         category: 'Lifestyle',
         excerpt: 'A great road trip is all about freedom, but a little planning goes a long way. Use these calculators to budget your trip and split expenses fairly, so you can focus on the journey.',
+        metaDescription: 'Create a budget for your next road trip with All Type Calculator. Learn how to use our Fuel Cost and Expense Splitter tools to plan your journey and manage shared costs with friends.',
         content: `The open road, good music, great company—there's nothing quite like a road trip. But while spontaneity is part of the fun, a little bit of financial planning can prevent stress and disagreements down the line. Here are the key costs to calculate before you hit the road.
 
 **1. The Biggest Cost: Fuel**
@@ -264,6 +274,7 @@ By taking a few minutes to calculate these key costs, you can create a realistic
         title: 'A Beginner\'s Guide to E-commerce Profitability',
         category: 'Business',
         excerpt: 'Making sales is exciting, but are you actually making money? We break down the key costs that eat into your revenue and show you how to calculate your true profit per order.',
+        metaDescription: 'Learn to calculate true e-commerce profitability with All Type Calculator. This guide explains how COGS, shipping, fees, and RTOs impact your bottom line and how to find your blended profit per order.',
         content: `Starting an e-commerce business is more accessible than ever, but turning those sales into actual profit is the real challenge. It's easy to get caught up in the excitement of revenue, but if your costs are too high, you could be losing money on every single order. Let's walk through the essential components of e-commerce profitability.
 
 **1. Revenue: The Top Line**
@@ -291,6 +302,7 @@ By understanding and tracking these numbers, you can make smarter decisions abou
         title: 'Demystifying Your Payslip: A Guide to Tax Calculations',
         category: 'Finance',
         excerpt: 'Ever looked at your payslip and wondered where all the money went? We break down how taxes are calculated and show you how to find your take-home pay.',
+        metaDescription: 'Understand your salary slip with All Type Calculator. This guide explains how income tax brackets work and breaks down common deductions to help you calculate your net take-home pay.',
         content: `For many people, a payslip can look like a complex document filled with confusing acronyms and deductions. But understanding it is key to managing your personal finances. The biggest deduction is usually income tax. Let's demystify how it's calculated.
 
 Most countries use a **progressive tax system**, which means the more you earn, the higher the percentage of your income you pay in tax. This is done through tax brackets or slabs.
@@ -324,6 +336,7 @@ Your **take-home pay** (or net salary) is your gross salary minus all these dedu
         title: '5 Common Financial Mistakes Young Adults Make (And How to Avoid Them)',
         category: 'Finance',
         excerpt: 'Your 20s are a critical time for building a strong financial foundation. Avoiding these common pitfalls can set you up for a lifetime of financial success.',
+        metaDescription: 'Avoid these 5 common financial mistakes in your 20s. All Type Calculator provides tips and tools to help you start investing early, manage debt, and build a secure financial future.',
         content: `The financial habits you build in your 20s can have a massive impact on the rest of your life. It's a decade of learning, growing, and, inevitably, making a few mistakes. Here are five of the most common financial blunders young adults make, and how you can sidestep them.
 
 **1. Not Starting to Invest Early**
@@ -353,6 +366,7 @@ A budget isn't about restriction; it's about control. It's simply a plan for you
         title: 'Understanding Area vs. Volume: A Practical Guide',
         category: 'Lifestyle',
         excerpt: 'They sound similar, but they measure completely different things. We break down the difference between area and volume with practical examples you can solve with our calculators.',
+        metaDescription: 'What is the difference between area and volume? Learn the definitions, formulas, and practical uses for 2D and 3D measurements with examples from the All Type Calculator.',
         content: `In school, you probably learned about area and volume, but it's easy to forget the difference in the real world. Understanding them is key to solving many practical, everyday problems.
 
 **What is Area?**
@@ -387,6 +401,7 @@ Understanding this distinction is crucial for everything from home renovation pr
         title: 'The Science of Speed: How Velocity, Distance, and Time Relate',
         category: 'Tech',
         excerpt: 'It\'s a formula we all learn in school, but how does it apply in the real world? We explore the simple but powerful relationship between speed, distance, and time.',
+        metaDescription: 'Learn the fundamental physics formula connecting speed, distance, and time. All Type Calculator explains how to calculate each variable with practical examples for travel, sports, and science.',
         content: `The relationship between speed, distance, and time is one of the fundamental concepts in physics and a practical tool for everyday life. It's governed by a simple and elegant formula that everyone should know:
 
 **Distance = Speed × Time**
@@ -415,6 +430,7 @@ This principle is not just for travel. It's used in sports to calculate the spee
         title: 'Smart Shopping: How to Use the Discount Calculator to Save Big',
         category: 'Lifestyle',
         excerpt: 'Sales and discounts can be confusing. Is 30% off better than a "Buy One, Get One Free" deal? Our Discount Calculator helps you see the real value of any promotion.',
+        metaDescription: 'Become a smarter shopper with the All Type Calculator discount tool. Learn how to quickly calculate final prices, compare different offers, and see your total savings in an instant.',
         content: `Everyone loves a good sale, but sometimes the offers can be deliberately confusing. To become a truly smart shopper, you need to be able to quickly understand the real value of a discount. That's where a simple tool can be your best friend.
 
 **The Power of Percentages**
