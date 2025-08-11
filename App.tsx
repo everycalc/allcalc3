@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import HomePage from './components/HomePage';
 import StandardCalculator from './components/StandardCalculator';
 import ScientificCalculator from './components/ScientificCalculator';
@@ -74,6 +74,7 @@ import { ProProvider } from './contexts/ProContext';
 import CheatCodeModal from './components/CheatCodeModal';
 import { blogPosts } from './data/blogPosts';
 import { calculatorDescriptions } from './data/calculatorDescriptions';
+import { calculatorsData } from './data/calculators';
 
 
 interface CalculatorProps {
@@ -178,6 +179,8 @@ const AppContent: React.FC = () => {
   const { history } = useContext(HistoryContext);
   const prevHistoryLengthRef = useRef(history.length);
 
+  const allCalculatorsList = useMemo(() => calculatorsData.flatMap(cat => cat.items), []);
+
   useEffect(() => {
     // This effect runs whenever a calculation is added to history, triggering the share prompt
     if (history.length > prevHistoryLengthRef.current) {
@@ -208,7 +211,7 @@ const AppContent: React.FC = () => {
         'name': 'All Type Calculator',
         'potentialAction': {
             '@type': 'SearchAction',
-            'target': `${window.location.origin}#search={search_term_string}`,
+            'target': `${window.location.origin}/search?q={search_term_string}`,
             'query-input': 'required name=search_term_string',
         },
     };
@@ -289,24 +292,76 @@ const AppContent: React.FC = () => {
         return () => clearTimeout(timer);
     }
   }, []);
-  
-    // URL parameter handling for embed
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const embedCalculator = params.get('embed');
-
-    if (embedCalculator && calculators[embedCalculator]) {
-      handleSelectCalculator(embedCalculator);
-      setIsEmbedMode(true);
-    }
-  }, []);
 
   const clearAllPages = () => {
       setCurrentCalculator(null);
       setShowSavedDatesPage(false);
       setPolicyPage(null);
       setBlogState(null);
-  }
+  };
+
+  // The function that updates state based on a path. It does NOT navigate.
+  const processRoute = (path: string) => {
+    clearAllPages();
+
+    const calcMatch = path.match(/^\/calc\/(.*)$/);
+    const blogPostMatch = path.match(/^\/blog\/(.*)$/);
+
+    if (calcMatch && calcMatch[1]) {
+      const slug = calcMatch[1];
+      const calc = allCalculatorsList.find(c => c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === slug);
+      if (calc) {
+        setCurrentCalculator(calc.name);
+        setCalculatorState(null);
+      }
+      // If calc not found, it will default to homepage because clearAllPages was called.
+      return;
+    }
+
+    if (blogPostMatch && blogPostMatch[1]) {
+      const slug = blogPostMatch[1];
+      if (blogPosts.some(p => p.slug === slug)) {
+        setBlogState({ page: 'post', slug });
+      } else {
+        // if blog post not found, show the blog list page
+        setBlogState({ page: 'list' });
+      }
+      return;
+    }
+
+    switch (path) {
+      case '/':
+      case '/index.html':
+        // Handled by clearAllPages, defaults to HomePage
+        break;
+      case '/saved-dates':
+        setShowSavedDatesPage(true);
+        break;
+      case '/blog':
+        setBlogState({ page: 'list' });
+        break;
+      case '/privacy':
+      case '/terms':
+      case '/about':
+      case '/disclaimer':
+        setPolicyPage(path.substring(1));
+        break;
+      default:
+        // Unknown path, will render HomePage by default because of clearAllPages.
+        // No navigation happens here, preventing loops.
+        break;
+    }
+  };
+
+  // The function that triggers navigation. It changes the URL, then calls processRoute.
+  const navigateTo = (path: string, replace = false) => {
+    const method = replace ? 'replaceState' : 'pushState';
+    const currentPath = window.location.pathname + window.location.search;
+    if (path !== currentPath) {
+        window.history[method]({ path }, '', path);
+    }
+    processRoute(path.split('?')[0]);
+  };
 
   useEffect(() => {
     // Online/offline listeners
@@ -317,26 +372,26 @@ const AppContent: React.FC = () => {
     
     // History management for back button
     const handlePopState = (event: PopStateEvent) => {
-        const state = event.state;
-        clearAllPages();
-        if (state?.page === 'home' || !state) {
-            // Already handled by clearAllPages
-        } else if (state?.page === 'calculator' && calculators[state.name]) {
-            setCurrentCalculator(state.name);
-            setCalculatorState(null);
-        } else if (state?.page === 'savedDates') {
-            setShowSavedDatesPage(true);
-        } else if (state?.page === 'policy' && policyPages[state.name]) {
-            setPolicyPage(state.name);
-        } else if (state?.page === 'blogList') {
-            setBlogState({ page: 'list' });
-        } else if (state?.page === 'blogPost' && state.slug) {
-            setBlogState({ page: 'post', slug: state.slug });
-        }
+        processRoute(window.location.pathname);
     };
     window.addEventListener('popstate', handlePopState);
-    if (!window.history.state) {
-        window.history.replaceState({ page: 'home' }, '');
+    
+    // Initial Route Handling on Load
+    const params = new URLSearchParams(window.location.search);
+    const embedCalculator = params.get('embed');
+
+    if (embedCalculator && calculators[embedCalculator]) {
+      setCurrentCalculator(embedCalculator);
+      setIsEmbedMode(true);
+    } else if (window.location.hash) {
+        // Handle old hash-based URLs on first load
+        const pathFromHash = window.location.hash.substring(1);
+        const normalizedPath = pathFromHash.startsWith('/') ? pathFromHash : `/${pathFromHash}`;
+        // Update the URL to the clean version without reloading the page
+        window.history.replaceState(null, '', normalizedPath);
+        processRoute(normalizedPath);
+    } else {
+       processRoute(window.location.pathname);
     }
 
     return () => {
@@ -344,7 +399,7 @@ const AppContent: React.FC = () => {
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, []); // Run only once on mount
 
   const isHomePage = !currentCalculator && !showSavedDatesPage && !policyPage && !blogState;
 
@@ -358,30 +413,19 @@ const AppContent: React.FC = () => {
   const handleSelectCalculator = (name: string) => {
     if (calculators[name]) {
       setScrollPosition(window.scrollY);
-      setCalculatorState(null);
-      clearAllPages();
-      setCurrentCalculator(name);
-      if(!isEmbedMode) {
-          const urlName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          window.history.pushState({ page: 'calculator', name }, ``, `#calc/${urlName}`);
-      }
+      const urlName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      navigateTo(`/calc/${urlName}`);
     }
-  };
-
-  const handleBackToHome = () => {
-    clearAllPages();
-    window.history.pushState({ page: 'home' }, '', window.location.pathname);
   };
   
   const handleRestoreFromHistory = (entry: HistoryEntry) => {
     if (calculators[entry.calculator] && entry.inputs) {
         setScrollPosition(window.scrollY);
-        setCalculatorState(entry.inputs);
-        clearAllPages();
-        setCurrentCalculator(entry.calculator);
-        setIsHistoryOpen(false); // Close panel on selection
         const urlName = entry.calculator.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#calc/${urlName}`);
+        navigateTo(`/calc/${urlName}`);
+        // We need to set state after navigating, because navigation clears state
+        setTimeout(() => setCalculatorState(entry.inputs), 0);
+        setIsHistoryOpen(false); // Close panel on selection
     }
   };
 
@@ -390,31 +434,24 @@ const AppContent: React.FC = () => {
   
   const handleShowSavedDatesPage = () => {
     setScrollPosition(window.scrollY);
-    clearAllPages();
-    setShowSavedDatesPage(true);
+    navigateTo('/saved-dates');
     setIsSidebarOpen(false);
-    window.history.pushState({ page: 'savedDates' }, ``, `#saved-dates`);
   };
 
   const handleShowPolicyPage = (page: string) => {
     if (policyPages[page]) {
       setScrollPosition(window.scrollY);
-      clearAllPages();
-      setPolicyPage(page);
+      navigateTo(`/${page}`);
       setIsSidebarOpen(false);
-      window.history.pushState({ page: 'policy', name: page }, '', `#${page}`);
     }
   };
 
   const handleShowBlogPage = (page: 'list' | 'post', slug?: string) => {
       setScrollPosition(window.scrollY);
-      clearAllPages();
       if (page === 'list') {
-          setBlogState({ page: 'list' });
-          window.history.pushState({ page: 'blogList' }, '', '#blog');
+          navigateTo('/blog');
       } else if (page === 'post' && slug) {
-          setBlogState({ page: 'post', slug });
-          window.history.pushState({ page: 'blogPost', slug }, '', `#blog/${slug}`);
+          navigateTo(`/blog/${slug}`);
       }
       setIsSidebarOpen(false);
   }
@@ -452,7 +489,7 @@ const AppContent: React.FC = () => {
         onToggleHistoryPanel={handleToggleHistory}
         onRestoreFromHistory={handleRestoreFromHistory}
         onShowPolicyPage={handleShowPolicyPage}
-        onShowBlogPage={handleShowBlogPage}
+        onShowBlogPage={() => handleShowBlogPage('list')}
     />;
   }
 
