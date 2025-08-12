@@ -10,6 +10,7 @@ import SearchModal from './SearchModal';
 import { blogPosts } from '../data/blogPosts';
 import BlogCard from './BlogCard';
 import CalculatorCarousel from './CalculatorCarousel';
+import { calculatorDescriptions } from '../data/calculatorDescriptions';
 
 interface HomePageProps {
   onSelectCalculator: (name: string, isPremium?: boolean) => void;
@@ -18,6 +19,74 @@ interface HomePageProps {
   onRestoreFromHistory: (entry: HistoryEntry) => void;
   onShowPolicyPage: (page: string) => void;
   onShowBlogPage: (page: string, slug?: string) => void;
+  onShowFaqPage: () => void;
+}
+
+const FAQItem: React.FC<{ q: string; a: string; }> = ({ q, a }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="border-b border-outline-variant">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex justify-between items-center text-left py-3 px-1"
+          aria-expanded={isOpen}
+        >
+          <h3 className="font-semibold text-on-surface">{q}</h3>
+          <svg
+            className={`w-5 h-5 text-on-surface-variant transform transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isOpen && (
+          <div className="pb-3 px-1 text-on-surface-variant text-sm animate-fade-in">
+            <p>{a}</p>
+          </div>
+        )}
+      </div>
+    );
+};
+  
+const HomepageFaqs: React.FC<{ onShowFaqPage: () => void; }> = ({ onShowFaqPage }) => {
+    const featuredFaqs = useMemo(() => {
+        const priorityFaqs = [
+            'What is blended profit in e-commerce?',
+            'What is a good CLV to CAC ratio?',
+            'How does the "Plan a Goal" AI feature work?',
+            'What is the 50% rule for affordability?'
+        ];
+        const allFaqs = Object.values(calculatorDescriptions).flatMap(desc => desc.faqs || []);
+        
+        const selected = priorityFaqs
+            .map(q => allFaqs.find(faq => faq.q === q))
+            .filter((faq): faq is {q: string, a: string} => !!faq);
+        
+        if (selected.length < 4) {
+            const otherFaqs = allFaqs.filter(faq => !priorityFaqs.includes(faq.q));
+            selected.push(...otherFaqs.sort(() => 0.5 - Math.random()).slice(0, 4 - selected.length));
+        }
+
+        return selected.slice(0, 4);
+    }, []);
+
+    if (featuredFaqs.length === 0) return null;
+
+    return (
+        <section className="my-12" aria-labelledby="homepage-faqs">
+            <h2 id="homepage-faqs" className="text-2xl font-semibold mb-4 text-on-surface">Frequently Asked Questions</h2>
+            <div className="bg-surface-container rounded-xl shadow-lg p-6 space-y-2">
+                {featuredFaqs.map((faq, index) => (
+                    <FAQItem key={index} q={faq.q} a={faq.a} />
+                ))}
+            </div>
+            <div className="text-center mt-6">
+                <button onClick={onShowFaqPage} className="btn-secondary font-bold py-3 px-8 rounded-full">
+                    View All FAQs
+                </button>
+            </div>
+        </section>
+    );
 }
 
 const suggestedCalculatorNames = [
@@ -50,7 +119,7 @@ const Footer: React.FC<{ onShowPolicyPage: (page: string) => void; onShowBlogPag
 };
 
 
-const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory, onShowPolicyPage, onShowBlogPage }) => {
+const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar, onToggleHistoryPanel, onRestoreFromHistory, onShowPolicyPage, onShowBlogPage, onShowFaqPage }) => {
     const { pinnedCalculators } = useTheme();
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     
@@ -118,56 +187,49 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                 <section className="mb-8" aria-labelledby="suggested-calculators">
                     <h2 id="suggested-calculators" className="text-2xl font-semibold mb-2 text-on-surface flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1V3a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V6H6a1 1 0 110-2h1V3a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0V6h1a1 1 0 100-2h-1V3zM4 12a1 1 0 011-1h1v-1a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H5a1 1 0 01-1-1zm11 1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1v-1z" clipRule="evenodd" /></svg>
-                        Suggested For You
+                        Suggested
                     </h2>
-                     <CalculatorCarousel items={suggestedCalculators} onSelectCalculator={onSelectCalculator} pinId={'onboarding-pin-target'} />
+                    <CalculatorCarousel items={suggestedCalculators} onSelectCalculator={onSelectCalculator} pinId="onboarding-pin-target" />
                 </section>
-               
-                <RecentHistory onToggleHistoryPanel={onToggleHistoryPanel} onRestore={onRestoreFromHistory} />
                 
                 <div id="onboarding-main-content">
-                    {categoriesBeforeBlog.map((category, index) => (
-                        <React.Fragment key={category.category}>
-                            <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
-                                <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-on-surface`}>{category.category}</h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {category.items.map((item: any) => (
-                                        <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
-                                    ))}
-                                </div>
-                            </section>
-                            {(index + 1) % 2 === 0 && <AdsensePlaceholder />}
-                        </React.Fragment>
-                    ))}
-
-                    <section className="my-12" aria-labelledby="latest-blogs">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 id="latest-blogs" className="text-2xl font-semibold text-on-surface">Latest From Our Blog</h2>
-                            <button onClick={() => onShowBlogPage('list')} className="text-sm font-semibold text-primary hover:underline">View All</button>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
-                            {latestBlogs.map(post => (
-                                <BlogCard key={post.slug} post={post} onSelect={() => onShowBlogPage('post', post.slug)} />
-                            ))}
-                        </div>
-                    </section>
-
-                     {categoriesAfterBlog.map((category, index) => (
-                        <React.Fragment key={category.category}>
-                            <section className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-')}>
-                                <h2 id={category.category.replace(/\s+/g, '-')} className={`text-2xl font-semibold mb-4 text-on-surface`}>{category.category}</h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {category.items.map((item: any) => (
-                                        <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />
-                                    ))}
-                                </div>
-                            </section>
-                            {(index + 1) % 2 !== 0 && <AdsensePlaceholder />}
-                        </React.Fragment>
-                    ))}
+                    <RecentHistory onToggleHistoryPanel={onToggleHistoryPanel} onRestore={onRestoreFromHistory} />
                 </div>
 
-                <Footer onShowPolicyPage={onShowPolicyPage} onShowBlogPage={onShowBlogPage} />
+                {categoriesBeforeBlog.map((category) => (
+                    <section key={category.category} className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-').toLowerCase()}>
+                        <h2 id={category.category.replace(/\s+/g, '-').toLowerCase()} className="text-2xl font-semibold mb-4 text-on-surface">{category.category}</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />)}
+                        </div>
+                    </section>
+                ))}
+                
+                 {/* LATEST BLOGS & GUIDES */}
+                <section className="my-12" aria-labelledby="latest-blogs">
+                     <h2 id="latest-blogs" className="text-2xl font-semibold mb-4 text-on-surface">From the Blog</h2>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {latestBlogs.map(post => <BlogCard key={post.slug} post={post} onSelect={() => onShowBlogPage('post', post.slug)} />)}
+                     </div>
+                     <div className="text-center mt-6">
+                        <button onClick={() => onShowBlogPage('list')} className="btn-secondary font-bold py-3 px-8 rounded-full">
+                            View All Posts
+                        </button>
+                    </div>
+                </section>
+                
+                {categoriesAfterBlog.map((category) => (
+                    <section key={category.category} className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-').toLowerCase()}>
+                        <h2 id={category.category.replace(/\s+/g, '-').toLowerCase()} className="text-2xl font-semibold mb-4 text-on-surface">{category.category}</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />)}
+                        </div>
+                    </section>
+                ))}
+
+                <HomepageFaqs onShowFaqPage={onShowFaqPage} />
+
+                <Footer onShowPolicyPage={onShowPolicyPage} onShowBlogPage={() => onShowBlogPage('list')} />
             </main>
         </div>
     );

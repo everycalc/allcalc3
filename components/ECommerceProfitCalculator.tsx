@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { HistoryContext } from '../contexts/HistoryContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -21,7 +18,7 @@ const InputField: React.FC<{ name: string, label: string, value: string | boolea
                     <label htmlFor={name} className="text-sm font-medium text-on-surface-variant">{label}</label>
                     <InfoTooltip text={tooltip} />
                 </div>
-                <button onClick={() => onChange({ target: { name, value: !value } } as any)} className={`w-14 h-7 rounded-full flex items-center transition-colors ${value ? 'bg-primary' : 'bg-surface-container-highest'}`}>
+                <button onClick={() => onChange({ target: { name, value: !value } } as any)} className={`w-14 h-7 rounded-full flex items-center transition-colors ${value ? 'bg-primary' : 'bg-surface-container-highest border-2 border-outline'}`}>
                     <span className={`inline-block w-5 h-5 bg-white rounded-full transform transition-transform ${value ? 'translate-x-8' : 'translate-x-1'}`} />
                 </button>
             </div>
