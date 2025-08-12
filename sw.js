@@ -96,6 +96,7 @@ const urlsToCache = [
   '/components/ExplanationModal.tsx',
   '/components/SearchModal.tsx',
   '/components/CheatCodeModal.tsx',
+  '/components/TimedShareToast.tsx',
 
   // Contexts
   '/contexts/DateTrackerContext.tsx',

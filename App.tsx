@@ -68,12 +68,14 @@ import OnboardingGuide from './components/OnboardingGuide';
 import EmbedModal from './components/EmbedModal';
 import BlogPage from './components/BlogPage';
 import BlogPostPage from './components/BlogPostPage';
-import SharePromptModal from './components/SharePromptModal';
+import TimedShareToast from './components/TimedShareToast';
 
 import { ProProvider } from './contexts/ProContext';
 import CheatCodeModal from './components/CheatCodeModal';
 import { blogPosts } from './data/blogPosts';
 import { calculatorDescriptions } from './data/calculatorDescriptions';
+import { calculatorsData } from './data/calculators';
+import FaqPage from './components/FaqPage';
 
 
 interface CalculatorProps {
@@ -145,6 +147,13 @@ const policyPages: { [key: string]: { title: string; content: React.ReactNode } 
   'disclaimer': { title: 'Disclaimer', content: <DisclaimerContent /> },
 };
 
+// --- Routing Helpers ---
+const allCalculatorsList = calculatorsData.flatMap(cat => cat.items);
+const nameToSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slugToNameMap = new Map(allCalculatorsList.map(calc => [nameToSlug(calc.name), calc.name]));
+const slugToName = (slug: string) => slugToNameMap.get(slug);
+
+
 // SEO Helper
 const updateSeoTags = (title: string, description: string, keywords: string, jsonLd?: object) => {
     document.title = title;
@@ -166,13 +175,14 @@ const AppContent: React.FC = () => {
   const [showSavedDatesPage, setShowSavedDatesPage] = useState(false);
   const [policyPage, setPolicyPage] = useState<string | null>(null);
   const [blogState, setBlogState] = useState<{ page: 'list' | 'post', slug?: string } | null>(null);
+  const [showFaqPage, setShowFaqPage] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isEmbedMode, setIsEmbedMode] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
-  const [isSharePromptOpen, setIsSharePromptOpen] = useState(false);
+  const [isShareToastOpen, setIsShareToastOpen] = useState(false);
   const [isCheatCodeModalOpen, setIsCheatCodeModalOpen] = useState(false);
 
   const { history } = useContext(HistoryContext);
@@ -181,16 +191,15 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     // This effect runs whenever a calculation is added to history, triggering the share prompt
     if (history.length > prevHistoryLengthRef.current) {
-        const hasShownPrompt = sessionStorage.getItem('hasShownSharePrompt');
-        if (!hasShownPrompt) {
-            const currentCount = parseInt(sessionStorage.getItem('calculationCount') || '0', 10);
-            const newCount = currentCount + 1;
-            sessionStorage.setItem('calculationCount', newCount.toString());
+        const currentCount = parseInt(sessionStorage.getItem('calculationCount') || '0', 10);
+        const newCount = currentCount + 1;
+        sessionStorage.setItem('calculationCount', newCount.toString());
 
-            if (newCount >= 2) {
-                setIsSharePromptOpen(true);
-                sessionStorage.setItem('hasShownSharePrompt', 'true');
-            }
+        // Check if the user has already shared in this session
+        const hasShared = sessionStorage.getItem('hasSharedSession') === 'true';
+
+        if (!hasShared && (newCount === 5 || (newCount > 5 && (newCount - 5) % 10 === 0))) {
+            setIsShareToastOpen(true);
         }
     }
     prevHistoryLengthRef.current = history.length;
@@ -208,7 +217,7 @@ const AppContent: React.FC = () => {
         'name': 'All Type Calculator',
         'potentialAction': {
             '@type': 'SearchAction',
-            'target': `${window.location.origin}#search={search_term_string}`,
+            'target': `${window.location.origin}/search/{search_term_string}`,
             'query-input': 'required name=search_term_string',
         },
     };
@@ -252,6 +261,23 @@ const AppContent: React.FC = () => {
       title = 'Saved Dates | All Type Calculator';
       description = 'Manage your saved birthdays and anniversaries for use with the Age Calculator. Never forget an important date with All Type Calculator.';
       keywords = 'all type calculator, saved dates, birthday tracker, anniversary calculator';
+    } else if (showFaqPage) {
+      title = 'Frequently Asked Questions | All Type Calculator';
+      description = 'Find answers to common questions about our suite of free online calculators. Get help with finance, business, health, and math tools.';
+      keywords = 'all type calculator, faq, calculator help, frequently asked questions';
+      const allFaqs = Object.values(calculatorDescriptions).flatMap(desc => desc.faqs || []);
+      jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        'mainEntity': allFaqs.map(faq => ({
+            '@type': 'Question',
+            'name': faq.q,
+            'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': faq.a
+            }
+        }))
+    };
     } else if (policyPage && policyPages[policyPage]) {
       title = `${policyPages[policyPage].title} | All Type Calculator`;
       description = `Read the ${policyPages[policyPage].title} for the All Type Calculator application. Understand our policies on data, terms of use, and more.`;
@@ -277,7 +303,7 @@ const AppContent: React.FC = () => {
       }
     }
     updateSeoTags(title, description, keywords, jsonLd);
-  }, [currentCalculator, showSavedDatesPage, policyPage, blogState]);
+  }, [currentCalculator, showSavedDatesPage, policyPage, blogState, showFaqPage]);
 
   useEffect(() => {
     // Onboarding guide
@@ -296,7 +322,7 @@ const AppContent: React.FC = () => {
     const embedCalculator = params.get('embed');
 
     if (embedCalculator && calculators[embedCalculator]) {
-      handleSelectCalculator(embedCalculator);
+      handleSelectCalculator(embedCalculator, true);
       setIsEmbedMode(true);
     }
   }, []);
@@ -304,49 +330,61 @@ const AppContent: React.FC = () => {
   const clearAllPages = () => {
       setCurrentCalculator(null);
       setShowSavedDatesPage(false);
+      setShowFaqPage(false);
       setPolicyPage(null);
       setBlogState(null);
   }
 
+  // --- Main Routing Logic ---
   useEffect(() => {
-    // Online/offline listeners
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
-    // History management for back button
-    const handlePopState = (event: PopStateEvent) => {
-        const state = event.state;
+
+    const route = (path: string) => {
+        if (isEmbedMode) return;
         clearAllPages();
-        if (state?.page === 'home' || !state) {
-            // Already handled by clearAllPages
-        } else if (state?.page === 'calculator' && calculators[state.name]) {
-            setCurrentCalculator(state.name);
-            setCalculatorState(null);
-        } else if (state?.page === 'savedDates') {
-            setShowSavedDatesPage(true);
-        } else if (state?.page === 'policy' && policyPages[state.name]) {
-            setPolicyPage(state.name);
-        } else if (state?.page === 'blogList') {
+        const parts = path.split('/').filter(Boolean);
+
+        if (parts[0] === 'calculator' && parts[1]) {
+            const calcName = slugToName(parts[1]);
+            if (calcName && calculators[calcName]) {
+                setCalculatorState(null);
+                setCurrentCalculator(calcName);
+            } else {
+                window.history.replaceState({ page: 'home' }, '', '/');
+            }
+        } else if (parts[0] === 'blog' && parts[1]) {
+            setBlogState({ page: 'post', slug: parts[1] });
+        } else if (parts[0] === 'blog') {
             setBlogState({ page: 'list' });
-        } else if (state?.page === 'blogPost' && state.slug) {
-            setBlogState({ page: 'post', slug: state.slug });
+        } else if (parts[0] === 'saved-dates') {
+            setShowSavedDatesPage(true);
+        } else if (parts[0] === 'faq') {
+            setShowFaqPage(true);
+        } else if (policyPages[parts[0]]) {
+            setPolicyPage(parts[0]);
+        } else {
+            // Homepage
         }
     };
-    window.addEventListener('popstate', handlePopState);
-    if (!window.history.state) {
-        window.history.replaceState({ page: 'home' }, '');
-    }
+    
+    route(window.location.pathname);
 
+    const handlePopState = () => {
+      route(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    
     return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
         window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [isEmbedMode]);
 
-  const isHomePage = !currentCalculator && !showSavedDatesPage && !policyPage && !blogState;
+  const isHomePage = !currentCalculator && !showSavedDatesPage && !policyPage && !blogState && !showFaqPage;
 
   useEffect(() => {
     // Scroll restoration logic
@@ -355,33 +393,33 @@ const AppContent: React.FC = () => {
     }
   }, [isHomePage, scrollPosition]);
 
-  const handleSelectCalculator = (name: string) => {
+  const handleSelectCalculator = (name: string, skipHistoryPush = false) => {
     if (calculators[name]) {
       setScrollPosition(window.scrollY);
-      setCalculatorState(null);
       clearAllPages();
+      setCalculatorState(null);
       setCurrentCalculator(name);
-      if(!isEmbedMode) {
-          const urlName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          window.history.pushState({ page: 'calculator', name }, ``, `#calc/${urlName}`);
+      if(!isEmbedMode && !skipHistoryPush) {
+          const urlSlug = nameToSlug(name);
+          window.history.pushState({ page: 'calculator', name }, ``, `/calculator/${urlSlug}`);
       }
     }
   };
 
   const handleBackToHome = () => {
     clearAllPages();
-    window.history.pushState({ page: 'home' }, '', window.location.pathname);
+    window.history.pushState({ page: 'home' }, '', '/');
   };
   
   const handleRestoreFromHistory = (entry: HistoryEntry) => {
     if (calculators[entry.calculator] && entry.inputs) {
         setScrollPosition(window.scrollY);
-        setCalculatorState(entry.inputs);
         clearAllPages();
+        setCalculatorState(entry.inputs);
         setCurrentCalculator(entry.calculator);
         setIsHistoryOpen(false); // Close panel on selection
-        const urlName = entry.calculator.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `#calc/${urlName}`);
+        const urlSlug = nameToSlug(entry.calculator);
+        window.history.pushState({ page: 'calculator', name: entry.calculator }, ``, `/calculator/${urlSlug}`);
     }
   };
 
@@ -393,8 +431,16 @@ const AppContent: React.FC = () => {
     clearAllPages();
     setShowSavedDatesPage(true);
     setIsSidebarOpen(false);
-    window.history.pushState({ page: 'savedDates' }, ``, `#saved-dates`);
+    window.history.pushState({ page: 'savedDates' }, ``, `/saved-dates`);
   };
+  
+  const handleShowFaqPage = () => {
+    setScrollPosition(window.scrollY);
+    clearAllPages();
+    setShowFaqPage(true);
+    setIsSidebarOpen(false);
+    window.history.pushState({ page: 'faq' }, ``, `/faq`);
+  }
 
   const handleShowPolicyPage = (page: string) => {
     if (policyPages[page]) {
@@ -402,7 +448,7 @@ const AppContent: React.FC = () => {
       clearAllPages();
       setPolicyPage(page);
       setIsSidebarOpen(false);
-      window.history.pushState({ page: 'policy', name: page }, '', `#${page}`);
+      window.history.pushState({ page: 'policy', name: page }, '', `/${page}`);
     }
   };
 
@@ -411,10 +457,10 @@ const AppContent: React.FC = () => {
       clearAllPages();
       if (page === 'list') {
           setBlogState({ page: 'list' });
-          window.history.pushState({ page: 'blogList' }, '', '#blog');
+          window.history.pushState({ page: 'blogList' }, '', '/blog');
       } else if (page === 'post' && slug) {
           setBlogState({ page: 'post', slug });
-          window.history.pushState({ page: 'blogPost', slug }, '', `#blog/${slug}`);
+          window.history.pushState({ page: 'blogPost', slug }, '', `/blog/${slug}`);
       }
       setIsSidebarOpen(false);
   }
@@ -437,6 +483,8 @@ const AppContent: React.FC = () => {
     }
     
     if (showSavedDatesPage) return <SavedDatesPage onBack={() => window.history.back()} />;
+    
+    if (showFaqPage) return <FaqPage onBack={() => window.history.back()} onSelectCalculator={handleSelectCalculator} />;
 
     if (policyPage && policyPages[policyPage]) {
       const { title, content } = policyPages[policyPage];
@@ -453,6 +501,7 @@ const AppContent: React.FC = () => {
         onRestoreFromHistory={handleRestoreFromHistory}
         onShowPolicyPage={handleShowPolicyPage}
         onShowBlogPage={handleShowBlogPage}
+        onShowFaqPage={handleShowFaqPage}
     />;
   }
 
@@ -476,6 +525,10 @@ const AppContent: React.FC = () => {
         </div>
     );
   }
+  
+  const handleShared = () => {
+    sessionStorage.setItem('hasSharedSession', 'true');
+  };
 
   return (
     <div id="app-container">
@@ -505,6 +558,7 @@ const AppContent: React.FC = () => {
         onShowSavedDatesPage={handleShowSavedDatesPage}
         onShowPolicyPage={handleShowPolicyPage}
         onShowBlogPage={() => handleShowBlogPage('list')}
+        onShowFaqPage={handleShowFaqPage}
         onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onOpenCheatCodeModal={() => setIsCheatCodeModalOpen(true)}
@@ -512,7 +566,11 @@ const AppContent: React.FC = () => {
       <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
       <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
       <CookieConsentBanner onShowPrivacyPolicy={() => handleShowPolicyPage('privacy')} />
-      <SharePromptModal isOpen={isSharePromptOpen} onClose={() => setIsSharePromptOpen(false)} />
+      <TimedShareToast 
+        isOpen={isShareToastOpen} 
+        onClose={() => setIsShareToastOpen(false)}
+        onShared={handleShared}
+      />
       <EmbedModal isOpen={isEmbedModalOpen} onClose={() => setIsEmbedModalOpen(false)} calculatorName={currentCalculator} />
       <CheatCodeModal isOpen={isCheatCodeModalOpen} onClose={() => setIsCheatCodeModalOpen(false)} />
     </div>
