@@ -1,7 +1,67 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"> 
-<url>
-  <loc>https://www.alltypecalculator.com/</loc>
-  <lastmod>2025-08-12</lastmod>
-</url>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Home -->
+  <url>
+    <loc>https://www.alltypecalculator.com/</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Important Calculators -->
+  <url>
+    <loc>https://www.alltypecalculator.com/calculator/e-commerce-profit-calculator</loc>
+    <lastmod>2025-08-12</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/calculator/product-cost-calculator</loc>
+    <lastmod>2025-08-12</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/calculator/break-even-roas-calculator</loc>
+    <lastmod>2025-08-12</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/calculator/profit-margin-calculator</loc>
+    <lastmod>2025-08-12</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/calculator/compound-interest-calculator</loc>
+    <lastmod>2025-08-12</lastmod>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Blog Index -->
+  <url>
+    <loc>https://www.alltypecalculator.com/blog</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog Posts -->
+  <url>
+    <loc>https://www.alltypecalculator.com/blog/how-to-price-your-product</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/blog/what-is-compound-interest</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.alltypecalculator.com/blog/break-even-point-like-a-pro</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
