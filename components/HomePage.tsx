@@ -13,7 +13,7 @@ import CalculatorCarousel from './CalculatorCarousel';
 import { calculatorDescriptions } from '../data/calculatorDescriptions';
 
 interface HomePageProps {
-  onSelectCalculator: (name: string, isPremium?: boolean) => void;
+  onSelectCalculator: (name: string) => void;
   onToggleSidebar: () => void;
   onToggleHistoryPanel: () => void;
   onRestoreFromHistory: (entry: HistoryEntry) => void;
@@ -200,7 +200,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                     <section key={category.category} className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-').toLowerCase()}>
                         <h2 id={category.category.replace(/\s+/g, '-').toLowerCase()} className="text-2xl font-semibold mb-4 text-on-surface">{category.category}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />)}
+                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name)} />)}
                         </div>
                     </section>
                 ))}
@@ -222,7 +222,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSelectCalculator, onToggleSidebar
                     <section key={category.category} className="mb-8" aria-labelledby={category.category.replace(/\s+/g, '-').toLowerCase()}>
                         <h2 id={category.category.replace(/\s+/g, '-').toLowerCase()} className="text-2xl font-semibold mb-4 text-on-surface">{category.category}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name, item.isPremium)} />)}
+                            {category.items.map((item) => <CalculatorCard key={item.name} name={item.name} icon={item.icon} isPremium={item.isPremium} onClick={() => onSelectCalculator(item.name)} />)}
                         </div>
                     </section>
                 ))}
