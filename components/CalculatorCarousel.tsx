@@ -4,7 +4,7 @@ import CalculatorCard from './CalculatorCard';
 
 interface CalculatorCarouselProps {
   items: CalculatorItem[];
-  onSelectCalculator: (name: string, isPremium?: boolean) => void;
+  onSelectCalculator: (name: string) => void;
   pinId?: string;
 }
 
@@ -28,7 +28,7 @@ const CalculatorCarousel: React.FC<CalculatorCarouselProps> = ({ items, onSelect
               name={item.name} 
               icon={item.icon} 
               isPremium={item.isPremium} 
-              onClick={() => onSelectCalculator(item.name, item.isPremium)}
+              onClick={() => onSelectCalculator(item.name)}
               pinId={index === 0 ? pinId : undefined}
             />
           </div>
